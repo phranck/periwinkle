@@ -8,7 +8,7 @@ exports[`buildSite > keeps the head structure stable 1`] = `
     <meta name="description" content="API reference for Bookstore API, version 1.2.3.">
     <meta name="generator" content="periwinkle">
     
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@500;600;700&amp;display=swap">
     <script>(function(){try{var t=localStorage.getItem("periwinkle:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();</script>
     <style>…</style>
     <link rel="stylesheet" href="/docs/styles.css">

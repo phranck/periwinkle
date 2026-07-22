@@ -43,7 +43,7 @@ describe("ApiDocs", () => {
 
   it("renders schema cards with field tables and variant links", () => {
     expect(defaultHtml).toContain('id="schema-book"');
-    expect(defaultHtml).toContain('data-presence="required"');
+    expect(defaultHtml).toContain('data-presence="included"');
     expect(defaultHtml).toContain('href="#schema-author"');
   });
 
