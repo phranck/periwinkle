@@ -194,36 +194,41 @@ export const DEFAULT_LIGHT_COLORS: ThemeColors = {
 };
 
 /**
- * Default dark palette, mirroring the light tokens on dark surfaces.
+ * Default dark palette: GitHub dark mode neutrals with the periwinkle
+ * (velvet) accent kept for brand highlights and links.
  */
 export const DEFAULT_DARK_COLORS: ThemeColors = {
-  background: "#17171c",
-  surface: "#1f1f26",
-  surfaceAlt: "#2a2a33",
-  text: "rgba(255, 255, 255, 0.92)",
-  textMuted: "rgba(255, 255, 255, 0.64)",
-  textFaint: "rgba(255, 255, 255, 0.42)",
+  background: "#0d1117",
+  surface: "#161b22",
+  surfaceAlt: "#21262d",
+  text: "#e6edf3",
+  textMuted: "#8b949e",
+  textFaint: "#6e7681",
   accent: "#9a9bd4",
-  border: "rgba(255, 255, 255, 0.12)",
+  border: "#30363d",
   link: "#a8a9e0",
-  methodGet: "#4eb3ec",
-  methodPost: "#7bc94a",
-  methodPut: "#ff9d4d",
-  methodPatch: "#e5c04b",
-  methodDelete: "#f06a80",
-  statusSuccess: "#7bc94a",
-  statusError: "#f06a80",
+  methodGet: "#58a6ff",
+  methodPost: "#3fb950",
+  methodPut: "#db6d28",
+  methodPatch: "#d29922",
+  methodDelete: "#f85149",
+  statusSuccess: "#3fb950",
+  statusError: "#f85149",
 };
 
 /**
- * Default font stacks: system fonts, no external dependencies.
+ * Default font stacks: Barlow for body copy, Barlow Condensed for headings
+ * (loaded via the default Google Fonts stylesheet, overridable per config),
+ * and a system mono stack for code.
  */
 export const DEFAULT_FONTS: ThemeFonts = {
-  base: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  base: '"Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   heading:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    '"Barlow Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   mono: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace',
-  stylesheets: [],
+  stylesheets: [
+    "https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap",
+  ],
 };
 
 /** Default corner radius token: cards render at this radius, compact controls at half of it. */
@@ -412,7 +417,7 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
         base: (fonts.base as string | undefined) ?? DEFAULT_FONTS.base,
         heading: (fonts.heading as string | undefined) ?? DEFAULT_FONTS.heading,
         mono: (fonts.mono as string | undefined) ?? DEFAULT_FONTS.mono,
-        stylesheets: (fonts.stylesheets as string[] | undefined) ?? [],
+        stylesheets: (fonts.stylesheets as string[] | undefined) ?? DEFAULT_FONTS.stylesheets,
       },
       radius: (theme.radius as string | undefined) ?? DEFAULT_RADIUS,
     },

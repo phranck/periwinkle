@@ -71,8 +71,8 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
               <thead>
                 <tr>
                   <th scope="col">Key</th>
-                  <th scope="col">Presence</th>
-                  <th scope="col">Type</th>
+                  <th scope="col">Key Presence</th>
+                  <th scope="col">Value Type</th>
                   <th scope="col">Description</th>
                 </tr>
               </thead>
@@ -89,8 +89,8 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
                       )}
                     </td>
                     <td className="pw-fields__presence">
-                      <span data-presence={field.required ? "required" : "optional"}>
-                        {field.required ? "required" : "optional"}
+                      <span data-presence={field.required ? "included" : "optional"}>
+                        {field.required ? "included" : "optional"}
                       </span>
                     </td>
                     <td className="pw-fields__type">

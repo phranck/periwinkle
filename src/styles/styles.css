@@ -16,6 +16,7 @@
 }
 
 html {
+  font-size: 106.25%; /* 17px base: rem-scaled type renders slightly larger overall */
   scroll-behavior: smooth;
 }
 
@@ -24,7 +25,7 @@ body {
   background: var(--pw-background);
   color: var(--pw-text);
   font-family: var(--pw-font-base);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -118,6 +119,7 @@ code {
   gap: 10px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--pw-border);
+  background: var(--pw-surface-alt);
 }
 
 .pw-nav__logo {
@@ -178,6 +180,29 @@ code {
    two-tone contrast stays readable on tinted surfaces. */
 .pw-icon path[opacity] {
   opacity: 0.42;
+}
+
+/* Icons align on the flex row axis, never on the text baseline. */
+.pw-icon {
+  display: block;
+}
+
+/* Light mode renders icons slightly lifted so they do not read as black. */
+:root {
+  --pw-icon-tone: 78%;
+}
+
+[data-theme="dark"] {
+  --pw-icon-tone: 100%;
+}
+
+.pw-nav__section-icon,
+.pw-nav__chevron,
+.pw-nav__icon-button,
+.pw-nav__search-icon,
+.pw-chapter__icon,
+.pw-endpoint__section-icon {
+  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-background));
 }
 
 .pw-nav__theme-icon--dark {
@@ -245,6 +270,7 @@ code {
   font-size: 0.95rem;
   color: var(--pw-text);
   user-select: none;
+  background: color-mix(in srgb, var(--pw-surface-alt) 72%, var(--pw-surface));
 }
 
 .pw-nav__summary::-webkit-details-marker {
@@ -252,7 +278,12 @@ code {
 }
 
 .pw-nav__summary:hover {
-  background: var(--pw-surface-alt);
+  background: color-mix(in srgb, var(--pw-surface-alt) 100%, var(--pw-surface));
+}
+
+.pw-nav__section {
+  overflow: hidden;
+  border-radius: calc(var(--pw-radius) / 2);
 }
 
 .pw-nav__section-icon {
@@ -793,7 +824,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   font-weight: 600;
 }
 
-.pw-fields__presence [data-presence="required"] {
+.pw-fields__presence [data-presence="included"] {
   color: var(--pw-status-error);
   font-weight: 650;
   font-size: 0.8rem;
