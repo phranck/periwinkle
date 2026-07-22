@@ -55,25 +55,38 @@ function NavItem({
   searchText,
   title,
   ariaLabel,
+  method,
   children,
 }: {
   href: string;
   searchText: string;
   title?: string;
   ariaLabel?: string;
+  /**
+   * Optional HTTP method rendered as a small right-aligned text label in the
+   * method's accent color. Accepted periwinkle addition on top of the
+   * reference (which shows only the nav title): a method hint next to each
+   * operation makes the sidebar scannable without opening every group.
+   */
+  method?: string;
   children: React.ReactNode;
 }) {
   return (
     <li className="sidebar__section-item">
       <a
-        className="api-reference-nav__link text-body truncate"
+        className="api-reference-nav__link pw-nav__item text-body"
         href={href}
         title={title}
         aria-label={ariaLabel}
         data-pw-nav-item
         data-pw-search-text={searchText}
       >
-        {children}
+        <span className="pw-nav__item-title truncate">{children}</span>
+        {method ? (
+          <span className={`pw-nav__item-method pw-nav__item-method--${method.toLowerCase()}`}>
+            {method}
+          </span>
+        ) : null}
       </a>
     </li>
   );
@@ -249,6 +262,7 @@ export function SidebarNav({ data }: { data: DocsData }) {
                 title={operationDescription(operation)}
                 ariaLabel={`${operation.navTitle}: ${operationDescription(operation)}`}
                 searchText={operationSearchText(operation)}
+                method={operation.method}
               >
                 {operation.navTitle}
               </NavItem>
