@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   bindSchemaTabs,
+  bindSidebarScrollState,
   bindThemeToggle,
   bindToggleAll,
   initTheme,
@@ -39,23 +40,31 @@ Object.defineProperty(window, "localStorage", { value: new MemoryStorage(), conf
 
 /** Static, fully trusted test fixture markup mirroring the rendered docs. */
 const PAGE_FIXTURE = `
-    <nav data-pw-nav>
-      <button type="button" data-pw-toggle-all></button>
-      <button type="button" data-pw-theme-toggle></button>
-      <input type="search" readonly data-pw-search />
-      <details data-pw-nav-section="books" data-pw-search-text="books">
-        <summary>Books</summary>
-        <ul>
-          <li><a data-pw-nav-item data-pw-search-text="all books get /books" href="#a">All books</a></li>
-          <li><a data-pw-nav-item data-pw-search-text="create book post /books" href="#b">Create Book</a></li>
-        </ul>
-      </details>
-      <details data-pw-nav-section="authors" data-pw-search-text="authors">
-        <summary>Authors</summary>
-        <ul>
-          <li><a data-pw-nav-item data-pw-search-text="list authors" href="#c">List Authors</a></li>
-        </ul>
-      </details>
+    <nav class="sidebar api-reference-nav surface-card" data-pw-nav>
+      <header class="sidebar__header">
+        <button type="button" data-pw-toggle-all></button>
+        <button type="button" data-pw-theme-toggle></button>
+        <label class="pw-nav__search"><input type="search" readonly data-pw-search /></label>
+      </header>
+      <div class="sidebar__body" data-pw-nav-body>
+        <details class="sidebar__section api-reference-nav__section" data-pw-nav-section="books" data-pw-search-text="books">
+          <summary>Books</summary>
+          <div class="api-reference-nav__content">
+            <ul>
+              <li><a data-pw-nav-item data-pw-search-text="all books get /books" href="#a">All books</a></li>
+              <li><a data-pw-nav-item data-pw-search-text="create book post /books" href="#b">Create Book</a></li>
+            </ul>
+          </div>
+        </details>
+        <details class="sidebar__section api-reference-nav__section" data-pw-nav-section="authors" data-pw-search-text="authors">
+          <summary>Authors</summary>
+          <div class="api-reference-nav__content">
+            <ul>
+              <li><a data-pw-nav-item data-pw-search-text="list authors" href="#c">List Authors</a></li>
+            </ul>
+          </div>
+        </details>
+      </div>
     </nav>
     <main data-api-search-root>
       <article
@@ -235,6 +244,21 @@ describe("toggle all", () => {
     button?.click();
     expect(sections().every((section) => !section.open)).toBe(true);
     expect(nav?.dataset.pwAllExpanded).toBe("false");
+  });
+});
+
+describe("sidebar scroll state", () => {
+  it("mirrors the scroll region position onto the nav for the header shadow", () => {
+    bindSidebarScrollState(document);
+    const nav = document.querySelector<HTMLElement>("[data-pw-nav]");
+    const scrollRegion = document.querySelector<HTMLElement>("[data-pw-nav-body]");
+    expect(nav?.dataset.pwNavScrolled).toBe("false");
+
+    if (scrollRegion) {
+      scrollRegion.scrollTop = 40;
+      scrollRegion.dispatchEvent(new Event("scroll"));
+    }
+    expect(nav?.dataset.pwNavScrolled).toBe("true");
   });
 });
 

@@ -26,11 +26,12 @@ export {
   CodeBlock,
   Entry,
   InlineMarkdown,
+  KeyCap,
   Markdown,
   MethodBadge,
 } from "./components/primitives.jsx";
 export { SchemaCard } from "./components/SchemaCard.jsx";
-export { KeyCap, SearchDialog } from "./components/SearchDialog.jsx";
+export { SearchDialog } from "./components/SearchDialog.jsx";
 export { SidebarNav } from "./components/SidebarNav.jsx";
 export type {
   CustomSection,

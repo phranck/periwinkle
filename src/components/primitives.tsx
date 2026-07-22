@@ -68,6 +68,37 @@ export function MethodBadge({ method }: { method: string }) {
 }
 
 /**
+ * A semantic keyboard shortcut whose glyphs are individually keyed, ported
+ * from the reference `KeyCap` component: one `kbd.keycap` per shortcut with
+ * a square `span.keycap__key` per glyph. `Esc` renders as the `⎋` glyph
+ * while the accessible label keeps the literal shortcut text.
+ *
+ * @param props.shortcut The shortcut text, e.g. `⌘K`, `↑↓`, `↵`, or `Esc`.
+ */
+export function KeyCap({ shortcut }: { shortcut: string }) {
+  const displayShortcut = shortcut.toLowerCase() === "esc" ? "⎋" : shortcut;
+  const keyOccurrences = new Map<string, number>();
+  const keys: Array<{ id: string; label: string }> = [];
+  for (const key of displayShortcut) {
+    if (!key.trim()) continue;
+    const label = key.toUpperCase();
+    const occurrence = (keyOccurrences.get(label) ?? 0) + 1;
+    keyOccurrences.set(label, occurrence);
+    keys.push({ id: `${label}-${occurrence}`, label });
+  }
+
+  return (
+    <kbd aria-label={shortcut} className="keycap">
+      {keys.map((key) => (
+        <span key={key.id} className="keycap__key">
+          {key.label}
+        </span>
+      ))}
+    </kbd>
+  );
+}
+
+/**
  * One content chapter: an H2 header with icon and an entry stack, mirroring
  * the sidebar's section structure.
  *
