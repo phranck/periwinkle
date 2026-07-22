@@ -71,7 +71,7 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
             JSON schema
           </button>
         </span>
-        <ArrowCircleDownIcon className="pw-nav__chevron" aria-hidden="true" />
+        <ArrowCircleDownIcon className="pw-schema-card__chevron" aria-hidden="true" />
       </summary>
       <div className="pw-schema-card__body">
         {schema.description ? <Markdown content={schema.description} /> : null}

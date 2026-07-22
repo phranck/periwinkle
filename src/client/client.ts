@@ -5,7 +5,8 @@
  * markup. Everything binds through `data-pw-*` attributes, so the page stays
  * fully usable without JavaScript: native `details`/`summary` collapsing and
  * anchor navigation keep working; this layer adds persistence, the document
- * search dialog, the theme toggle, and the schema view tabs.
+ * search dialog, the theme toggle, the sidebar header's scroll shadow, and
+ * the schema view tabs.
  */
 
 import { bindSearchDialog } from "./search.js";
@@ -86,7 +87,7 @@ function sectionTransitionEasing(section: HTMLElement): string {
 
 function sectionContent(section: HTMLDetailsElement): HTMLElement | null {
   return section.querySelector<HTMLElement>(
-    ":scope > .pw-nav__content, :scope > .pw-schema-card__body",
+    ":scope > .api-reference-nav__content, :scope > .pw-schema-card__body",
   );
 }
 
@@ -254,6 +255,26 @@ export function bindToggleAll(root: Document): void {
 }
 
 /**
+ * Keeps the sidebar header shadow tied to the rail's own scroll position,
+ * exactly like the reference implementation: the nav carries
+ * `data-pw-nav-scrolled` so the stylesheet can raise the glass header's
+ * shadow once the scroll region (`[data-pw-nav-body]`) has scrolled.
+ *
+ * @param root The document containing the sidebar.
+ */
+export function bindSidebarScrollState(root: Document): void {
+  for (const nav of root.querySelectorAll<HTMLElement>("[data-pw-nav]")) {
+    const scrollRegion = nav.querySelector<HTMLElement>("[data-pw-nav-body]");
+    if (!scrollRegion) continue;
+    const update = (): void => {
+      nav.dataset.pwNavScrolled = String(scrollRegion.scrollTop > 0);
+    };
+    update();
+    scrollRegion.addEventListener("scroll", update, { passive: true });
+  }
+}
+
+/**
  * Binds the schema card view tabs: `[data-pw-tab]` buttons switch the
  * sibling `[data-pw-panel]` visibility inside the same card. Clicks must not
  * toggle the surrounding `details` element, so the handler stops the event.
@@ -294,6 +315,7 @@ export function setupPeriwinkle(root: Document): void {
   bindThemeToggle(root);
   bindCollapsibles(root);
   bindToggleAll(root);
+  bindSidebarScrollState(root);
   bindSearchDialog(root);
   bindSchemaTabs(root);
 }

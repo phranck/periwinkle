@@ -169,86 +169,172 @@ code {
 
 /* ---------- Sidebar ---------- */
 
-.pw-nav {
-  position: sticky;
-  top: 24px;
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 48px);
-  background: var(--pw-surface);
-  border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
-  overflow: hidden;
+/* Docs-nav tokens adopted from the reference `.api-reference-shell` block.
+   periwinkle has no sticky public header, so the reference's
+   `--mc-docs-public-header-block-size` term resolves to zero and the sticky
+   offset keeps only the reference's `--mc-space-4` gap term. The header
+   block size sums the two accepted header rows (brand title line at
+   `--pw-text-card-title` * 1.25 line-height plus the `--pw-size-control`
+   search field) with the header's padding and row gap. */
+:root {
+  --pw-docs-nav-padding: var(--pw-docs-space-md);
+  --pw-docs-nav-bottom-fade-height: var(--pw-space-3);
+  --pw-docs-nav-toggle-secondary-opacity: 0.3;
+  --pw-docs-nav-sticky-offset: var(--pw-space-4);
+  --pw-docs-nav-viewport-gap: 4rem;
+  --pw-docs-nav-viewport-clearance: calc(
+    var(--pw-docs-nav-sticky-offset) +
+    var(--pw-docs-nav-viewport-gap)
+  );
+  --pw-docs-header-min-height: var(--pw-size-control);
+  --pw-docs-sidebar-header-block-size: calc(
+    var(--pw-space-card-header) *
+    2 +
+    var(--pw-space-3) +
+    var(--pw-text-card-title) *
+    1.25 +
+    var(--pw-size-control)
+  );
+  --pw-docs-sidebar-header-surface: color-mix(in srgb, var(--pw-surface-alt) 56%, transparent);
+  --pw-docs-nav-active-color: var(--pw-accent);
+  --pw-color-mask-opaque: #000;
 }
 
+.api-reference-nav {
+  display: grid;
+  grid-template-areas: "stack";
+  position: relative;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.sidebar__header {
+  /* The header and the scrolling body intentionally overlap. This gives
+     Safari actual scrolling content to sample for the glass backdrop. */
+  position: relative;
+  z-index: 3;
+  grid-area: stack;
+  align-self: start;
+  display: grid;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-card-header) var(--pw-docs-nav-padding);
+  background: var(--pw-docs-sidebar-header-surface);
+  -webkit-backdrop-filter: blur(var(--pw-space-4)) saturate(1.15);
+  backdrop-filter: blur(var(--pw-space-4)) saturate(1.15);
+}
+
+.api-reference-nav[data-pw-nav-scrolled="true"] .sidebar__header {
+  box-shadow: 0 var(--pw-space-2) var(--pw-space-4)
+    color-mix(in srgb, var(--pw-sky-top) 56%, transparent);
+}
+
+/* Brand row: the accepted periwinkle addition on top of the reference
+   header; its inner geometry mirrors the reference header grid. */
 .pw-nav__brand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--pw-space-3);
+}
+
+.sidebar__header-title {
   display: flex;
   align-items: center;
   gap: var(--pw-space-3);
-  padding: var(--pw-space-card-header) var(--pw-docs-space-md);
-  border-bottom: 1px solid var(--pw-border);
-  background: var(--pw-surface-alt);
+  min-width: 0;
+  margin: 0;
+  padding-inline-start: calc(var(--pw-radius) / 2);
+  color: var(--pw-text);
+  font-size: var(--pw-text-card-title);
+  font-weight: 600;
+}
+
+.pw-nav__brand-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pw-nav__logo {
   width: var(--pw-size-icon-lg);
   height: var(--pw-size-icon-lg);
   object-fit: contain;
+  flex: none;
 }
 
-.pw-nav__brand-title {
-  flex: 1;
-  font-family: var(--pw-font-heading);
-  font-weight: 600;
-  font-size: var(--pw-text-card-title);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pw-nav__icon-button {
-  display: inline-flex;
+.sidebar__header-addon {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+}
+
+/* The theme toggle (periwinkle addition) shares the reference's toggle-all
+   control geometry so both header buttons render identically. */
+.api-reference-nav__toggle-all,
+.pw-nav__icon-button {
+  position: relative;
+  display: inline-flex;
   width: var(--pw-docs-nav-toggle-size);
   min-height: var(--pw-docs-nav-toggle-size);
   height: var(--pw-docs-nav-toggle-size);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--pw-text-muted);
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
   flex: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-background));
+  cursor: pointer;
   transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
 
+.api-reference-nav__toggle-all:hover,
 .pw-nav__icon-button:hover {
   color: var(--pw-accent);
 }
 
+.api-reference-nav__toggle-all svg,
 .pw-nav__icon-button svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: var(--pw-docs-nav-toggle-size);
   height: var(--pw-docs-nav-toggle-size);
+  transition:
+    opacity var(--pw-nav-transition-duration) var(--pw-nav-transition-easing),
+    transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+  transform: translate(-50%, -50%);
 }
 
-/* Expand/collapse-all: show the direction matching the next action. */
-.pw-nav__toggle-all-up {
-  display: none;
+/* Expand/collapse-all: crossfade the direction matching the next action. */
+.api-reference-nav__toggle-all-up {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
 }
 
-[data-pw-all-expanded="true"] .pw-nav__toggle-all-down {
-  display: none;
+[data-pw-all-expanded="true"] .api-reference-nav__toggle-all-down {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
 }
 
-[data-pw-all-expanded="true"] .pw-nav__toggle-all-up {
-  display: inline;
+[data-pw-all-expanded="true"] .api-reference-nav__toggle-all-up {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Iconsax Bulk hardcodes opacity .4 on the secondary layer; lift it so the
    two-tone contrast stays readable on tinted surfaces. */
 .pw-icon path[opacity] {
   opacity: 0.42;
+}
+
+/* Nav toggle controls keep their secondary Bulk layer quieter, exactly like
+   the reference. */
+.api-reference-nav__toggle .pw-icon path[opacity],
+.api-reference-nav__toggle-all .pw-icon path[opacity],
+.pw-nav__icon-button .pw-icon path[opacity] {
+  opacity: var(--pw-docs-nav-toggle-secondary-opacity);
 }
 
 /* Icons align on the flex row axis, never on the text baseline. */
@@ -265,9 +351,6 @@ code {
   --pw-icon-tone: 100%;
 }
 
-.pw-nav__section-icon,
-.pw-nav__chevron,
-.pw-nav__icon-button,
 .pw-nav__search-icon,
 .pw-chapter__icon,
 .pw-endpoint__section-icon {
@@ -286,166 +369,256 @@ code {
   display: inline;
 }
 
+/* Search trigger (periwinkle addition): the field adopts the reference
+   search dialog's header-search geometry so both search surfaces match. */
 .pw-nav__search {
-  position: relative;
-  padding: var(--pw-space-3) var(--pw-docs-space-md);
-  border-bottom: 1px solid var(--pw-border);
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: var(--pw-space-2);
+  min-height: var(--pw-size-control);
+  border: 1px solid var(--pw-border);
+  border-radius: calc(var(--pw-radius) / 2);
+  padding-inline: var(--pw-space-3) var(--pw-space-2);
+  color: var(--pw-text-muted);
+  background: var(--pw-docs-search-dialog-input-surface);
+  cursor: pointer;
+}
+
+.pw-nav__search:focus-within {
+  border-color: var(--pw-accent);
 }
 
 .pw-nav__search-icon {
-  position: absolute;
-  top: 50%;
-  left: 26px;
-  width: var(--pw-size-icon-sm);
-  height: var(--pw-size-icon-sm);
-  transform: translateY(-50%);
-  color: var(--pw-text-faint);
-  pointer-events: none;
+  display: inline-flex;
 }
 
 .pw-nav__search-input {
-  width: 100%;
-  padding: 7px 10px 7px 32px;
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  background: var(--pw-background);
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
   color: var(--pw-text);
-  font-family: var(--pw-font-base);
-  font-size: var(--pw-text-code);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--pw-text-body);
 }
 
-.pw-nav__body {
-  overflow-y: auto;
-  padding: var(--pw-docs-space-md);
+.pw-nav__search-input::placeholder {
+  color: var(--pw-text-faint);
+}
+
+.pw-nav__search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.sidebar__body {
+  padding: var(--pw-space-3) var(--pw-docs-nav-padding) 0;
+}
+
+.sidebar__chapter {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+}
+
+/* Separate the chapter cluster from the first disclosure while keeping
+   adjacent collapsed section headers flush with each other. */
+.sidebar__chapter + .sidebar__section {
+  margin-block-start: var(--pw-space-3);
+}
+
+/* Open disclosures use equal breathing room before the first and after the
+   last item; the padding collapses with the disclosure content itself.
+   List resets replace the reference's Tailwind preflight. */
+.sidebar__section-items {
+  list-style: none;
+  margin: 0;
+  padding: var(--pw-docs-nav-padding) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--pw-space-1);
 }
 
-.pw-nav__section > .pw-nav__summary {
+.api-reference-nav__link {
+  display: block;
+  color: var(--pw-text-muted);
+}
+
+.api-reference-nav__top-link {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+}
+
+.api-reference-nav__section {
+  overflow: clip;
+  margin-inline: calc(-1 * var(--pw-docs-nav-padding));
+  padding-inline: var(--pw-docs-nav-padding);
+}
+
+.api-reference-nav__section summary::marker {
+  content: "";
+}
+
+.api-reference-nav__section summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-reference-nav__summary {
   display: flex;
   min-height: var(--pw-size-control);
   align-items: center;
   gap: var(--pw-space-2);
-  padding: 0 var(--pw-docs-space-md);
-  border-radius: calc(var(--pw-radius) / 2);
+  margin-inline: calc(-1 * var(--pw-docs-nav-padding));
+  padding: 0 var(--pw-docs-nav-padding);
+  color: var(--pw-text-muted);
+  background: var(--pw-surface-alt);
   cursor: pointer;
-  list-style: none;
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
+  transition: background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.api-reference-nav__summary:hover {
+  background: color-mix(in srgb, var(--pw-surface-alt) 98%, var(--pw-text) 2%);
+}
+
+.api-reference-nav__summary-title {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
   color: var(--pw-text);
-  user-select: none;
-  background: color-mix(in srgb, var(--pw-surface-alt) 72%, var(--pw-surface));
+  font-size: var(--pw-text-body);
+  font-weight: 600;
 }
 
-.pw-nav__summary::-webkit-details-marker {
-  display: none;
-}
-
-.pw-nav__summary:hover {
-  background: color-mix(in srgb, var(--pw-surface-alt) 100%, var(--pw-surface));
-}
-
-.pw-nav__section {
-  overflow: hidden;
-  border-radius: calc(var(--pw-radius) / 2);
-}
-
-.pw-nav__section-icon {
-  display: inline-flex;
+.api-reference-nav__summary-addons {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: var(--pw-size-icon-md);
-  height: var(--pw-size-icon-md);
-  color: var(--pw-accent);
+  gap: var(--pw-space-2);
   flex: none;
 }
 
-.pw-nav__section-icon svg,
-.pw-nav__section-icon > * {
-  width: 100%;
-  height: 100%;
+.api-reference-nav__section-icon {
+  flex: none;
+  color: color-mix(in srgb, var(--pw-text) var(--pw-icon-tone), var(--pw-background));
 }
 
-.pw-nav__summary-title {
-  flex: 1;
-  font-size: var(--pw-text-body);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pw-nav__count {
+.api-reference-nav__count {
   display: inline-grid;
   min-width: var(--pw-space-7);
   height: var(--pw-docs-nav-toggle-size);
   place-items: center;
-  font-size: var(--pw-text-code);
-  color: var(--pw-text-muted);
   border: 1px solid var(--pw-border);
   border-radius: calc(var(--pw-radius) / 2);
   padding: 0 var(--pw-docs-space-sm);
+  color: var(--pw-text-muted);
   line-height: 1;
   text-align: center;
 }
 
-.pw-nav__chevron {
+.api-reference-nav__toggle {
+  position: relative;
+  display: inline-flex;
   width: var(--pw-docs-nav-toggle-size);
   height: var(--pw-docs-nav-toggle-size);
-  color: var(--pw-text-faint);
-  transition: transform 0.18s ease;
   flex: none;
+  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-background));
 }
 
-details[open] > summary .pw-nav__chevron,
-details[open] > .pw-schema-card__summary .pw-nav__chevron {
-  transform: rotate(180deg);
+.api-reference-nav__toggle svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
+  transition:
+    opacity var(--pw-nav-transition-duration) var(--pw-nav-transition-easing),
+    transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+  transform: translate(-50%, -50%);
 }
 
-.pw-nav__content {
+.api-reference-nav__toggle-up {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+[data-pw-expanded="true"] .api-reference-nav__toggle-down {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+[data-pw-expanded="true"] .api-reference-nav__toggle-up {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.api-reference-nav__content {
   height: 0;
   opacity: 0;
   overflow: clip;
 }
 
-.pw-nav__section[open] > .pw-nav__content {
+.api-reference-nav__section[open] .api-reference-nav__content {
   height: auto;
   opacity: 1;
 }
 
-.pw-nav__items {
-  list-style: none;
-  margin: var(--pw-space-1) 0 var(--pw-space-2);
-  padding: 0 0 0 var(--pw-space-card-row);
-  display: grid;
-  gap: var(--pw-space-1);
-}
-
-.pw-nav__item {
-  display: flex;
-  align-items: center;
-  gap: var(--pw-space-2);
+[data-pw-nav-item] {
+  border-radius: calc(var(--pw-radius) / 2);
   padding-block: var(--pw-space-1);
   padding-inline: var(--pw-space-2);
-  border-radius: calc(var(--pw-radius) / 2);
-  color: var(--pw-text-muted);
-  overflow: hidden;
+  transition:
+    background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
 
-.pw-nav__item:hover {
-  background: var(--pw-surface-alt);
+[data-pw-nav-item]:hover {
   color: var(--pw-text);
+  background: var(--pw-surface-alt);
   text-decoration: none;
 }
 
-.pw-nav__item-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+[data-pw-nav-item][aria-current="true"],
+[data-pw-nav-item][aria-current="true"]:hover {
+  color: var(--pw-docs-nav-active-color);
+  background: var(--pw-surface-alt);
+  font-weight: 400;
+  text-decoration: none;
 }
 
-.pw-nav__item[hidden],
-.pw-nav__section[hidden] {
-  display: none;
+/* Keep a desktop sticky rail clear of the viewport edge while long, open
+   section lists scroll inside the rail instead of extending below it. */
+@media (min-width: 64rem) {
+  .api-reference-nav {
+    position: sticky;
+    top: var(--pw-docs-nav-sticky-offset);
+  }
+
+  [data-pw-nav-body].sidebar__body {
+    /* The body overlaps the header, then offsets its first row by the
+       header's block size. The header can therefore frost the actual list
+       instead of the sidebar card's opaque parent surface. */
+    grid-area: stack;
+    min-height: 0;
+    max-height: calc(100dvh - var(--pw-docs-nav-viewport-clearance));
+    padding-block-start: calc(var(--pw-docs-sidebar-header-block-size) + var(--pw-space-3));
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scroll-padding-bottom: var(--pw-docs-nav-viewport-gap);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      var(--pw-color-mask-opaque) 0 calc(100% - var(--pw-docs-nav-bottom-fade-height)),
+      color-mix(in srgb, var(--pw-color-mask-opaque) 80%, transparent)
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      var(--pw-color-mask-opaque) 0 calc(100% - var(--pw-docs-nav-bottom-fade-height)),
+      color-mix(in srgb, var(--pw-color-mask-opaque) 80%, transparent)
+    );
+  }
 }
 
 /* ---------- Method badges ---------- */
@@ -838,6 +1011,18 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   background: var(--pw-surface-alt);
 }
 
+.pw-schema-card__chevron {
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
+  color: color-mix(in srgb, var(--pw-text-faint) var(--pw-icon-tone), var(--pw-background));
+  transition: transform 0.18s ease;
+  flex: none;
+}
+
+details[open] > .pw-schema-card__summary .pw-schema-card__chevron {
+  transform: rotate(180deg);
+}
+
 .pw-schema-card__title {
   flex: 1;
   font-family: var(--pw-font-mono);
@@ -1081,7 +1266,8 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   border-width: 0;
 }
 
-/* Sizing utilities used by the adopted markup (Tailwind-equivalent values). */
+/* Sizing and text utilities used by the adopted markup (Tailwind-equivalent
+   values). */
 .size-5 {
   width: 1.25rem;
   height: 1.25rem;
@@ -1090,6 +1276,16 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
 .size-6 {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.text-body {
+  font-size: var(--pw-text-body);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Icon aligns against the cap height of the first text line, rather than
@@ -1627,19 +1823,28 @@ mark[data-api-search-highlight] {
 
 /* ---------- Responsive ---------- */
 
-/* The reference collapses the two-column reference layout below 64rem. */
+/* The reference collapses the two-column reference layout below 64rem and
+   grows the compact nav controls to the full touch-target size. */
 @media (max-width: 63.999rem) {
   .pw-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .pw-nav {
-    position: static;
-    max-height: none;
+  .api-reference-nav,
+  .pw-content {
+    max-width: 100%;
   }
 
-  .pw-nav__body {
-    max-height: 50vh;
+  .api-reference-nav__toggle-all,
+  .pw-nav__icon-button,
+  .api-reference-nav__toggle {
+    width: var(--pw-size-control);
+    min-height: var(--pw-size-control);
+    height: var(--pw-size-control);
+  }
+
+  .api-reference-nav__count {
+    height: var(--pw-size-control);
   }
 }
 
@@ -1650,7 +1855,10 @@ mark[data-api-search-highlight] {
     scroll-behavior: auto;
   }
 
-  .pw-nav__chevron {
+  .api-reference-nav__summary,
+  .api-reference-nav__toggle-all svg,
+  .pw-nav__icon-button svg,
+  .pw-schema-card__chevron {
     transition: none;
   }
 }

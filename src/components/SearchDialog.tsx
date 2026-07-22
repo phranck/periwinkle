@@ -10,37 +10,7 @@
  */
 
 import { BookIcon, CloseCircleIcon, CodeIcon, DiagramIcon, SearchNormal1Icon } from "./icons.jsx";
-
-/**
- * A semantic keyboard shortcut whose glyphs are individually keyed, ported
- * from the reference `KeyCap` component: one `kbd.keycap` per shortcut with
- * a square `span.keycap__key` per glyph. `Esc` renders as the `⎋` glyph
- * while the accessible label keeps the literal shortcut text.
- *
- * @param props.shortcut The shortcut text, e.g. `↑↓`, `↵`, or `Esc`.
- */
-export function KeyCap({ shortcut }: { shortcut: string }) {
-  const displayShortcut = shortcut.toLowerCase() === "esc" ? "⎋" : shortcut;
-  const keyOccurrences = new Map<string, number>();
-  const keys: Array<{ id: string; label: string }> = [];
-  for (const key of displayShortcut) {
-    if (!key.trim()) continue;
-    const label = key.toUpperCase();
-    const occurrence = (keyOccurrences.get(label) ?? 0) + 1;
-    keyOccurrences.set(label, occurrence);
-    keys.push({ id: `${label}-${occurrence}`, label });
-  }
-
-  return (
-    <kbd aria-label={shortcut} className="keycap">
-      {keys.map((key) => (
-        <span key={key.id} className="keycap__key">
-          {key.label}
-        </span>
-      ))}
-    </kbd>
-  );
-}
+import { KeyCap } from "./primitives.jsx";
 
 /**
  * The complete search overlay: the native `dialog` (header with search
