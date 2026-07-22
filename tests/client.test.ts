@@ -5,6 +5,7 @@ import {
   bindSchemaTabs,
   bindSearch,
   bindThemeToggle,
+  bindToggleAll,
   initTheme,
   setupPeriwinkle,
   THEME_STORAGE_KEY,
@@ -36,6 +37,7 @@ Object.defineProperty(window, "localStorage", { value: new MemoryStorage(), conf
 /** Static, fully trusted test fixture markup mirroring the rendered docs. */
 const PAGE_FIXTURE = `
     <nav data-pw-nav>
+      <button type="button" data-pw-toggle-all></button>
       <button type="button" data-pw-theme-toggle></button>
       <input type="search" data-pw-search />
       <details data-pw-nav-section="books" data-pw-search-text="books">
@@ -120,6 +122,29 @@ describe("search", () => {
     ];
     expect(sections.every((section) => !section.hidden)).toBe(true);
     expect(sections.every((section) => !section.open)).toBe(true);
+  });
+});
+
+describe("toggle all", () => {
+  it("expands all sections when any is closed, then collapses all", () => {
+    bindToggleAll(document);
+    const nav = document.querySelector<HTMLElement>("[data-pw-nav]");
+    const button = document.querySelector<HTMLButtonElement>("[data-pw-toggle-all]");
+    const sections = () => [
+      ...document.querySelectorAll<HTMLDetailsElement>("[data-pw-nav-section]"),
+    ];
+
+    expect(nav?.dataset.pwAllExpanded).toBe("false");
+    expect(button?.getAttribute("aria-label")).toBe("Expand all sections");
+
+    button?.click();
+    expect(sections().every((section) => section.open)).toBe(true);
+    expect(nav?.dataset.pwAllExpanded).toBe("true");
+    expect(button?.getAttribute("aria-label")).toBe("Collapse all sections");
+
+    button?.click();
+    expect(sections().every((section) => !section.open)).toBe(true);
+    expect(nav?.dataset.pwAllExpanded).toBe("false");
   });
 });
 

@@ -4,11 +4,10 @@
  * generated curl example.
  */
 
-import { CheckCircleIcon, CodeIcon, KeyIcon, PaperPlaneTiltIcon } from "@phosphor-icons/react";
-
 import type { ApiMediaType, ApiOperation } from "../model/api-reference.js";
 import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
+import { CodeIcon, KeyIcon, Send2Icon, TickCircleIcon } from "./icons.jsx";
 import { CodeBlock, Entry, InlineMarkdown, Markdown, MethodBadge } from "./primitives.jsx";
 
 function responseTone(status: string): string {
@@ -63,7 +62,7 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
           <span className="pw-endpoint__access">
             {requiresAuth ? (
               <>
-                <KeyIcon aria-hidden="true" weight="duotone" /> Authentication required
+                <KeyIcon aria-hidden="true" /> Authentication required
               </>
             ) : (
               "Public endpoint"
@@ -78,11 +77,7 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
 
           {operation.parameters.length > 0 ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-parameters`}>
-              <SectionHeader
-                icon={<CodeIcon weight="duotone" />}
-                id={`${anchor}-parameters`}
-                title="Parameters"
-              />
+              <SectionHeader icon={<CodeIcon />} id={`${anchor}-parameters`} title="Parameters" />
               <ul className="pw-params">
                 {operation.parameters.map((parameter) => (
                   <li className="pw-param" key={`${parameter.location}-${parameter.name}`}>
@@ -108,7 +103,7 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
           {operation.requestBody && operation.requestBody.mediaTypes.length > 0 ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-request-body`}>
               <SectionHeader
-                icon={<PaperPlaneTiltIcon weight="duotone" />}
+                icon={<Send2Icon />}
                 id={`${anchor}-request-body`}
                 title="Request body"
               />
@@ -135,11 +130,7 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
           ) : null}
 
           <section className="pw-endpoint__section" aria-labelledby={`${anchor}-responses`}>
-            <SectionHeader
-              icon={<CheckCircleIcon weight="duotone" />}
-              id={`${anchor}-responses`}
-              title="Responses"
-            />
+            <SectionHeader icon={<TickCircleIcon />} id={`${anchor}-responses`} title="Responses" />
             <ul className="pw-responses">
               {operation.responses.map((response) => (
                 <li
@@ -182,11 +173,7 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
 
           {curlHtml ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-example`}>
-              <SectionHeader
-                icon={<CodeIcon weight="duotone" />}
-                id={`${anchor}-example`}
-                title="Example request"
-              />
+              <SectionHeader icon={<CodeIcon />} id={`${anchor}-example`} title="Example request" />
               <CodeBlock html={curlHtml} />
             </section>
           ) : null}

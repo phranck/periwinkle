@@ -7,24 +7,21 @@
  * host apps embed it directly and provide their own shell.
  */
 
-import { BookOpenTextIcon, BracketsCurlyIcon, FileTextIcon, TagIcon } from "@phosphor-icons/react";
-
 import type { CustomSection } from "../config/config.js";
-import type { DocsData } from "../render/prepare.js";
+import { customSectionsAt, type DocsData } from "../render/prepare.js";
 import { EndpointBlock } from "./EndpointBlock.jsx";
+import { Book1Icon, BookIcon, CategoryIcon, CodeIcon } from "./icons.jsx";
 import { Chapter, Markdown } from "./primitives.jsx";
 import { SchemaCard } from "./SchemaCard.jsx";
 import { SidebarNav } from "./SidebarNav.jsx";
 
 function sectionsAt(data: DocsData, position: CustomSection["position"]): CustomSection[] {
-  return data.config.customSections.filter(
-    (section) => (section.position ?? "after-guide") === position,
-  );
+  return customSectionsAt(data.config, position ?? "after-guide");
 }
 
 function CustomSectionChapter({ section }: { section: CustomSection }) {
   return (
-    <Chapter id={section.id} title={section.title} icon={<FileTextIcon weight="duotone" />}>
+    <Chapter id={section.id} title={section.title} icon={<Book1Icon />}>
       <div className="pw-panel">
         <Markdown content={section.markdown} />
       </div>
@@ -34,11 +31,7 @@ function CustomSectionChapter({ section }: { section: CustomSection }) {
 
 function GuideChapter({ data }: { data: DocsData }) {
   return (
-    <Chapter
-      id="integration-guide"
-      title="Integration guide"
-      icon={<BookOpenTextIcon weight="duotone" />}
-    >
+    <Chapter id="integration-guide" title="Integration guide" icon={<BookIcon />}>
       <div className="pw-guide">
         {data.guideSections.map((section) => (
           <div className="pw-panel" id={`guide-${section.id}`} key={section.id}>
@@ -60,22 +53,11 @@ export function ApiDocs({ data }: { data: DocsData }) {
   const { reference, config } = data;
   const schemas = Object.values(reference.schemas);
   const hasGuide = data.guideSections.length > 0;
-  const topLevelCustomSections = [
-    ...sectionsAt(data, "before-guide"),
-    ...sectionsAt(data, "after-guide"),
-    ...sectionsAt(data, "after-reference"),
-  ];
 
   return (
     <div className="pw-shell">
       <div className="pw-layout">
-        <SidebarNav
-          reference={reference}
-          title={data.title}
-          {...(config.site.logo ? { logo: config.site.logo } : {})}
-          hasGuide={hasGuide}
-          customSections={topLevelCustomSections}
-        />
+        <SidebarNav data={data} />
         <main className="pw-content">
           <header className="pw-intro">
             <h1 className="pw-intro__title">{data.title}</h1>
@@ -101,7 +83,7 @@ export function ApiDocs({ data }: { data: DocsData }) {
             <Chapter
               id={`group-${group.name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}`}
               title={group.name}
-              icon={<TagIcon weight="duotone" />}
+              icon={<CategoryIcon />}
               key={group.name}
             >
               {group.description ? <p className="pw-chapter__lead">{group.description}</p> : null}
@@ -112,11 +94,7 @@ export function ApiDocs({ data }: { data: DocsData }) {
           ))}
 
           {schemas.length > 0 ? (
-            <Chapter
-              id="schemas-heading"
-              title="Schemas"
-              icon={<BracketsCurlyIcon weight="duotone" />}
-            >
+            <Chapter id="schemas-heading" title="Schemas" icon={<CodeIcon />}>
               {schemas.map((schema) => (
                 <SchemaCard schema={schema} data={data} key={schema.anchor} />
               ))}

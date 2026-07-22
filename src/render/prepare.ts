@@ -41,6 +41,24 @@ export function codeKey(...parts: string[]): string {
   return parts.join("::");
 }
 
+/**
+ * Returns the custom sections placed at one position, preserving authored
+ * order. Sections without an explicit position default to `after-guide`.
+ * Sidebar and content both derive their ordering from this helper so the
+ * two can never disagree.
+ *
+ * @param config The resolved configuration.
+ * @param position The placement to filter for.
+ */
+export function customSectionsAt(
+  config: ResolvedConfig,
+  position: NonNullable<ResolvedConfig["customSections"][number]["position"]>,
+): ResolvedConfig["customSections"] {
+  return config.customSections.filter(
+    (section) => (section.position ?? "after-guide") === position,
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

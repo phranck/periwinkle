@@ -45,7 +45,7 @@ export default defineConfig({
       heading: '"Barlow Condensed", sans-serif',
       stylesheets: ["/fonts/fonts.css"],
     },
-    radius: "6px",
+    radius: "1rem",
   },
   guide: {
     auth: "Send the `X-API-Key` header with every request.",
@@ -78,7 +78,7 @@ export default defineConfig({
 | `site.logo` / `site.favicon` | Local file (bundled) or URL | — |
 | `theme.colors.light` / `.dark` | Partial palette overrides | periwinkle palette |
 | `theme.fonts` | Font stacks + external font stylesheets | system fonts |
-| `theme.radius` | Corner radius token | `6px` |
+| `theme.radius` | Corner radius token (cards full, compact controls half) | `1rem` |
 | `guide.*` | Markdown per section (`intro`, `auth`, `requests`, `errors`, `rateLimits`, `versioning`), `false` disables | derived from the spec |
 | `customSections` | Free Markdown sections with `position` (`before-guide`, `after-guide`, `after-reference`) | `[]` |
 | `footer` | Links and text | — |

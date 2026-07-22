@@ -7,11 +7,10 @@
  * the client bundle. The fields view is the no-JS default.
  */
 
-import { CaretDownIcon } from "@phosphor-icons/react";
-
 import type { ApiSchema } from "../model/api-reference.js";
 import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
+import { ArrowCircleDownIcon } from "./icons.jsx";
 import { CodeBlock, InlineMarkdown, Markdown } from "./primitives.jsx";
 
 /**
@@ -62,7 +61,7 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
             JSON schema
           </button>
         </span>
-        <CaretDownIcon className="pw-nav__chevron" aria-hidden="true" weight="bold" />
+        <ArrowCircleDownIcon className="pw-nav__chevron" aria-hidden="true" />
       </summary>
       <div className="pw-schema-card__body">
         {schema.description ? <Markdown content={schema.description} /> : null}

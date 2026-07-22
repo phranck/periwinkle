@@ -136,7 +136,7 @@ code {
   text-overflow: ellipsis;
 }
 
-.pw-nav__theme-toggle {
+.pw-nav__icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -144,20 +144,40 @@ code {
   height: 30px;
   padding: 0;
   border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   background: transparent;
   color: var(--pw-text-muted);
   cursor: pointer;
+  flex: none;
 }
 
-.pw-nav__theme-toggle:hover {
+.pw-nav__icon-button:hover {
   color: var(--pw-accent);
   border-color: var(--pw-accent);
 }
 
-.pw-nav__theme-icon {
+.pw-nav__icon-button svg {
   width: 18px;
   height: 18px;
+}
+
+/* Expand/collapse-all: show the direction matching the next action. */
+.pw-nav__toggle-all-up {
+  display: none;
+}
+
+[data-pw-all-expanded="true"] .pw-nav__toggle-all-down {
+  display: none;
+}
+
+[data-pw-all-expanded="true"] .pw-nav__toggle-all-up {
+  display: inline;
+}
+
+/* Iconsax Bulk hardcodes opacity .4 on the secondary layer; lift it so the
+   two-tone contrast stays readable on tinted surfaces. */
+.pw-icon path[opacity] {
+  opacity: 0.42;
 }
 
 .pw-nav__theme-icon--dark {
@@ -193,7 +213,7 @@ code {
   width: 100%;
   padding: 7px 10px 7px 32px;
   border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   background: var(--pw-background);
   color: var(--pw-text);
   font-family: var(--pw-font-base);
@@ -218,7 +238,7 @@ code {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   cursor: pointer;
   list-style: none;
   font-weight: 600;
@@ -266,8 +286,8 @@ code {
 }
 
 .pw-nav__chevron {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
   color: var(--pw-text-faint);
   transition: transform 0.18s ease;
   flex: none;
@@ -291,7 +311,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   align-items: center;
   gap: 8px;
   padding: 5px 10px;
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   color: var(--pw-text-muted);
   font-size: 0.9rem;
   overflow: hidden;
@@ -546,7 +566,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
 .pw-param {
   background: var(--pw-background);
   border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   padding: 10px 14px;
   display: grid;
   gap: 4px;
@@ -625,7 +645,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   background: var(--pw-background);
   border: 1px solid var(--pw-border);
   border-left: 3px solid var(--pw-response-color, var(--pw-border));
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   padding: 10px 14px;
 }
 
@@ -691,7 +711,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
 .pw-schema-card__tabs {
   display: inline-flex;
   border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   overflow: hidden;
 }
 
@@ -813,7 +833,7 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
   margin: 0;
   padding: 14px 16px;
   border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
+  border-radius: calc(var(--pw-radius) / 2);
   overflow-x: auto;
   font-family: var(--pw-font-mono);
   font-size: 0.85rem;

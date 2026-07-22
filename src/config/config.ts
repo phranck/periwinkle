@@ -226,8 +226,8 @@ export const DEFAULT_FONTS: ThemeFonts = {
   stylesheets: [],
 };
 
-/** Default corner radius token. */
-export const DEFAULT_RADIUS = "6px";
+/** Default corner radius token: cards render at this radius, compact controls at half of it. */
+export const DEFAULT_RADIUS = "1rem";
 
 const CUSTOM_SECTION_POSITIONS: ReadonlySet<string> = new Set([
   "before-guide",
