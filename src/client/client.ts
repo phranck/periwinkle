@@ -83,6 +83,41 @@ export function bindCollapsibles(root: Document): void {
 }
 
 /**
+ * Binds the expand/collapse-all control in the sidebar brand row: when any
+ * section is closed the button expands all, otherwise it collapses all. The
+ * surrounding nav carries `data-pw-all-expanded` so the stylesheet can swap
+ * the button's direction icon, and each change persists like a manual
+ * toggle.
+ *
+ * @param root The document containing the sidebar.
+ */
+export function bindToggleAll(root: Document): void {
+  const nav = root.querySelector<HTMLElement>("[data-pw-nav]");
+  const button = root.querySelector<HTMLButtonElement>("[data-pw-toggle-all]");
+  if (!nav || !button) return;
+
+  const sections = (): HTMLDetailsElement[] => [
+    ...nav.querySelectorAll<HTMLDetailsElement>("[data-pw-nav-section]"),
+  ];
+
+  const update = (): void => {
+    const allExpanded = sections().every((section) => section.open);
+    nav.dataset.pwAllExpanded = String(allExpanded);
+    const label = allExpanded ? "Collapse all sections" : "Expand all sections";
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
+  };
+
+  button.addEventListener("click", () => {
+    const shouldExpand = sections().some((section) => !section.open);
+    for (const section of sections()) section.open = shouldExpand;
+    update();
+  });
+  for (const section of sections()) section.addEventListener("toggle", update);
+  update();
+}
+
+/**
  * Binds the sidebar filter input: matching compares the query against each
  * item's `data-pw-search-text`. Sections without any matching item hide;
  * sections with matches open while a query is active. Clearing the query
@@ -172,6 +207,7 @@ export function setupPeriwinkle(root: Document): void {
   initTheme(root);
   bindThemeToggle(root);
   bindCollapsibles(root);
+  bindToggleAll(root);
   bindSearch(root);
   bindSchemaTabs(root);
 }

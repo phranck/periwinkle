@@ -97,3 +97,26 @@ describe("ApiDocs with custom config", () => {
     expect(html).toContain('href="/imprint"');
   });
 });
+
+describe("ApiDocs sidebar ordering", () => {
+  it("mirrors the content order for custom sections around the guide", async () => {
+    const data = await prepareDocsData(
+      bookstore,
+      resolveConfig({
+        customSections: [
+          { id: "intro-note", title: "Intro note", markdown: "First.", position: "before-guide" },
+          { id: "appendix", title: "Appendix", markdown: "Last.", position: "after-reference" },
+        ],
+      }),
+    );
+    const html = renderToStaticMarkup(<ApiDocs data={data} />);
+    const sidebar = html.slice(0, html.indexOf("pw-content"));
+    const beforeLink = sidebar.indexOf('href="#intro-note"');
+    const guideLink = sidebar.indexOf('href="#integration-guide"');
+    const appendixLink = sidebar.indexOf('href="#appendix"');
+    const schemasSection = sidebar.indexOf('data-pw-nav-section="schemas"');
+    expect(beforeLink).toBeGreaterThan(-1);
+    expect(beforeLink).toBeLessThan(guideLink);
+    expect(schemasSection).toBeLessThan(appendixLink);
+  });
+});
