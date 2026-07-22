@@ -29,6 +29,7 @@ import {
   Send2,
   Sun1,
   TickCircle,
+  Warning2,
 } from "iconsax-react";
 
 /**
@@ -64,3 +65,4 @@ export const SearchNormal1Icon = bulk(SearchNormal1);
 export const Send2Icon = bulk(Send2);
 export const Sun1Icon = bulk(Sun1);
 export const TickCircleIcon = bulk(TickCircle);
+export const Warning2Icon = bulk(Warning2);
