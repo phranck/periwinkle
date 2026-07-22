@@ -172,25 +172,26 @@ export interface ResolvedConfig {
 }
 
 /**
- * Default light palette: calm neutrals with a periwinkle (blue-violet) accent.
+ * Default light palette: GitHub light mode neutrals with the periwinkle
+ * (velvet) accent kept for brand highlights and links.
  */
 export const DEFAULT_LIGHT_COLORS: ThemeColors = {
   background: "#ffffff",
-  surface: "#f7f7fa",
-  surfaceAlt: "#eeeef4",
-  text: "#26262e",
-  textMuted: "#5c5c6a",
-  textFaint: "#9898a6",
+  surface: "#f6f8fa",
+  surfaceAlt: "#eff2f5",
+  text: "#1f2328",
+  textMuted: "#59636e",
+  textFaint: "#818b98",
   accent: "#6667ab",
-  border: "rgba(38, 38, 46, 0.12)",
+  border: "#d1d9e0",
   link: "#5253a3",
-  methodGet: "#0277aa",
-  methodPost: "#3e8d00",
-  methodPut: "#c96a00",
-  methodPatch: "#a88300",
-  methodDelete: "#c93a52",
-  statusSuccess: "#3e8d00",
-  statusError: "#c93a52",
+  methodGet: "#0969da",
+  methodPost: "#1a7f37",
+  methodPut: "#bc4c00",
+  methodPatch: "#9a6700",
+  methodDelete: "#d1242f",
+  statusSuccess: "#1a7f37",
+  statusError: "#d1242f",
 };
 
 /**
