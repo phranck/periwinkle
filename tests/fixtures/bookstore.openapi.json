@@ -1,0 +1,221 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bookstore API",
+    "version": "1.2.3",
+    "description": "A neutral example API used as periwinkle test fixture."
+  },
+  "tags": [
+    { "name": "Books", "description": "Browse and manage books." },
+    { "name": "Authors", "description": "Author directory." }
+  ],
+  "security": [{ "ApiKeyAuth": [] }],
+  "paths": {
+    "/books": {
+      "get": {
+        "x-nav-title": "All books",
+        "operationId": "listBooks",
+        "summary": "List all books",
+        "tags": ["Books"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of books to return.",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of books.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBook",
+        "summary": "Create a book",
+        "tags": ["Books"],
+        "requestBody": {
+          "required": true,
+          "description": "The book to create.",
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/BookInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created book.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Book" } }
+            }
+          },
+          "400": {
+            "description": "Validation failed.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/books/{id}": {
+      "get": {
+        "summary": "Fetch a single book, with reviews included (verbose)",
+        "tags": ["Books"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Book identifier.",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested book.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Book" },
+                "example": { "id": 1, "title": "Example" }
+              }
+            }
+          },
+          "404": { "description": "Not found." }
+        }
+      }
+    },
+    "/authors": {
+      "get": {
+        "operationId": "listAuthors",
+        "summary": "List all authors",
+        "tags": ["Authors"],
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "All authors.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Author" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "search",
+        "summary": "Search books and authors",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search phrase.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The best match.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/Book" },
+                    { "$ref": "#/components/schemas/Author" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key issued per account."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "OAuth access token."
+      }
+    },
+    "schemas": {
+      "Book": {
+        "type": "object",
+        "description": "A single book in the catalog.",
+        "required": ["id", "title"],
+        "properties": {
+          "title": { "type": "string", "description": "Display title." },
+          "id": { "type": "integer", "description": "Unique identifier." },
+          "author": { "$ref": "#/components/schemas/Author" },
+          "category": { "$ref": "#/components/schemas/Category" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "rating": {
+            "type": ["number", "null"],
+            "description": "Average rating, when rated."
+          }
+        }
+      },
+      "BookInput": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "authorId": { "type": "integer" }
+        }
+      },
+      "Author": {
+        "type": "object",
+        "description": "A book author.",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "website": { "type": "string", "nullable": true }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "description": "Hierarchical catalog category.",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "parent": { "$ref": "#/components/schemas/Category" }
+        }
+      },
+      "SearchResult": {
+        "description": "Either a book or an author.",
+        "oneOf": [
+          { "$ref": "#/components/schemas/Book" },
+          { "$ref": "#/components/schemas/Author" }
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}

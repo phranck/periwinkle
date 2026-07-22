@@ -12,3 +12,23 @@
  * point so tooling and tests can assert against the package identity.
  */
 export const PACKAGE_NAME = "periwinkle";
+
+export type {
+  ApiMediaType,
+  ApiOperation,
+  ApiOperationGroup,
+  ApiParameter,
+  ApiReference,
+  ApiRequestBody,
+  ApiResponse,
+  ApiSchema,
+  ApiSchemaField,
+  ApiSchemaVariant,
+  ApiSecurityScheme,
+} from "./model/api-reference.js";
+export {
+  buildApiReference,
+  operationAnchor,
+  schemaAnchor,
+  schemaTypeLabel,
+} from "./model/api-reference.js";
