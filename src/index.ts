@@ -13,6 +13,12 @@
  */
 export const PACKAGE_NAME = "periwinkle";
 
+export {
+  type BuildSiteOptions,
+  type BuildSiteResult,
+  buildSite,
+} from "./build/build-site.jsx";
+export { renderHtmlDocument, withBase } from "./build/html.js";
 export { ApiDocs } from "./components/ApiDocs.jsx";
 export { EndpointBlock } from "./components/EndpointBlock.jsx";
 export {
@@ -64,6 +70,7 @@ export {
   schemaAnchor,
   schemaTypeLabel,
 } from "./model/api-reference.js";
+export { startPreviewServer } from "./preview/serve.js";
 export { buildCurlExample } from "./render/curl.js";
 export { type GuideSection, resolveGuideSections } from "./render/guide.js";
 export { type HighlightLanguage, highlightCode } from "./render/highlight.js";
