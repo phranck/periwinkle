@@ -14,4 +14,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
+  onSuccess: "cp src/styles/styles.css dist/styles.css",
 });

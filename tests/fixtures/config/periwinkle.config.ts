@@ -1,4 +1,7 @@
-import { defineConfig } from "../../../src/index.js";
+// Imports the config module directly: jiti loads this fixture from source,
+// and the package root would pull in JSX components jiti cannot parse.
+// Real consumers import { defineConfig } from "periwinkle" (compiled JS).
+import { defineConfig } from "../../../src/config/config.js";
 
 export default defineConfig({
   site: {

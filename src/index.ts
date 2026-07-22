@@ -13,6 +13,18 @@
  */
 export const PACKAGE_NAME = "periwinkle";
 
+export { ApiDocs } from "./components/ApiDocs.jsx";
+export { EndpointBlock } from "./components/EndpointBlock.jsx";
+export {
+  Chapter,
+  CodeBlock,
+  Entry,
+  InlineMarkdown,
+  Markdown,
+  MethodBadge,
+} from "./components/primitives.jsx";
+export { SchemaCard } from "./components/SchemaCard.jsx";
+export { SidebarNav } from "./components/SidebarNav.jsx";
 export type {
   CustomSection,
   CustomSectionPosition,
@@ -52,3 +64,8 @@ export {
   schemaAnchor,
   schemaTypeLabel,
 } from "./model/api-reference.js";
+export { buildCurlExample } from "./render/curl.js";
+export { type GuideSection, resolveGuideSections } from "./render/guide.js";
+export { type HighlightLanguage, highlightCode } from "./render/highlight.js";
+export { renderInlineMarkdown, renderMarkdown } from "./render/markdown.js";
+export { codeKey, type DocsData, prepareDocsData } from "./render/prepare.js";
