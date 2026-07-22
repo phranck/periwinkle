@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildSite > keeps the head structure stable 1`] = `
+"<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bookstore API</title>
+    <meta name="description" content="API reference for Bookstore API, version 1.2.3.">
+    <meta name="generator" content="periwinkle">
+    
+    
+    <script>(function(){try{var t=localStorage.getItem("periwinkle:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();</script>
+    <style>…</style>
+    <link rel="stylesheet" href="/docs/styles.css">
+  "
+`;
