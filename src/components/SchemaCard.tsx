@@ -10,7 +10,7 @@
 import type { ApiSchema } from "../model/api-reference.js";
 import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
-import { ArrowCircleDownIcon, ArrowCircleUpIcon } from "./icons.jsx";
+import { ArrowCircleDownIcon } from "./icons.jsx";
 import { CodeBlock, InlineMarkdown, Markdown } from "./primitives.jsx";
 
 /**
@@ -71,9 +71,8 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
             JSON schema
           </button>
         </span>
-        <span className="pw-schema-card__chevron" aria-hidden="true">
-          <ArrowCircleDownIcon className="pw-schema-card__chevron-down" />
-          <ArrowCircleUpIcon className="pw-schema-card__chevron-up" />
+        <span className="pw-schema-card__chevron pw-chevron" aria-hidden="true">
+          <ArrowCircleDownIcon />
         </span>
       </summary>
       <div className="pw-schema-card__body">
