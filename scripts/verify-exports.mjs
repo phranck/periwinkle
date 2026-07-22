@@ -52,4 +52,6 @@ for (const [subpath, target] of Object.entries(pkg.exports)) {
   }
 }
 
-console.log(`verify-exports: ok (${REQUIRED_EXPORTS.length} exports, ${Object.keys(pkg.exports).length} subpaths)`);
+console.log(
+  `verify-exports: ok (${REQUIRED_EXPORTS.length} exports, ${Object.keys(pkg.exports).length} subpaths)`,
+);
