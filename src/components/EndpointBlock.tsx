@@ -7,12 +7,13 @@
 import type { ApiMediaType, ApiOperation } from "../model/api-reference.js";
 import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
-import { CodeIcon, KeyIcon, Send2Icon, TickCircleIcon } from "./icons.jsx";
+import { CodeIcon, KeyIcon, Send2Icon, TickCircleIcon, Warning2Icon } from "./icons.jsx";
 import { CodeBlock, Entry, InlineMarkdown, Markdown, MethodBadge } from "./primitives.jsx";
 
 function responseTone(status: string): string {
   if (status.startsWith("2")) return "success";
-  if (status.startsWith("4") || status.startsWith("5")) return "error";
+  if (status.startsWith("4")) return "client-error";
+  if (status.startsWith("5")) return "server-error";
   return "neutral";
 }
 
@@ -132,42 +133,46 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
           <section className="pw-endpoint__section" aria-labelledby={`${anchor}-responses`}>
             <SectionHeader icon={<TickCircleIcon />} id={`${anchor}-responses`} title="Responses" />
             <ul className="pw-responses">
-              {operation.responses.map((response) => (
-                <li
-                  className={`pw-response pw-response--${responseTone(response.status)}`}
-                  key={response.status}
-                >
-                  <span className="pw-response__status">{response.status}</span>
-                  <div className="pw-response__content">
-                    {response.description ? (
-                      <InlineMarkdown content={response.description} />
-                    ) : null}
-                    {response.mediaTypes.map((media) => {
-                      const exampleHtml =
-                        data.codeHtml[
-                          codeKey(anchor, "response", response.status, media.mediaType)
-                        ];
-                      return (
-                        <div className="pw-response__meta" key={media.mediaType}>
-                          <span className="pw-media__header">
-                            <code className="pw-media__type">{media.mediaType}</code>
-                            {mediaSchemaRefs(media).map((ref) => (
-                              <a
-                                className="pw-schema-link"
-                                href={`#${schemaAnchor(ref)}`}
-                                key={ref}
-                              >
-                                {ref}
-                              </a>
-                            ))}
-                          </span>
-                          {exampleHtml ? <CodeBlock html={exampleHtml} label="Example" /> : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </li>
-              ))}
+              {operation.responses.map((response) => {
+                const tone = responseTone(response.status);
+                const StatusIcon = tone === "success" ? TickCircleIcon : Warning2Icon;
+                return (
+                  <li className={`pw-response pw-response--${tone}`} key={response.status}>
+                    <span className="pw-response__status">
+                      <StatusIcon className="pw-response__icon" aria-hidden="true" />
+                      <code className="pw-response__code">{response.status}</code>
+                    </span>
+                    <div className="pw-response__content">
+                      {response.description ? (
+                        <InlineMarkdown content={response.description} />
+                      ) : null}
+                      {response.mediaTypes.map((media) => {
+                        const exampleHtml =
+                          data.codeHtml[
+                            codeKey(anchor, "response", response.status, media.mediaType)
+                          ];
+                        return (
+                          <div className="pw-response__meta" key={media.mediaType}>
+                            <span className="pw-media__header">
+                              <code className="pw-media__type">{media.mediaType}</code>
+                              {mediaSchemaRefs(media).map((ref) => (
+                                <a
+                                  className="pw-schema-link"
+                                  href={`#${schemaAnchor(ref)}`}
+                                  key={ref}
+                                >
+                                  {ref}
+                                </a>
+                              ))}
+                            </span>
+                            {exampleHtml ? <CodeBlock html={exampleHtml} label="Example" /> : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
 
