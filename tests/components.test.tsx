@@ -41,9 +41,9 @@ describe("ApiDocs", () => {
     // The reference response-card renders no CodeBlock for its media examples
     // — only the media/schema header row. Verify no code-block markup appears
     // inside any .pw-response.
-    const responseSlices = [...defaultHtml.matchAll(/class="pw-response [^"]*"[\s\S]*?<\/li>/g)].map(
-      (match) => match[0],
-    );
+    const responseSlices = [
+      ...defaultHtml.matchAll(/class="pw-response [^"]*"[\s\S]*?<\/li>/g),
+    ].map((match) => match[0]);
     expect(responseSlices.length).toBeGreaterThan(0);
     for (const slice of responseSlices) {
       expect(slice).not.toContain("data-code-block");
