@@ -1,0 +1,55 @@
+{
+  "name": "periwinkle",
+  "version": "0.0.0",
+  "description": "Static API documentation generator for OpenAPI 3.x — themable, self-contained, no runtime framework",
+  "type": "module",
+  "license": "MIT",
+  "author": "phranck",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phranck/periwinkle.git"
+  },
+  "homepage": "https://github.com/phranck/periwinkle#readme",
+  "bugs": "https://github.com/phranck/periwinkle/issues",
+  "keywords": [
+    "openapi",
+    "api-docs",
+    "documentation",
+    "static-site-generator",
+    "api-reference"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "periwinkle": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
+    "@types/node": "^26.1.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}
