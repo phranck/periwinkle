@@ -25,11 +25,30 @@ describe("ApiDocs", () => {
     expect(defaultHtml).toContain('data-pw-nav-section="schemas"');
   });
 
-  it("renders endpoint blocks with anchors, method badges, and access labels", () => {
+  it("renders endpoint blocks with anchors, method text, and access labels", () => {
     expect(defaultHtml).toContain('id="op-get-books-id"');
-    expect(defaultHtml).toContain("pw-method--post");
+    // Endpoint header carries the method as text in the method accent color
+    // (reference .endpoint-card__method), not as a pill badge.
+    expect(defaultHtml).toContain("pw-endpoint__header--post");
+    expect(defaultHtml).toContain('class="pw-endpoint__method">POST<');
+    // Sidebar operation items show the method as a right-aligned text label.
+    expect(defaultHtml).toContain("pw-nav__item-method--post");
     expect(defaultHtml).toContain("Authentication required");
     expect(defaultHtml).toContain("Public endpoint");
+  });
+
+  it("renders responses without code blocks (reference behavior)", () => {
+    // The reference response-card renders no CodeBlock for its media examples
+    // — only the media/schema header row. Verify no code-block markup appears
+    // inside any .pw-response.
+    const responseSlices = [...defaultHtml.matchAll(/class="pw-response [^"]*"[\s\S]*?<\/li>/g)].map(
+      (match) => match[0],
+    );
+    expect(responseSlices.length).toBeGreaterThan(0);
+    for (const slice of responseSlices) {
+      expect(slice).not.toContain("data-code-block");
+      expect(slice).not.toContain("code-block__frame");
+    }
   });
 
   it("marks deprecated operations", () => {

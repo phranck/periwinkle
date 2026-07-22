@@ -162,6 +162,13 @@ code {
   gap: var(--pw-space-8);
 }
 
+.pw-intro {
+  /* The reference indents free-standing copy by --mc-card-content-inset so
+     paragraph text aligns with the copy inside cards (whose headers already
+     carry `padding-inline-start: --mc-docs-content-card-copy-inset`). */
+  padding-inline: var(--pw-card-content-inset);
+}
+
 .pw-intro__title {
   font-size: var(--pw-text-hero);
   font-weight: 500;
@@ -212,6 +219,12 @@ code {
   --pw-docs-sidebar-header-surface: color-mix(in srgb, var(--pw-surface-alt) 56%, transparent);
   --pw-docs-nav-active-color: var(--pw-accent);
   --pw-color-mask-opaque: #000;
+  /* Reference `--mc-card-content-inset` (docs.css § api-content) equals
+     `radius / 2` — the horizontal inset every free-standing headline/copy
+     uses so its text aligns with the copy inside a card whose header
+     already carries `padding-inline-start: --mc-docs-content-card-copy-inset`
+     (identical value). Adopted verbatim as `--pw-card-content-inset`. */
+  --pw-card-content-inset: calc(var(--pw-radius) / 2);
 }
 
 .api-reference-nav {
@@ -281,6 +294,10 @@ code {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  /* Give the toggle-all chevron and the theme toggle a comfortable gap so the
+     two adjacent icon buttons do not read as one control cluster. Bumped from
+     the previous zero-gap layout to the next spacing step per user feedback. */
+  gap: var(--pw-space-3);
 }
 
 /* The theme toggle (periwinkle addition) shares the reference's toggle-all
@@ -637,43 +654,52 @@ details[data-pw-expanded="false"] .pw-chevron {
   transform: rotate(-90deg);
 }
 
-/* ---------- Method badges ---------- */
+/* ---------- Sidebar operation items ---------- */
 
-.pw-method {
-  display: inline-flex;
+/* Accepted periwinkle deviation from the reference: each operation link is a
+   two-column grid so the HTTP method sits as a small, right-aligned text
+   mark in its method accent color. The reference sidebar shows only the nav
+   title; adding the method here keeps the rail scannable without opening
+   every disclosure. */
+[data-pw-nav-item].pw-nav__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  justify-content: center;
-  min-width: 2.9em;
-  padding: 0.12em 0.55em;
-  border: 1px solid var(--pw-method-color, var(--pw-accent));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--pw-method-color, var(--pw-accent)) 14%, transparent);
-  color: var(--pw-method-color, var(--pw-accent));
+  gap: var(--pw-space-2);
+}
+
+.pw-nav__item-method {
+  color: var(--pw-nav-item-method-color, var(--pw-text-faint));
   font-family: var(--pw-font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.5;
-  flex: none;
+  font-size: var(--pw-text-code);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
-.pw-method--get {
-  --pw-method-color: var(--pw-method-get);
+.pw-nav__item-method--get {
+  --pw-nav-item-method-color: var(--pw-method-get);
 }
 
-.pw-method--post {
-  --pw-method-color: var(--pw-method-post);
+.pw-nav__item-method--post {
+  --pw-nav-item-method-color: var(--pw-method-post);
 }
 
-.pw-method--put {
-  --pw-method-color: var(--pw-method-put);
+.pw-nav__item-method--put {
+  --pw-nav-item-method-color: var(--pw-method-put);
 }
 
-.pw-method--patch {
-  --pw-method-color: var(--pw-method-patch);
+.pw-nav__item-method--patch {
+  --pw-nav-item-method-color: var(--pw-method-patch);
 }
 
-.pw-method--delete {
-  --pw-method-color: var(--pw-method-delete);
+.pw-nav__item-method--delete {
+  --pw-nav-item-method-color: var(--pw-method-delete);
+}
+
+.pw-nav__item-method--options,
+.pw-nav__item-method--head {
+  --pw-nav-item-method-color: var(--pw-method-get);
 }
 
 /* ---------- Chapters & entries ---------- */
@@ -682,6 +708,10 @@ details[data-pw-expanded="false"] .pw-chevron {
   display: flex;
   align-items: center;
   gap: var(--pw-docs-space-md);
+  /* Reference `.api-content__chapter-header` (docs.css § api-content) indents
+     free-standing chapter headers by --mc-card-content-inset so their text
+     lines up with the copy inside the section's cards. */
+  padding-inline: var(--pw-card-content-inset);
   font-size: var(--pw-text-section);
   font-weight: 500;
   letter-spacing: 0;
@@ -689,23 +719,33 @@ details[data-pw-expanded="false"] .pw-chevron {
 }
 
 .pw-chapter__icon {
+  /* Align the icon against the cap-mid of the heading text. The reference
+     header (`text-box: trim-both cap alphabetic`) collapses its line-box so
+     the visual icon center already sits on the cap-mid. Barlow Condensed on
+     periwinkle's H2 leaves the icon roughly 2.6px above the cap-mid without
+     correction — measured in Chrome (delta iconMid − capMid = −2.594px on
+     the H2 "Integration guide"). A `translateY(0.075em)` (2.7px at 36px
+     font-size) drops the icon into the cap-mid without disturbing the
+     surrounding line rhythm. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--pw-docs-heading-icon-scale);
-  height: var(--pw-docs-heading-icon-scale);
+  height: 1lh;
   color: var(--pw-accent);
   flex: none;
+  transform: translateY(0.075em);
 }
 
 .pw-chapter__icon svg,
 .pw-chapter__icon > * {
-  width: 100%;
-  height: 100%;
+  width: var(--pw-docs-heading-icon-scale);
+  height: var(--pw-docs-heading-icon-scale);
 }
 
 .pw-chapter__lead {
   margin: 0 0 var(--pw-space-4);
+  padding-inline: var(--pw-card-content-inset);
   color: var(--pw-text-muted);
 }
 
@@ -716,6 +756,9 @@ details[data-pw-expanded="false"] .pw-chevron {
 }
 
 .pw-entry__title {
+  /* Reference `.api-content__entry-title` (docs.css § api-content) indents
+     entry headings by the same card-content inset as the chapter headers. */
+  padding-inline: var(--pw-card-content-inset);
   font-size: var(--pw-text-subsection);
   font-weight: 500;
   margin-bottom: var(--pw-space-4);
@@ -755,7 +798,12 @@ details[data-pw-expanded="false"] .pw-chevron {
   overflow: hidden;
 }
 
+/* Per-method accent color for the header tint and the method text. Adopted
+   verbatim from the reference `.endpoint-card__header--<method>` map: the
+   header background is `color-mix(--request-method-color 12%, --color-surface)`
+   and the method glyph inherits `--request-method-color`. */
 .pw-endpoint__header {
+  --pw-request-method-color: var(--pw-text-muted);
   display: flex;
   min-height: var(--pw-size-control);
   align-items: center;
@@ -764,8 +812,36 @@ details[data-pw-expanded="false"] .pw-chevron {
   gap: var(--pw-space-card-row);
   padding: var(--pw-space-card-header);
   padding-inline-start: calc(var(--pw-space-card-header) * 1.7);
-  background: var(--pw-surface-alt);
+  background: color-mix(in srgb, var(--pw-request-method-color) 12%, var(--pw-surface));
   border-bottom: 1px solid var(--pw-border);
+}
+
+.pw-endpoint__header--get {
+  --pw-request-method-color: var(--pw-method-get);
+}
+
+.pw-endpoint__header--post {
+  --pw-request-method-color: var(--pw-method-post);
+}
+
+.pw-endpoint__header--put {
+  --pw-request-method-color: var(--pw-method-put);
+}
+
+.pw-endpoint__header--patch {
+  --pw-request-method-color: var(--pw-method-patch);
+}
+
+.pw-endpoint__header--delete {
+  --pw-request-method-color: var(--pw-method-delete);
+}
+
+.pw-endpoint__header--options {
+  --pw-request-method-color: var(--pw-method-get);
+}
+
+.pw-endpoint__header--head {
+  --pw-request-method-color: var(--pw-method-get);
 }
 
 .pw-endpoint__request {
@@ -776,7 +852,21 @@ details[data-pw-expanded="false"] .pw-chevron {
   min-width: 0;
 }
 
+/* Reference `.endpoint-card__method` (docs.css § endpoint-card): the method
+   glyph is a monospaced text mark in the method's accent color at the
+   lead-text scale, not a pill. */
+.pw-endpoint__method {
+  color: var(--pw-request-method-color);
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-lead);
+  font-weight: 600;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
 .pw-endpoint__path {
+  color: var(--pw-text);
+  font-family: var(--pw-font-mono);
   font-size: var(--pw-text-body);
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -812,9 +902,21 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-endpoint__body {
   padding: var(--pw-space-card);
-  display: flex;
-  flex-direction: column;
+  /* Reference `.content-card__body-stack` (docs.css § content-card): explicit
+     zero-minimum grid track. Without it, long Shiki lines widen the flex
+     child and push the code frame beyond the card's rounded bottom edge. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--pw-space-6);
+}
+
+/* Adopt the same minmax(0, 1fr) recipe on each nested section stack so long
+   source lines never widen `.pw-media` or the response content column. */
+.pw-endpoint__section,
+.pw-media,
+.pw-response__content {
+  min-width: 0;
 }
 
 .pw-endpoint__summary {
@@ -963,6 +1065,13 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-response--success {
   --pw-response-color: var(--pw-method-post);
+}
+
+/* User-defined tone: 3xx responses read as a discreet accent (velvet) since
+   blue is reserved for information notes elsewhere in the reference and its
+   own success/warning/error triple already covers 2xx/4xx/5xx. */
+.pw-response--redirect {
+  --pw-response-color: var(--pw-accent);
 }
 
 .pw-response--client-error {
@@ -1577,8 +1686,13 @@ details[data-pw-expanded="false"] .pw-chevron {
   flex-direction: column;
 }
 
+/* The reference darkens the search backdrop with `--color-sky-top`, an
+   opaque navy that reads as a blue haze under the GitHub palette. Periwinkle
+   swaps the tint source for the site's own `--pw-background` so the veil
+   stays neutral (dark: near-black GitHub background; light: a soft off-white
+   wash) without ever introducing a blue cast the palette does not carry. */
 .api-dialog::backdrop {
-  background: color-mix(in srgb, var(--pw-sky-top) 72%, transparent);
+  background: color-mix(in srgb, var(--pw-background) 72%, transparent);
   backdrop-filter: blur(var(--pw-space-2));
 }
 

@@ -8,10 +8,11 @@ import type { ApiMediaType, ApiOperation } from "../model/api-reference.js";
 import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
 import { CodeIcon, KeyIcon, Send2Icon, TickCircleIcon, Warning2Icon } from "./icons.jsx";
-import { CodeBlock, Entry, InlineMarkdown, Markdown, MethodBadge } from "./primitives.jsx";
+import { CodeBlock, Entry, InlineMarkdown, Markdown } from "./primitives.jsx";
 
 function responseTone(status: string): string {
   if (status.startsWith("2")) return "success";
+  if (status.startsWith("3")) return "redirect";
   if (status.startsWith("4")) return "client-error";
   if (status.startsWith("5")) return "server-error";
   return "neutral";
@@ -71,7 +72,7 @@ export function EndpointBlock({
           data-api-search-ignore=""
         >
           <span className="pw-endpoint__request">
-            <MethodBadge method={operation.method} />
+            <span className="pw-endpoint__method">{operation.method}</span>
             <code className="pw-endpoint__path">{operation.path}</code>
             {operation.deprecated ? (
               <span className="pw-endpoint__deprecated">Deprecated</span>
@@ -163,14 +164,10 @@ export function EndpointBlock({
                       {response.description ? (
                         <InlineMarkdown content={response.description} />
                       ) : null}
-                      {response.mediaTypes.map((media) => {
-                        const exampleBlock =
-                          data.codeBlocks[
-                            codeKey(anchor, "response", response.status, media.mediaType)
-                          ];
-                        return (
-                          <div className="pw-response__meta" key={media.mediaType}>
-                            <span className="pw-media__header">
+                      {response.mediaTypes.length > 0 ? (
+                        <div className="pw-response__meta">
+                          {response.mediaTypes.map((media) => (
+                            <span className="pw-media__header" key={media.mediaType}>
                               <code className="pw-media__type">{media.mediaType}</code>
                               {mediaSchemaRefs(media).map((ref) => (
                                 <a
@@ -182,12 +179,9 @@ export function EndpointBlock({
                                 </a>
                               ))}
                             </span>
-                            {exampleBlock ? (
-                              <CodeBlock block={exampleBlock} label="Example" />
-                            ) : null}
-                          </div>
-                        );
-                      })}
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </li>
                 );

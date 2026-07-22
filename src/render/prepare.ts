@@ -121,17 +121,10 @@ export async function prepareDocsData(
           });
         }
       }
-      for (const response of operation.responses) {
-        for (const media of response.mediaTypes) {
-          if (media.example !== undefined) {
-            pending.push({
-              key: codeKey(operation.anchor, "response", response.status, media.mediaType),
-              code: JSON.stringify(media.example, null, 2),
-              language: "json",
-            });
-          }
-        }
-      }
+      // Response media examples are intentionally not pre-highlighted: the
+      // reference response card renders no code block, only the media/schema
+      // header row. Skipping the pending entries avoids Shiki work for markup
+      // that never lands in the DOM.
     }
   }
 
