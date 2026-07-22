@@ -304,6 +304,94 @@ export function bindSchemaTabs(root: Document): void {
   }
 }
 
+/** Duration for the visible successful-copy acknowledgement. */
+export const COPY_SUCCESS_DURATION_MS = 3000;
+
+/** Minimal clipboard surface, injectable for tests. */
+interface ClipboardWriter {
+  writeText(text: string): Promise<void>;
+}
+
+/**
+ * Binds one delegated copy listener for all rendered code blocks, ported
+ * from the reference `code-copy` script: the button's `data-copy-target`
+ * names the code frame, the copied text is read back from the rendered
+ * `code` node (so the clipboard yields the exact source), the success icon
+ * shows for {@link COPY_SUCCESS_DURATION_MS} with an `aria-live` status
+ * update, and a failed write downgrades the control to a "select to copy"
+ * hint instead of throwing.
+ *
+ * @param root The document containing the code blocks.
+ * @param clipboard Clipboard writer; defaults to `navigator.clipboard`.
+ * @returns Cleanup function removing the listener and pending reset timers,
+ *   which keeps the behavior safe for tests and future page transitions.
+ */
+export function bindCopyButtons(
+  root: Document,
+  clipboard: ClipboardWriter = navigator.clipboard,
+): () => void {
+  const resetTimers = new Map<HTMLButtonElement, number>();
+
+  /** Keeps the single visual control stable while swapping its semantic icon. */
+  const setIconState = (button: HTMLButtonElement, copied: boolean) => {
+    button.querySelector<HTMLElement>("[data-copy-icon]")?.toggleAttribute("hidden", copied);
+    button.querySelector<HTMLElement>("[data-copy-success]")?.toggleAttribute("hidden", !copied);
+  };
+
+  const reset = (button: HTMLButtonElement) => {
+    const block = button.closest<HTMLElement>("[data-code-block]");
+    setIconState(button, false);
+    button.setAttribute("aria-label", "Copy code");
+    button.setAttribute("title", "Copy code");
+    block?.querySelector<HTMLElement>("[data-copy-status]")?.replaceChildren();
+    resetTimers.delete(button);
+  };
+
+  const onClick = async (event: Event) => {
+    const button =
+      event.target instanceof Element ? event.target.closest("[data-copy-code]") : null;
+    if (!(button instanceof HTMLButtonElement)) return;
+
+    const targetId = button.dataset.copyTarget;
+    const target = targetId ? root.getElementById(targetId) : null;
+    const code = target?.matches("code") ? target : target?.querySelector("code");
+    const text = code?.textContent;
+    if (!text) return;
+
+    const block = button.closest<HTMLElement>("[data-code-block]");
+    const success = block?.querySelector<HTMLElement>("[data-copy-success]");
+    const status = block?.querySelector<HTMLElement>("[data-copy-status]");
+
+    try {
+      await clipboard.writeText(text);
+      const previousTimer = resetTimers.get(button);
+      if (previousTimer !== undefined) window.clearTimeout(previousTimer);
+      if (success) {
+        success.hidden = true;
+        void success.offsetWidth;
+      }
+      setIconState(button, true);
+      button.setAttribute("aria-label", "Code copied");
+      button.setAttribute("title", "Code copied");
+      status?.replaceChildren("Code copied");
+      const timer = window.setTimeout(() => reset(button), COPY_SUCCESS_DURATION_MS);
+      resetTimers.set(button, timer);
+    } catch {
+      setIconState(button, false);
+      button.setAttribute("aria-label", "Select code to copy");
+      button.setAttribute("title", "Select code to copy");
+      status?.replaceChildren("Copy unavailable");
+    }
+  };
+
+  root.addEventListener("click", onClick);
+  return () => {
+    root.removeEventListener("click", onClick);
+    for (const timer of resetTimers.values()) window.clearTimeout(timer);
+    resetTimers.clear();
+  };
+}
+
 /**
  * Wires the complete interactivity layer for one document.
  *
@@ -318,4 +406,5 @@ export function setupPeriwinkle(root: Document): void {
   bindSidebarScrollState(root);
   bindSearchDialog(root);
   bindSchemaTabs(root);
+  bindCopyButtons(root);
 }

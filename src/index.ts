@@ -77,4 +77,9 @@ export { buildCurlExample } from "./render/curl.js";
 export { type GuideSection, resolveGuideSections } from "./render/guide.js";
 export { type HighlightLanguage, highlightCode } from "./render/highlight.js";
 export { renderInlineMarkdown, renderMarkdown } from "./render/markdown.js";
-export { codeKey, type DocsData, prepareDocsData } from "./render/prepare.js";
+export {
+  codeKey,
+  type DocsData,
+  type PreparedCodeBlock,
+  prepareDocsData,
+} from "./render/prepare.js";

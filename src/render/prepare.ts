@@ -13,6 +13,24 @@ import { type GuideSection, resolveGuideSections } from "./guide.js";
 import { type HighlightLanguage, highlightCode } from "./highlight.js";
 
 /**
+ * One pre-rendered code block.
+ *
+ * Alongside the highlighted markup the UI needs the raw source: the line
+ * count drives the reference's gutter/scroll switches and the content hash
+ * forms the stable block id the copy control targets.
+ *
+ * @property html Highlighted `<pre class="shiki">` markup from Shiki.
+ * @property code Raw source text of the snippet, exactly what a copy action
+ *   must yield.
+ * @property language Highlight language of the snippet.
+ */
+export interface PreparedCodeBlock {
+  html: string;
+  code: string;
+  language: HighlightLanguage;
+}
+
+/**
  * Everything the UI components need to render one documentation page.
  *
  * @property reference The normalized API reference.
@@ -20,7 +38,7 @@ import { type HighlightLanguage, highlightCode } from "./highlight.js";
  * @property title Effective page title (config override or spec title).
  * @property serverUrl Effective server base URL, when known.
  * @property guideSections Resolved integration guide sections in order.
- * @property codeHtml Pre-highlighted code blocks keyed by {@link codeKey}.
+ * @property codeBlocks Pre-rendered code blocks keyed by {@link codeKey}.
  */
 export interface DocsData {
   reference: ApiReference;
@@ -28,14 +46,14 @@ export interface DocsData {
   title: string;
   serverUrl?: string;
   guideSections: GuideSection[];
-  codeHtml: Record<string, string>;
+  codeBlocks: Record<string, PreparedCodeBlock>;
 }
 
 /**
  * Builds the lookup key for a pre-highlighted code block.
  *
  * @param parts Stable key segments, e.g. an operation anchor and a suffix.
- * @returns The joined key used in {@link DocsData.codeHtml}.
+ * @returns The joined key used in {@link DocsData.codeBlocks}.
  */
 export function codeKey(...parts: string[]): string {
   return parts.join("::");
@@ -125,10 +143,14 @@ export async function prepareDocsData(
     });
   }
 
-  const codeHtml: Record<string, string> = {};
+  const codeBlocks: Record<string, PreparedCodeBlock> = {};
   await Promise.all(
     pending.map(async (entry) => {
-      codeHtml[entry.key] = await highlightCode(entry.code, entry.language);
+      codeBlocks[entry.key] = {
+        html: await highlightCode(entry.code, entry.language),
+        code: entry.code,
+        language: entry.language,
+      };
     }),
   );
 
@@ -138,6 +160,6 @@ export async function prepareDocsData(
     title: config.site.title ?? reference.title,
     ...(serverUrl !== undefined ? { serverUrl } : {}),
     guideSections,
-    codeHtml,
+    codeBlocks,
   };
 }

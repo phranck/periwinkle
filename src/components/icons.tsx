@@ -22,6 +22,8 @@ import {
   Category,
   CloseCircle,
   Code,
+  Copy,
+  CopySuccess,
   Diagram,
   type Icon,
   type IconProps,
@@ -33,17 +35,34 @@ import {
   TickCircle,
   Warning2,
 } from "iconsax-react";
+import type { FC } from "react";
+
+/**
+ * Allows `data-*` hooks on bound icons (e.g. the copy control's
+ * `data-copy-icon`), mirroring the reference's compound-element typing;
+ * iconsax's own `IconProps` has no data-attribute index signature.
+ */
+type DataAttributes = {
+  [attribute: `data-${string}`]: unknown;
+};
+
+/**
+ * A bound icon component: Iconsax props plus `data-*` passthrough. Consumers
+ * that accept icons as props type them as `BoundIcon` (not iconsax's `Icon`),
+ * because the added data-attribute signature makes the two non-interchangeable.
+ */
+export type BoundIcon = FC<IconProps & DataAttributes>;
 
 /**
  * Binds the periwinkle icon policy (Bulk + currentColor + `pw-icon` class)
  * onto an Iconsax icon and returns a drop-in component that only needs
- * `className`/`aria-*`.
+ * `className`/`aria-*`/`data-*`.
  *
  * @param Base The raw iconsax-react icon component.
  * @returns The pre-styled icon component.
  */
-function bulk(Base: Icon): Icon {
-  const Bound = ({ className, ...rest }: IconProps) => (
+function bulk(Base: Icon): BoundIcon {
+  const Bound: BoundIcon = ({ className, ...rest }) => (
     <Base
       variant="Bulk"
       color="currentColor"
@@ -62,6 +81,8 @@ export const BookIcon = bulk(Book);
 export const CategoryIcon = bulk(Category);
 export const CloseCircleIcon = bulk(CloseCircle);
 export const CodeIcon = bulk(Code);
+export const CopyIcon = bulk(Copy);
+export const CopySuccessIcon = bulk(CopySuccess);
 export const DiagramIcon = bulk(Diagram);
 export const KeyIcon = bulk(Key);
 export const MoonIcon = bulk(Moon);

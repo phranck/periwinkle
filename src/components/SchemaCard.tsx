@@ -34,7 +34,7 @@ function withFieldKeys(fields: ApiSchema["fields"]): Array<[string, ApiSchema["f
  * @param props.data The prepared docs data (highlighted JSON lookup).
  */
 export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData }) {
-  const jsonHtml = data.codeHtml[codeKey(schema.anchor, "json")];
+  const jsonBlock = data.codeBlocks[codeKey(schema.anchor, "json")];
   const headingId = `${schema.anchor}-heading`;
 
   return (
@@ -132,7 +132,7 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
           ) : null}
         </div>
         <div className="pw-schema-card__panel" data-pw-panel="json" hidden>
-          {jsonHtml ? <CodeBlock html={jsonHtml} /> : null}
+          {jsonBlock ? <CodeBlock block={jsonBlock} /> : null}
         </div>
       </div>
     </details>

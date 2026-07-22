@@ -21,8 +21,6 @@
  * both sides derive that order from `customSectionsAt()`.
  */
 
-import type { Icon } from "iconsax-react";
-
 import type { CustomSection } from "../config/config.js";
 import type { ApiOperation } from "../model/api-reference.js";
 import { customSectionsAt, type DocsData } from "../render/prepare.js";
@@ -31,6 +29,7 @@ import {
   ArrowCircleUpIcon,
   Book1Icon,
   BookIcon,
+  type BoundIcon,
   CategoryIcon,
   CodeIcon,
   MoonIcon,
@@ -89,7 +88,7 @@ function NavSection({
 }: {
   name: string;
   count: number;
-  icon: Icon;
+  icon: BoundIcon;
   searchText: string;
   children: React.ReactNode;
 }) {
@@ -123,7 +122,7 @@ function TopLink({
   children,
 }: {
   href: string;
-  icon: Icon;
+  icon: BoundIcon;
   searchText?: string;
   children: React.ReactNode;
 }) {
