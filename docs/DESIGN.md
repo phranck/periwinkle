@@ -4,26 +4,17 @@ Static API documentation generator for OpenAPI 3.x. Named after the violet-bloom
 
 ## Goal
 
-periwinkle turns an OpenAPI 3.x document plus a small config into a polished, static API reference site. The UI structure follows the musiccloud developer documentation: sidebar navigation with endpoint groups, an integration guide, endpoint detail blocks, and a schema section — rendered as static HTML with a minimal JavaScript layer for interactivity.
+periwinkle turns an OpenAPI 3.x document plus a small config into a polished, static API reference site: sidebar navigation with endpoint groups, an integration guide, endpoint detail blocks, and a schema section — rendered as static HTML with a minimal JavaScript layer for interactivity.
 
-It replaces per-project, hand-built API doc setups (Scalar embeds, custom Astro apps) with one reusable, themable tool.
+It replaces per-project, hand-built API doc setups with one reusable, themable tool.
 
-## Consumers and consumer equality (hard rule)
+## Consumer equality (hard rule)
 
-- periwinkle contains **no project-specific code**. Not for lmaa.space, not for musiccloud, not for anyone.
-- Every consumer — including the author's own projects — uses the same public surface: the CLI with a config file, or the package exports.
+- periwinkle contains **no project-specific code** — for no consumer, including the author's own projects.
+- Every consumer uses the same public surface: the CLI with a config file, or the package exports.
 - Everything project-specific (colors, fonts, logos, guide texts, extra sections) lives in the consuming project.
 - If a consumer needs something the generic feature set cannot express, the generic feature set is extended. Special-case hooks are never added.
-- Test fixtures in this repo are neutral example specs. Real-world specs (e.g. the lmaa.space public API) may serve as additional test data but have no special status in the code.
-
-Planned consumers: lmaa.space (first, replaces its Scalar setup at `api.lmaa.space/docs`), musiccloud (later, replaces the hand-built reference inside its Astro developer app — as an ordinary consumer, no exceptions).
-
-## Non-goals (YAGNI)
-
-- **No try-it-out / request playground.** periwinkle is pure documentation with code examples (curl).
-- **No SDK download catalog.** That is musiccloud-specific content; custom sections or the consumer's own app shell cover it.
-- **No i18n framework.** All rendered content is configurable, so consumers control the language.
-- **No SSR runtime.** Output is static; there is no server component.
+- Test fixtures in this repo are neutral example specs. Real-world specs may serve as additional test data but have no special status in the code.
 
 ## Architecture
 
@@ -39,9 +30,9 @@ The CLI is a thin wrapper around the same components — there is exactly one UI
 
 ### Display model
 
-A port of musiccloud's `buildApiReference()` normalizer:
+A normalizer decouples rendering from OpenAPI's raw shape:
 
-- OpenAPI 3.x document → normalized display model, decoupled from OpenAPI's raw shape
+- OpenAPI 3.x document → normalized display model
 - Endpoints grouped by their first tag
 - Navigation titles from `x-nav-title`, falling back to `operationId`, then `summary`
 - Schema `$ref`s resolved; schema fields flattened into display-friendly field lists
@@ -50,7 +41,7 @@ A port of musiccloud's `buildApiReference()` normalizer:
 ### Rendering
 
 - React 19 `renderToStaticMarkup` in a Node build script. React is a **build-time** dependency only; the output contains no React runtime.
-- The musiccloud `.astro` templates are ported 1:1 in structure as React components. React was chosen over Astro deliberately: React components work both in the CLI (static rendering) and embedded in Astro apps (`@astrojs/react` renders them server-side), while `.astro` components would only work inside Astro projects. Astro's machinery (routing, islands, integrations) is not needed for a generated one-page site.
+- React was chosen over a site framework deliberately: React components work both in the CLI (static rendering) and embedded in host apps (e.g. Astro renders them server-side via `@astrojs/react`), while framework-specific components would only work inside that framework. A site framework's machinery (routing, islands, integrations) is not needed for a generated one-page site.
 - Components are host-agnostic: all data arrives via props, no CLI/config globals.
 - Syntax highlighting at build time via Shiki; Markdown in descriptions and guide content via marked.
 
@@ -66,7 +57,7 @@ A small vanilla-JS bundle (no framework at runtime):
 
 - Hand-written CSS with design tokens as CSS custom properties. Consumers need no Tailwind/UnoCSS/PostCSS.
 - The theme config compiles to `:root` / `.dark-mode` variable blocks (colors light/dark, fonts, radii).
-- Method badges (GET/POST/PUT/PATCH/DELETE) with per-method accent colors, as in the musiccloud UI.
+- Method badges (GET/POST/PUT/PATCH/DELETE) with per-method accent colors.
 
 ## Configuration
 
@@ -91,10 +82,9 @@ A static `dist/` directory: `index.html`, one CSS file, one JS file, assets (log
 - vitest
 - Unit tests for the display model (grouping, nav titles, ref resolution, flattening, error cases)
 - Snapshot test of a full build against a neutral fixture spec
-- Real-world specs as additional fixtures (no special status)
 
-## Licensing and repo
+## Licensing and distribution
 
 - MIT, copyright phranck
-- Public repo `phranck/periwinkle`, npm package `periwinkle`, first release 0.1.0
+- npm package `periwinkle`
 - README with quickstart, config reference, and deploy recipes
