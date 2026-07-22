@@ -53,6 +53,14 @@
   --pw-motion-duration-fast: 80ms;
   --pw-nav-transition-duration: 160ms;
   --pw-nav-transition-easing: ease-in-out;
+  /* The reference mixes 4% status color into its translucent dark surface;
+     on the opaque GitHub palettes that reads as gray, so the tint is raised
+     until the tone is clearly perceptible in both modes. */
+  --pw-response-tint: 12%;
+}
+
+[data-theme="dark"] {
+  --pw-response-tint: 16%;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -939,7 +947,11 @@ code {
   align-items: start;
   gap: var(--pw-space-3);
   padding: var(--pw-space-card-row);
-  background: color-mix(in srgb, var(--pw-response-color) 4%, var(--pw-surface));
+  background: color-mix(
+    in srgb,
+    var(--pw-response-color) var(--pw-response-tint),
+    var(--pw-surface)
+  );
   border-radius: calc(var(--pw-radius) / 2);
 }
 
