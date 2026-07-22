@@ -94,7 +94,9 @@ function NavSection({
         <span className="pw-nav__count">{count}</span>
         <ArrowCircleDownIcon className="pw-nav__chevron" aria-hidden="true" />
       </summary>
-      <ul className="pw-nav__items">{children}</ul>
+      <div className="pw-nav__content">
+        <ul className="pw-nav__items">{children}</ul>
+      </div>
     </details>
   );
 }
