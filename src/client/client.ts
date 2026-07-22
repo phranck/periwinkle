@@ -62,9 +62,125 @@ function sectionStorageKey(key: string): string {
   return `${STORAGE_PREFIX}section:${key}:open`;
 }
 
+const sectionAnimations = new WeakMap<HTMLDetailsElement, Animation>();
+const sectionStates = new WeakMap<HTMLDetailsElement, boolean>();
+
+/** Returns the CSS-controlled duration so reduced-motion remains authoritative. */
+function sectionTransitionDuration(section: HTMLElement): number {
+  return (
+    Number.parseFloat(
+      window.getComputedStyle(section).getPropertyValue("--pw-nav-transition-duration"),
+    ) || 0
+  );
+}
+
+/** Uses one quiet, symmetric easing curve for opening and closing disclosures. */
+function sectionTransitionEasing(section: HTMLElement): string {
+  return (
+    window.getComputedStyle(section).getPropertyValue("--pw-nav-transition-easing").trim() ||
+    "ease-in-out"
+  );
+}
+
+function sectionContent(section: HTMLDetailsElement): HTMLElement | null {
+  return section.querySelector<HTMLElement>(
+    ":scope > .pw-nav__content, :scope > .pw-schema-card__body",
+  );
+}
+
+/**
+ * Animates a measured height instead of an interpolated grid track. This is
+ * interruptible, avoids timer-based closing, and keeps native details usable
+ * before JavaScript loads. Ported from the reference implementation.
+ *
+ * @param section The `details` element to open or close.
+ * @param expanded Target state.
+ */
+export function setSectionOpen(section: HTMLDetailsElement, expanded: boolean): void {
+  if ((sectionStates.get(section) ?? section.open) === expanded) return;
+  const content = sectionContent(section);
+  if (!content) {
+    section.open = expanded;
+    sectionStates.set(section, expanded);
+    return;
+  }
+
+  const previousAnimation = sectionAnimations.get(section);
+  previousAnimation?.commitStyles();
+  previousAnimation?.cancel();
+  sectionStates.set(section, expanded);
+
+  const duration = sectionTransitionDuration(section);
+  const easing = sectionTransitionEasing(section);
+  const finishOpening = () => {
+    content.style.height = "auto";
+    content.style.opacity = "1";
+    sectionAnimations.delete(section);
+  };
+  const finishClosing = () => {
+    section.open = false;
+    content.style.removeProperty("height");
+    content.style.removeProperty("opacity");
+    sectionAnimations.delete(section);
+  };
+
+  if (expanded) {
+    section.open = true;
+    section.dataset.pwExpanded = "true";
+    content.style.height = "0px";
+    content.style.opacity = "0";
+
+    const targetHeight = content.scrollHeight;
+    if (!duration || typeof content.animate !== "function") {
+      finishOpening();
+      return;
+    }
+
+    const animation = content.animate(
+      [
+        { height: "0px", opacity: 0 },
+        { height: `${targetHeight}px`, opacity: 1 },
+      ],
+      { duration, easing, fill: "forwards" },
+    );
+    sectionAnimations.set(section, animation);
+    void animation.finished
+      .then(() => {
+        if (sectionAnimations.get(section) === animation) finishOpening();
+      })
+      .catch(() => undefined);
+    return;
+  }
+
+  section.dataset.pwExpanded = "false";
+  const startHeight = content.getBoundingClientRect().height;
+  content.style.height = `${startHeight}px`;
+  content.style.opacity = "1";
+  if (!duration || !startHeight || typeof content.animate !== "function") {
+    finishClosing();
+    return;
+  }
+
+  const animation = content.animate(
+    [
+      { height: `${startHeight}px`, opacity: 1 },
+      { height: "0px", opacity: 0 },
+    ],
+    { duration, easing, fill: "forwards" },
+  );
+  sectionAnimations.set(section, animation);
+  void animation.finished
+    .then(() => {
+      if (sectionAnimations.get(section) === animation) finishClosing();
+    })
+    .catch(() => undefined);
+}
+
 /**
  * Restores and persists the open state of every collapsible section
- * (`[data-pw-nav-section]` in the rail, `[data-pw-schema-card]` cards).
+ * (`[data-pw-nav-section]` in the rail, `[data-pw-schema-card]` cards) and
+ * routes summary clicks through the animated open/close, exactly like the
+ * reference implementation.
  *
  * @param root The document containing the sections.
  */
@@ -75,9 +191,21 @@ export function bindCollapsibles(root: Document): void {
   for (const section of sections) {
     const key = section.dataset.pwNavSection ?? section.dataset.pwSchemaCard;
     if (!key) continue;
-    if (storageGet(sectionStorageKey(key)) === "true") section.open = true;
-    section.addEventListener("toggle", () => {
-      storageSet(sectionStorageKey(key), String(section.open));
+    if (storageGet(sectionStorageKey(key)) === "true") {
+      section.open = true;
+      section.dataset.pwExpanded = "true";
+      sectionStates.set(section, true);
+    } else {
+      sectionStates.set(section, false);
+    }
+
+    section.querySelector("summary")?.addEventListener("click", (event) => {
+      // Tab buttons inside the summary switch views, they never toggle.
+      if (event.target instanceof Element && event.target.closest("[data-pw-tab]")) return;
+      event.preventDefault();
+      const expanded = section.dataset.pwExpanded !== "true";
+      setSectionOpen(section, expanded);
+      storageSet(sectionStorageKey(key), String(expanded));
     });
   }
 }
@@ -109,8 +237,14 @@ export function bindToggleAll(root: Document): void {
   };
 
   button.addEventListener("click", () => {
-    const shouldExpand = sections().some((section) => !section.open);
-    for (const section of sections()) section.open = shouldExpand;
+    const shouldExpand = sections().some(
+      (section) => !(sectionStates.get(section) ?? section.open),
+    );
+    for (const section of sections()) {
+      setSectionOpen(section, shouldExpand);
+      const key = section.dataset.pwNavSection ?? section.dataset.pwSchemaCard;
+      if (key) storageSet(sectionStorageKey(key), String(shouldExpand));
+    }
     update();
   });
   for (const section of sections()) section.addEventListener("toggle", update);
@@ -146,7 +280,7 @@ export function bindSearch(root: Document): void {
       for (const item of items) item.hidden = false;
       for (const section of sections) {
         section.hidden = false;
-        if (searching) section.open = openStates.get(section) ?? false;
+        if (searching) setSectionOpen(section, openStates.get(section) ?? false);
       }
       searching = false;
       return;
@@ -162,7 +296,7 @@ export function bindSearch(root: Document): void {
         (item) => !item.hidden,
       );
       section.hidden = !hasVisibleItem && !sectionText.includes(query);
-      if (!section.hidden) section.open = true;
+      if (!section.hidden) setSectionOpen(section, true);
     }
   });
 }
