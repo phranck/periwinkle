@@ -50,7 +50,11 @@
   --pw-code-padding-block: 1rem;
   --pw-code-padding-inline: 1rem;
   --pw-code-line-height: 1.7;
+  --pw-code-gutter-number-width: 2.5ch;
+  --pw-code-gutter-padding-inline: 0.75rem;
+  --pw-code-gutter-code-gap: 1rem;
   --pw-motion-duration-fast: 80ms;
+  --pw-motion-duration-slow: 300ms;
   --pw-nav-transition-duration: 160ms;
   --pw-nav-transition-easing: ease-in-out;
   /* The reference mixes 4% status color into its translucent dark surface;
@@ -1167,36 +1171,187 @@ details[data-pw-expanded="false"] .pw-chevron {
   line-height: 1.5;
 }
 
-/* ---------- Code blocks ---------- */
+/* ---------- Code blocks (adopted from the reference) ---------- */
 
-.pw-code-block {
-  margin: 0;
+/* Docs tokens the code-block compound consumes. Derivations are read
+   verbatim from the reference (`docs.css` `.api-reference-shell`); the
+   color-mix sources map --color-code-bg → --pw-background and
+   --color-surface-raised → --pw-surface-alt, matching the search dialog's
+   adopted surfaces. */
+:root {
+  --pw-docs-content-card-copy-inset: calc(var(--pw-radius) / 2);
+  --pw-docs-content-panel-inset: var(--pw-space-1);
+  --pw-docs-content-panel-radius: max(
+    0px,
+    calc(var(--pw-radius) - var(--pw-docs-content-panel-inset))
+  );
+  --pw-docs-code-surface: color-mix(in srgb, var(--pw-background) 84%, transparent);
+  --pw-docs-code-gutter-surface: color-mix(
+    in srgb,
+    var(--pw-docs-code-surface) 88%,
+    var(--pw-surface-alt) 12%
+  );
+}
+
+/* Shared inner-surface panel for content nested inside a card. The code
+   frame reuses its derived radius recipe (reference `.content-panel`). */
+.content-panel {
   min-width: 0;
+  overflow: hidden;
+  border-radius: var(--pw-docs-content-panel-radius);
+  background: color-mix(in srgb, var(--pw-surface-alt) 72%, transparent);
 }
 
-.pw-code-block__label {
-  font-size: var(--pw-text-code);
+/* Keep the scrollable code surface within every compound-card slot. Long
+   source lines scroll inside this frame instead of widening or escaping it. */
+.code-block,
+.code-block__surface,
+.code-block__frame {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The reference zeroes paragraph margins via its preflight; periwinkle has
+   no global reset, so the label drops its top margin here while the `mb-2`
+   utility keeps the reference's bottom gap. */
+.code-block__label {
+  margin-top: 0;
+  padding-inline: var(--pw-docs-content-card-copy-inset);
   color: var(--pw-text-muted);
-  margin-bottom: var(--pw-space-2);
 }
 
-.pw-code-block__body pre {
-  margin: 0;
-  padding: var(--pw-code-padding-block) var(--pw-code-padding-inline);
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  overflow-x: auto;
-  font-family: var(--pw-font-mono);
+.code-block__surface {
+  --pw-code-copy-clearance: calc(var(--pw-size-control-compact) + var(--pw-space-5));
+  position: relative;
+}
+
+.code-block__actions {
+  position: absolute;
+  top: var(--pw-space-2);
+  right: var(--pw-space-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+}
+
+.code-block__copy {
+  display: inline-flex;
+  width: var(--pw-size-control-compact);
+  min-height: var(--pw-size-control-compact);
+  height: var(--pw-size-control-compact);
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--pw-text-muted);
+  cursor: pointer;
+  transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.code-block__copy:hover {
+  color: var(--pw-accent);
+}
+
+.code-block__copy-success {
+  display: inline-flex;
+  color: var(--pw-status-success);
+  animation: code-copy-success var(--pw-motion-duration-slow) var(--pw-nav-transition-easing) both;
+}
+
+.code-block__copy-success[hidden] {
+  display: none;
+}
+
+.code-block__copy-icon,
+.code-block__copy-success-icon {
+  width: var(--pw-size-icon-lg);
+  height: var(--pw-size-icon-lg);
+}
+
+.code-block__frame {
+  overflow: auto;
+  background: var(--pw-docs-code-surface);
   font-size: var(--pw-text-code);
   line-height: var(--pw-code-line-height);
 }
 
-[data-theme="dark"] .pw-code-block__body .shiki,
-[data-theme="dark"] .pw-code-block__body .shiki span {
+[data-code-vertical-scroll] .code-block__frame {
+  max-block-size: calc(20lh + var(--pw-code-padding-block) + var(--pw-code-padding-block));
+}
+
+/* Text color comes from Shiki's dual-theme inline styles plus the dark
+   override below; the frame owns the code surface, exactly like the
+   reference. */
+.code-block__frame pre.shiki {
+  margin: 0;
+  padding: var(--pw-code-padding-block) var(--pw-code-copy-clearance) var(--pw-code-padding-block)
+    var(--pw-code-padding-inline);
+  /* biome-ignore lint/complexity/noImportantStyles: Shiki inlines the light-theme background; only !important lets the frame surface show through, exactly like the reference. */
+  background: transparent !important;
+  font-family: var(--pw-font-mono);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* A continuous gutter keeps line numbers visually separate without adding
+   content to the selectable code node or the clipboard payload. */
+[data-code-line-numbers] .code-block__frame pre.shiki {
+  --code-line-number-column-width: calc(
+    var(--pw-code-gutter-padding-inline) +
+    var(--pw-code-gutter-number-width) +
+    var(--pw-code-gutter-padding-inline)
+  );
+  padding-left: var(--pw-code-gutter-padding-inline);
+  background: linear-gradient(
+    to right,
+    var(--pw-docs-code-gutter-surface) 0 var(--code-line-number-column-width),
+    var(--pw-border) var(--code-line-number-column-width)
+      calc(var(--code-line-number-column-width) + 1px),
+    transparent calc(var(--code-line-number-column-width) + 1px)
+  ) /* biome-ignore lint/complexity/noImportantStyles: Must beat the pre rule's `background: transparent !important` above, exactly like the reference gutter. */ !important;
+}
+
+/* Pseudo-elements keep visual line numbers out of the code node, so copy
+   actions continue to return the exact source text. */
+[data-code-line-numbers] code {
+  counter-reset: code-line;
+}
+
+[data-code-line-numbers] .line {
+  display: inline;
+}
+
+[data-code-line-numbers] .line::before {
+  min-width: var(--pw-code-gutter-number-width);
+  margin-right: calc(var(--pw-code-gutter-padding-inline) + var(--pw-code-gutter-code-gap));
+  display: inline-block;
+  color: var(--pw-text-faint);
+  content: counter(code-line);
+  counter-increment: code-line;
+  text-align: right;
+  user-select: none;
+}
+
+/* Shiki dual-theme switch. Unlike the old design the frame owns the code
+   surface (see the transparent pre background above), so only the token
+   colors flip in dark mode. */
+[data-theme="dark"] .code-block__frame .shiki,
+[data-theme="dark"] .code-block__frame .shiki span {
   /* biome-ignore lint/complexity/noImportantStyles: Shiki's documented dual-theme pattern; inline light-theme styles can only be overridden with !important. */
   color: var(--shiki-dark) !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki's documented dual-theme pattern; inline light-theme styles can only be overridden with !important. */
-  background-color: var(--shiki-dark-bg) !important;
+}
+
+@keyframes code-copy-success {
+  from {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ---------- Markdown ---------- */
@@ -1307,6 +1462,18 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .text-body {
   font-size: var(--pw-text-body);
+}
+
+.text-code {
+  font-size: var(--pw-text-code);
+}
+
+.text-fg-muted {
+  color: var(--pw-text-muted);
+}
+
+.mb-2 {
+  margin-bottom: var(--pw-space-2);
 }
 
 .truncate {
@@ -1843,7 +2010,8 @@ mark[data-api-search-highlight] {
   .api-dialog,
   .api-dialog::backdrop,
   .api-search-highlight-notice,
-  mark[data-api-search-highlight] {
+  mark[data-api-search-highlight],
+  .code-block__copy-success {
     animation: none;
   }
 }
@@ -1862,6 +2030,7 @@ mark[data-api-search-highlight] {
     max-width: 100%;
   }
 
+  .code-block__copy,
   .api-reference-nav__toggle-all,
   .pw-nav__icon-button,
   .api-reference-nav__toggle {
@@ -1872,6 +2041,10 @@ mark[data-api-search-highlight] {
 
   .api-reference-nav__count {
     height: var(--pw-size-control);
+  }
+
+  .code-block__surface {
+    --pw-code-copy-clearance: calc(var(--pw-size-control) + var(--pw-space-5));
   }
 }
 

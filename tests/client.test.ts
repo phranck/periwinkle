@@ -4,10 +4,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  bindCopyButtons,
   bindSchemaTabs,
   bindSidebarScrollState,
   bindThemeToggle,
   bindToggleAll,
+  COPY_SUCCESS_DURATION_MS,
   initTheme,
   setupPeriwinkle,
   THEME_STORAGE_KEY,
@@ -273,6 +275,84 @@ describe("schema tabs", () => {
     expect(document.querySelector<HTMLElement>('[data-pw-panel="fields"]')?.hidden).toBe(true);
     expect(document.querySelector<HTMLElement>('[data-pw-panel="json"]')?.hidden).toBe(false);
     expect(card?.open).toBe(true);
+  });
+});
+
+describe("copy buttons", () => {
+  /** Static markup mirroring the rendered CodeBlock compound. */
+  const CODE_BLOCK_FIXTURE = `
+    <div class="code-block" data-code-block>
+      <div class="code-block__surface" data-code-line-numbers>
+        <div class="code-block__actions">
+          <button type="button" class="code-block__copy" aria-label="Copy code" title="Copy code" data-copy-code data-copy-target="code-abc123def456">
+            <span data-copy-icon></span>
+            <span data-copy-success hidden></span>
+          </button>
+        </div>
+        <span class="sr-only" aria-live="polite" data-copy-status></span>
+        <div id="code-abc123def456" class="content-panel code-block__frame"><pre class="shiki"><code><span class="line">{</span>
+<span class="line">  "ok": true</span>
+<span class="line">}</span></code></pre></div>
+      </div>
+    </div>
+  `;
+
+  let cleanup: (() => void) | undefined;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.body.innerHTML = CODE_BLOCK_FIXTURE;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    vi.useRealTimers();
+  });
+
+  function copyButton(): HTMLButtonElement {
+    const button = document.querySelector<HTMLButtonElement>("[data-copy-code]");
+    if (!button) throw new Error("missing copy button");
+    return button;
+  }
+
+  it("copies the raw source and shows the success state until the timeout", async () => {
+    const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+    cleanup = bindCopyButtons(document, { writeText });
+    const button = copyButton();
+    const copyIcon = document.querySelector<HTMLElement>("[data-copy-icon]");
+    const success = document.querySelector<HTMLElement>("[data-copy-success]");
+    const status = document.querySelector<HTMLElement>("[data-copy-status]");
+
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(writeText).toHaveBeenCalledWith('{\n  "ok": true\n}');
+    expect(copyIcon?.hidden).toBe(true);
+    expect(success?.hidden).toBe(false);
+    expect(button.getAttribute("aria-label")).toBe("Code copied");
+    expect(status?.textContent).toBe("Code copied");
+
+    await vi.advanceTimersByTimeAsync(COPY_SUCCESS_DURATION_MS);
+    expect(copyIcon?.hidden).toBe(false);
+    expect(success?.hidden).toBe(true);
+    expect(button.getAttribute("aria-label")).toBe("Copy code");
+    expect(status?.textContent).toBe("");
+  });
+
+  it("falls back to a selection hint when the clipboard write fails", async () => {
+    const writeText = vi.fn<(text: string) => Promise<void>>().mockRejectedValue(new Error("nope"));
+    cleanup = bindCopyButtons(document, { writeText });
+    const button = copyButton();
+
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(button.getAttribute("aria-label")).toBe("Select code to copy");
+    expect(document.querySelector<HTMLElement>("[data-copy-status]")?.textContent).toBe(
+      "Copy unavailable",
+    );
+    expect(document.querySelector<HTMLElement>("[data-copy-success]")?.hidden).toBe(true);
   });
 });
 

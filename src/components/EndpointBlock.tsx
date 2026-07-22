@@ -51,7 +51,7 @@ export function EndpointBlock({
 }) {
   const anchor = operation.anchor;
   const requiresAuth = operation.security.length > 0;
-  const curlHtml = data.codeHtml[codeKey(anchor, "curl")];
+  const curlBlock = data.codeBlocks[codeKey(anchor, "curl")];
 
   return (
     <Entry title={operation.navTitle}>
@@ -129,7 +129,7 @@ export function EndpointBlock({
                 <Markdown content={operation.requestBody.description} />
               ) : null}
               {operation.requestBody.mediaTypes.map((media) => {
-                const exampleHtml = data.codeHtml[codeKey(anchor, "request", media.mediaType)];
+                const exampleBlock = data.codeBlocks[codeKey(anchor, "request", media.mediaType)];
                 return (
                   <div className="pw-media" key={media.mediaType}>
                     <span className="pw-media__header">
@@ -140,7 +140,7 @@ export function EndpointBlock({
                         </a>
                       ))}
                     </span>
-                    {exampleHtml ? <CodeBlock html={exampleHtml} label="Example" /> : null}
+                    {exampleBlock ? <CodeBlock block={exampleBlock} label="Example" /> : null}
                   </div>
                 );
               })}
@@ -164,8 +164,8 @@ export function EndpointBlock({
                         <InlineMarkdown content={response.description} />
                       ) : null}
                       {response.mediaTypes.map((media) => {
-                        const exampleHtml =
-                          data.codeHtml[
+                        const exampleBlock =
+                          data.codeBlocks[
                             codeKey(anchor, "response", response.status, media.mediaType)
                           ];
                         return (
@@ -182,7 +182,9 @@ export function EndpointBlock({
                                 </a>
                               ))}
                             </span>
-                            {exampleHtml ? <CodeBlock html={exampleHtml} label="Example" /> : null}
+                            {exampleBlock ? (
+                              <CodeBlock block={exampleBlock} label="Example" />
+                            ) : null}
                           </div>
                         );
                       })}
@@ -193,10 +195,10 @@ export function EndpointBlock({
             </ul>
           </section>
 
-          {curlHtml ? (
+          {curlBlock ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-example`}>
               <SectionHeader icon={<CodeIcon />} id={`${anchor}-example`} title="Example request" />
-              <CodeBlock html={curlHtml} />
+              <CodeBlock block={curlBlock} />
             </section>
           ) : null}
         </div>

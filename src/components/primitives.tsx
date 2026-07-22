@@ -11,9 +11,12 @@
  * components; the produced site is fully static.
  */
 
+import { createHash } from "node:crypto";
 import type { ReactNode } from "react";
 
 import { renderInlineMarkdown, renderMarkdown } from "../render/markdown.js";
+import type { PreparedCodeBlock } from "../render/prepare.js";
+import { CopyIcon, CopySuccessIcon } from "./icons.jsx";
 
 /**
  * Renders trusted Markdown (OpenAPI prose, config content) as block HTML.
@@ -44,17 +47,65 @@ export function InlineMarkdown({ content }: { content: string }) {
 }
 
 /**
- * Renders a pre-highlighted code block produced by the build-time Shiki pass.
+ * Renders a pre-highlighted code block with the reference's line-number
+ * gutter and copy control, adopted from the reference `CodeBlock.astro`:
  *
- * @param props.html Highlighted HTML from the build-time highlighter.
+ * - The block id is a short content hash over label, language, and source,
+ *   so the copy button can target its code node without inline JavaScript.
+ * - The copy control reads the rendered text back from the code node; no
+ *   raw source is duplicated into the page.
+ * - Bash snippets skip the gutter (`language !== "bash"` gates line
+ *   numbers), and blocks longer than 20 lines scroll vertically.
+ *
+ * @param props.block The prepared code block (highlighted HTML, raw source,
+ *   and language) from {@link PreparedCodeBlock}.
  * @param props.label Optional label shown above the block, e.g. "Example".
  */
-export function CodeBlock({ html, label }: { html: string; label?: string }) {
+export function CodeBlock({ block, label }: { block: PreparedCodeBlock; label?: string }) {
+  const blockId = `code-${createHash("sha256")
+    .update(`${label ?? ""}\n${block.language}\n${block.code}`)
+    .digest("hex")
+    .slice(0, 12)}`;
+  const lineCount = block.code.split(/\r?\n/).length;
+  const hasLineNumbers = block.language !== "bash";
+  const hasVerticalOverflow = lineCount > 20;
+
   return (
-    <figure className="pw-code-block">
-      {label ? <figcaption className="pw-code-block__label">{label}</figcaption> : null}
-      <div className="pw-code-block__body" dangerouslySetInnerHTML={{ __html: html }} />
-    </figure>
+    <div className="code-block" data-code-block="">
+      {label ? <p className="code-block__label text-code mb-2">{label}</p> : null}
+      <div
+        className="code-block__surface"
+        data-code-line-numbers={hasLineNumbers ? "" : undefined}
+        data-code-vertical-scroll={hasVerticalOverflow ? "" : undefined}
+      >
+        <div className="code-block__actions" data-api-search-ignore="">
+          <button
+            type="button"
+            className="code-block__copy text-fg-muted"
+            aria-label="Copy code"
+            title="Copy code"
+            data-copy-code=""
+            data-copy-target={blockId}
+          >
+            <CopyIcon className="code-block__copy-icon" data-copy-icon="" aria-hidden="true" />
+            <span
+              className="code-block__copy-success"
+              data-copy-success=""
+              hidden
+              aria-hidden="true"
+            >
+              <CopySuccessIcon className="code-block__copy-success-icon" aria-hidden="true" />
+            </span>
+          </button>
+        </div>
+        <span className="sr-only" aria-live="polite" data-copy-status="" />
+        <div
+          className="content-panel code-block__frame"
+          id={blockId}
+          dangerouslySetInnerHTML={{ __html: block.html }}
+        />
+      </div>
+    </div>
   );
 }
 
