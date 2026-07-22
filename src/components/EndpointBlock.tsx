@@ -37,8 +37,18 @@ function SectionHeader({ icon, id, title }: { icon: React.ReactNode; id: string;
  *
  * @param props.operation The normalized operation.
  * @param props.data The prepared docs data (code lookups, security schemes).
+ * @param props.searchGroup Visible group name the operation is indexed under
+ *   in the document search (mirrors the reference's `searchGroup` prop).
  */
-export function EndpointBlock({ operation, data }: { operation: ApiOperation; data: DocsData }) {
+export function EndpointBlock({
+  operation,
+  data,
+  searchGroup,
+}: {
+  operation: ApiOperation;
+  data: DocsData;
+  searchGroup: string;
+}) {
   const anchor = operation.anchor;
   const requiresAuth = operation.security.length > 0;
   const curlHtml = data.codeHtml[codeKey(anchor, "curl")];
@@ -49,9 +59,16 @@ export function EndpointBlock({ operation, data }: { operation: ApiOperation; da
         className="pw-endpoint"
         id={anchor}
         aria-label={`${operation.method} ${operation.path}`}
+        data-api-search-entry=""
+        data-api-search-group={searchGroup}
+        data-api-search-title={operation.navTitle}
+        data-api-search-addon={`${operation.method} ${operation.path}`}
+        data-api-search-kind="operation"
+        data-api-search-target={anchor}
       >
         <header
           className={`pw-endpoint__header pw-endpoint__header--${operation.method.toLowerCase()}`}
+          data-api-search-ignore=""
         >
           <span className="pw-endpoint__request">
             <MethodBadge method={operation.method} />

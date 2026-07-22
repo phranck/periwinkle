@@ -13,6 +13,7 @@ import { EndpointBlock } from "./EndpointBlock.jsx";
 import { Book1Icon, BookIcon, CategoryIcon, CodeIcon } from "./icons.jsx";
 import { Chapter, Markdown } from "./primitives.jsx";
 import { SchemaCard } from "./SchemaCard.jsx";
+import { SearchDialog } from "./SearchDialog.jsx";
 import { SidebarNav } from "./SidebarNav.jsx";
 
 function sectionsAt(data: DocsData, position: CustomSection["position"]): CustomSection[] {
@@ -22,7 +23,14 @@ function sectionsAt(data: DocsData, position: CustomSection["position"]): Custom
 function CustomSectionChapter({ section }: { section: CustomSection }) {
   return (
     <Chapter id={section.id} title={section.title} icon={<Book1Icon />}>
-      <div className="pw-panel">
+      <div
+        className="pw-panel"
+        data-api-search-entry=""
+        data-api-search-group={section.title}
+        data-api-search-title={section.title}
+        data-api-search-kind="chapter"
+        data-api-search-target={section.id}
+      >
         <Markdown content={section.markdown} />
       </div>
     </Chapter>
@@ -34,7 +42,17 @@ function GuideChapter({ data }: { data: DocsData }) {
     <Chapter id="integration-guide" title="Integration guide" icon={<BookIcon />}>
       <div className="pw-guide">
         {data.guideSections.map((section) => (
-          <div className="pw-panel" id={`guide-${section.id}`} key={section.id}>
+          <div
+            className="pw-panel"
+            id={`guide-${section.id}`}
+            key={section.id}
+            data-api-search-entry=""
+            data-api-search-group="Integration guide"
+            data-api-search-title={section.title}
+            data-api-search-addon="Guide"
+            data-api-search-kind="chapter"
+            data-api-search-target={`guide-${section.id}`}
+          >
             <h3 className="pw-panel__title">{section.title}</h3>
             <Markdown content={section.markdown} />
           </div>
@@ -58,7 +76,7 @@ export function ApiDocs({ data }: { data: DocsData }) {
     <div className="pw-shell">
       <div className="pw-layout">
         <SidebarNav data={data} />
-        <main className="pw-content">
+        <main className="pw-content" data-api-search-root="">
           <header className="pw-intro">
             <h1 className="pw-intro__title">{data.title}</h1>
             <p className="pw-intro__lead">
@@ -88,7 +106,12 @@ export function ApiDocs({ data }: { data: DocsData }) {
             >
               {group.description ? <p className="pw-chapter__lead">{group.description}</p> : null}
               {group.operations.map((operation) => (
-                <EndpointBlock operation={operation} data={data} key={operation.anchor} />
+                <EndpointBlock
+                  operation={operation}
+                  data={data}
+                  searchGroup={group.name}
+                  key={operation.anchor}
+                />
               ))}
             </Chapter>
           ))}
@@ -121,6 +144,7 @@ export function ApiDocs({ data }: { data: DocsData }) {
           ) : null}
         </main>
       </div>
+      <SearchDialog />
     </div>
   );
 }
