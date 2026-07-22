@@ -14,6 +14,26 @@
 export const PACKAGE_NAME = "periwinkle";
 
 export type {
+  CustomSection,
+  CustomSectionPosition,
+  FooterLink,
+  GuideConfig,
+  PeriwinkleConfig,
+  ResolvedConfig,
+  ThemeColors,
+  ThemeFonts,
+} from "./config/config.js";
+export {
+  DEFAULT_DARK_COLORS,
+  DEFAULT_FONTS,
+  DEFAULT_LIGHT_COLORS,
+  DEFAULT_RADIUS,
+  defineConfig,
+  resolveConfig,
+} from "./config/config.js";
+export { type LoadedConfig, loadConfig } from "./config/load-config.js";
+export { compileThemeCss, cssVariableName } from "./config/theme-css.js";
+export type {
   ApiMediaType,
   ApiOperation,
   ApiOperationGroup,
