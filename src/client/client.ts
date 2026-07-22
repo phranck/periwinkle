@@ -4,9 +4,11 @@
  * A small framework-free enhancement layer over the statically rendered
  * markup. Everything binds through `data-pw-*` attributes, so the page stays
  * fully usable without JavaScript: native `details`/`summary` collapsing and
- * anchor navigation keep working; this layer adds persistence, filtering,
- * the theme toggle, and the schema view tabs.
+ * anchor navigation keep working; this layer adds persistence, the document
+ * search dialog, the theme toggle, and the schema view tabs.
  */
+
+import { bindSearchDialog } from "./search.js";
 
 const STORAGE_PREFIX = "periwinkle:";
 /** localStorage key holding the explicit theme choice (`light` or `dark`). */
@@ -252,56 +254,6 @@ export function bindToggleAll(root: Document): void {
 }
 
 /**
- * Binds the sidebar filter input: matching compares the query against each
- * item's `data-pw-search-text`. Sections without any matching item hide;
- * sections with matches open while a query is active. Clearing the query
- * restores the pre-search open states.
- *
- * @param root The document containing the sidebar.
- */
-export function bindSearch(root: Document): void {
-  const input = root.querySelector<HTMLInputElement>("[data-pw-search]");
-  if (!input) return;
-
-  const items = [...root.querySelectorAll<HTMLElement>("[data-pw-nav-item][data-pw-search-text]")];
-  const sections = [...root.querySelectorAll<HTMLDetailsElement>("[data-pw-nav-section]")];
-  const openStates = new WeakMap<HTMLDetailsElement, boolean>();
-  let searching = false;
-
-  input.addEventListener("input", () => {
-    const query = input.value.trim().toLowerCase();
-
-    if (query && !searching) {
-      searching = true;
-      for (const section of sections) openStates.set(section, section.open);
-    }
-
-    if (!query) {
-      for (const item of items) item.hidden = false;
-      for (const section of sections) {
-        section.hidden = false;
-        if (searching) setSectionOpen(section, openStates.get(section) ?? false);
-      }
-      searching = false;
-      return;
-    }
-
-    for (const item of items) {
-      const text = item.dataset.pwSearchText ?? "";
-      item.hidden = !text.includes(query);
-    }
-    for (const section of sections) {
-      const sectionText = section.dataset.pwSearchText ?? "";
-      const hasVisibleItem = [...section.querySelectorAll<HTMLElement>("[data-pw-nav-item]")].some(
-        (item) => !item.hidden,
-      );
-      section.hidden = !hasVisibleItem && !sectionText.includes(query);
-      if (!section.hidden) setSectionOpen(section, true);
-    }
-  });
-}
-
-/**
  * Binds the schema card view tabs: `[data-pw-tab]` buttons switch the
  * sibling `[data-pw-panel]` visibility inside the same card. Clicks must not
  * toggle the surrounding `details` element, so the handler stops the event.
@@ -342,6 +294,6 @@ export function setupPeriwinkle(root: Document): void {
   bindThemeToggle(root);
   bindCollapsibles(root);
   bindToggleAll(root);
-  bindSearch(root);
+  bindSearchDialog(root);
   bindSchemaTabs(root);
 }

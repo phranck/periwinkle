@@ -52,6 +52,16 @@ describe("ApiDocs", () => {
     expect(defaultHtml).toContain('id="guide-auth"');
     expect(defaultHtml).toContain("generated from API version 1.2.3");
   });
+
+  it("renders the search dialog and marks searchable entries", () => {
+    expect(defaultHtml).toContain("data-api-search-dialog");
+    expect(defaultHtml).toContain("data-api-search-root");
+    expect(defaultHtml).toContain('data-api-search-group="Books"');
+    expect(defaultHtml).toContain('data-api-search-group="Integration guide"');
+    expect(defaultHtml).toContain('data-api-search-kind="schema"');
+    expect(defaultHtml).toContain('id="api-document-search-results"');
+    expect(defaultHtml).toContain("api-search-highlight-notice");
+  });
 });
 
 describe("ApiDocs with custom config", () => {

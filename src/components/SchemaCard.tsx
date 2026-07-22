@@ -38,7 +38,17 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
   const headingId = `${schema.anchor}-heading`;
 
   return (
-    <details className="pw-schema-card" id={schema.anchor} data-pw-schema-card={schema.anchor}>
+    <details
+      className="pw-schema-card"
+      id={schema.anchor}
+      data-pw-schema-card={schema.anchor}
+      data-api-search-entry=""
+      data-api-search-group="Schemas"
+      data-api-search-title={schema.name}
+      data-api-search-addon="Schema"
+      data-api-search-kind="schema"
+      data-api-search-target={schema.anchor}
+    >
       <summary className="pw-schema-card__summary">
         <span className="pw-schema-card__title" id={headingId}>
           {schema.name}

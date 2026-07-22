@@ -3,10 +3,10 @@
  *
  * Sections use native `details`/`summary` so the rail works without
  * JavaScript; the client bundle enhances them with persisted open state,
- * search filtering, the expand/collapse-all control, and the theme toggle
- * via the `data-pw-*` hooks. Endpoint paths stay out of the rail to keep it
- * scannable — items show the operation's navigation title with a method
- * badge.
+ * the expand/collapse-all control, and the theme toggle via the `data-pw-*`
+ * hooks. The read-only search field opens the document search dialog.
+ * Endpoint paths stay out of the rail to keep it scannable — items show the
+ * operation's navigation title with a method badge.
  *
  * Top-level links mirror the content's document order exactly (custom
  * sections before the guide link when placed `before-guide`, and so on);
@@ -161,8 +161,9 @@ export function SidebarNav({ data }: { data: DocsData }) {
           type="search"
           id="pw-search"
           name="pw-search"
-          placeholder="Filter reference"
-          aria-label="Filter reference"
+          placeholder="Search the API reference"
+          aria-label="Search API reference"
+          readOnly
           data-pw-search
         />
       </div>

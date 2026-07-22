@@ -31,6 +31,7 @@ const REQUIRED_EXPORTS = [
   "SidebarNav",
   "EndpointBlock",
   "SchemaCard",
+  "SearchDialog",
 ];
 
 const missing = REQUIRED_EXPORTS.filter((name) => typeof entry[name] === "undefined");

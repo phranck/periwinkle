@@ -20,7 +20,9 @@ import {
   Book,
   Book1,
   Category,
+  CloseCircle,
   Code,
+  Diagram,
   type Icon,
   type IconProps,
   Key,
@@ -58,7 +60,9 @@ export const ArrowCircleUpIcon = bulk(ArrowCircleUp);
 export const Book1Icon = bulk(Book1);
 export const BookIcon = bulk(Book);
 export const CategoryIcon = bulk(Category);
+export const CloseCircleIcon = bulk(CloseCircle);
 export const CodeIcon = bulk(Code);
+export const DiagramIcon = bulk(Diagram);
 export const KeyIcon = bulk(Key);
 export const MoonIcon = bulk(Moon);
 export const SearchNormal1Icon = bulk(SearchNormal1);

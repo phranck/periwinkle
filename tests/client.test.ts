@@ -1,15 +1,18 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   bindSchemaTabs,
-  bindSearch,
   bindThemeToggle,
   bindToggleAll,
   initTheme,
   setupPeriwinkle,
   THEME_STORAGE_KEY,
 } from "../src/client/client.js";
+import { bindSearchDialog } from "../src/client/search.js";
+import { SearchDialog } from "../src/components/SearchDialog.jsx";
 
 /** Minimal in-memory Storage stand-in; happy-dom does not expose localStorage. */
 class MemoryStorage implements Pick<Storage, "getItem" | "setItem" | "removeItem" | "clear"> {
@@ -39,7 +42,7 @@ const PAGE_FIXTURE = `
     <nav data-pw-nav>
       <button type="button" data-pw-toggle-all></button>
       <button type="button" data-pw-theme-toggle></button>
-      <input type="search" data-pw-search />
+      <input type="search" readonly data-pw-search />
       <details data-pw-nav-section="books" data-pw-search-text="books">
         <summary>Books</summary>
         <ul>
@@ -54,20 +57,47 @@ const PAGE_FIXTURE = `
         </ul>
       </details>
     </nav>
-    <details data-pw-schema-card="schema-book">
-      <summary>
-        <button type="button" data-pw-tab="fields" aria-pressed="true">Fields</button>
-        <button type="button" data-pw-tab="json" aria-pressed="false">JSON</button>
-      </summary>
-      <div data-pw-panel="fields"></div>
-      <div data-pw-panel="json" hidden></div>
-    </details>
+    <main data-api-search-root>
+      <article
+        id="op-create-book"
+        data-api-search-entry
+        data-api-search-group="Books"
+        data-api-search-title="Create Book"
+        data-api-search-addon="POST /books"
+        data-api-search-kind="operation"
+        data-api-search-target="op-create-book"
+      >
+        <p>Create a new book in the catalog.</p>
+      </article>
+      <details
+        id="schema-book"
+        data-pw-schema-card="schema-book"
+        data-api-search-entry
+        data-api-search-group="Schemas"
+        data-api-search-title="Book"
+        data-api-search-addon="Schema"
+        data-api-search-kind="schema"
+        data-api-search-target="schema-book"
+      >
+        <summary>
+          <button type="button" data-pw-tab="fields" aria-pressed="true">Fields</button>
+          <button type="button" data-pw-tab="json" aria-pressed="false">JSON</button>
+        </summary>
+        <div class="pw-schema-card__body">
+          <div data-pw-panel="fields"><p>A book record.</p></div>
+          <div data-pw-panel="json" hidden></div>
+        </div>
+      </details>
+    </main>
   `;
+
+/** The real dialog markup, so the fixture can never drift from the component. */
+const DIALOG_FIXTURE = renderToStaticMarkup(createElement(SearchDialog));
 
 beforeEach(() => {
   window.localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
-  document.body.innerHTML = PAGE_FIXTURE;
+  document.body.innerHTML = PAGE_FIXTURE + DIALOG_FIXTURE;
 });
 
 describe("theme", () => {
@@ -90,38 +120,98 @@ describe("theme", () => {
   });
 });
 
-describe("search", () => {
-  function query(value: string): void {
-    const input = document.querySelector<HTMLInputElement>("[data-pw-search]");
-    if (!input) throw new Error("missing search input");
-    input.value = value;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+describe("search dialog", () => {
+  function dialog(): HTMLDialogElement {
+    const element = document.querySelector<HTMLDialogElement>("[data-api-search-dialog]");
+    if (!element) throw new Error("missing search dialog");
+    return element;
   }
 
-  it("hides non-matching items and empty sections, opens matching sections", () => {
-    bindSearch(document);
-    query("create");
-    const items = [...document.querySelectorAll<HTMLElement>("[data-pw-nav-item]")];
-    expect(items.map((item) => item.hidden)).toEqual([true, false, true]);
-    const [books, authors] = [
-      ...document.querySelectorAll<HTMLDetailsElement>("details[data-pw-nav-section]"),
-    ];
-    expect(books?.hidden).toBe(false);
-    expect(books?.open).toBe(true);
-    expect(authors?.hidden).toBe(true);
+  function dialogInput(): HTMLInputElement {
+    const input = document.querySelector<HTMLInputElement>(".search-dialog__header-search-input");
+    if (!input) throw new Error("missing dialog input");
+    return input;
+  }
+
+  function pressKey(key: string): void {
+    dialogInput().dispatchEvent(
+      new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+    );
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    bindSearchDialog(document);
   });
 
-  it("restores visibility and open states when cleared", () => {
-    bindSearch(document);
-    query("create");
-    query("");
-    const items = [...document.querySelectorAll<HTMLElement>("[data-pw-nav-item]")];
-    expect(items.every((item) => !item.hidden)).toBe(true);
-    const sections = [
-      ...document.querySelectorAll<HTMLDetailsElement>("details[data-pw-nav-section]"),
-    ];
-    expect(sections.every((section) => !section.hidden)).toBe(true);
-    expect(sections.every((section) => !section.open)).toBe(true);
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("opens as a modal when the sidebar trigger is clicked", () => {
+    const trigger = document.querySelector<HTMLInputElement>("[data-pw-search]");
+    trigger?.click();
+    expect(dialog().open).toBe(true);
+    expect(dialog().dataset.state).toBe("open");
+    expect(dialogInput().getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("renders grouped results for a query", () => {
+    document.querySelector<HTMLInputElement>("[data-pw-search]")?.click();
+    const input = dialogInput();
+    input.value = "book";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const groups = [...document.querySelectorAll(".search-dialog__group-header-title")];
+    expect(groups.map((group) => group.textContent)).toEqual(["Schemas", "Books"]);
+    const options = [...document.querySelectorAll<HTMLElement>('[role="option"]')];
+    expect(options).toHaveLength(2);
+    // The exact-title match ranks first and is preselected.
+    expect(options[0]?.getAttribute("aria-selected")).toBe("true");
+    expect(options[0]?.textContent).toContain("Book");
+    expect(input.getAttribute("aria-activedescendant")).toBe(options[0]?.id);
+  });
+
+  it("closes on Escape without navigating", () => {
+    document.querySelector<HTMLInputElement>("[data-pw-search]")?.click();
+    pressKey("Escape");
+    expect(dialog().dataset.state).toBe("closing");
+    vi.runAllTimers();
+    expect(dialog().open).toBe(false);
+    expect(dialog().dataset.state).toBeUndefined();
+  });
+
+  it("navigates to the selected result on Enter", () => {
+    document.querySelector<HTMLInputElement>("[data-pw-search]")?.click();
+    const input = dialogInput();
+    input.value = "book record";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    pressKey("Enter");
+    vi.runAllTimers();
+
+    expect(dialog().open).toBe(false);
+    expect(window.location.hash).toBe("#schema-book");
+    const schemaCard = document.querySelector<HTMLDetailsElement>("#schema-book");
+    expect(schemaCard?.open).toBe(true);
+    expect(document.querySelectorAll("mark[data-api-search-highlight]").length).toBeGreaterThan(0);
+    const notice = document.querySelector<HTMLElement>(".api-search-highlight-notice");
+    expect(notice?.hidden).toBe(false);
+    expect(notice?.textContent).toContain("highlighted");
+  });
+
+  it("clears highlights via Escape outside the dialog", () => {
+    document.querySelector<HTMLInputElement>("[data-pw-search]")?.click();
+    const input = dialogInput();
+    input.value = "book record";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    pressKey("Enter");
+    vi.runAllTimers();
+
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
+    );
+    expect(document.querySelectorAll("mark[data-api-search-highlight]")).toHaveLength(0);
+    expect(document.querySelector<HTMLElement>(".api-search-highlight-notice")?.hidden).toBe(true);
   });
 });
 

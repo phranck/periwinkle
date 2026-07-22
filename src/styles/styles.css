@@ -14,11 +14,14 @@
   --pw-space-2: 0.5rem;
   --pw-space-3: 0.75rem;
   --pw-space-4: 1rem;
+  --pw-space-5: 1.25rem;
   --pw-space-6: 1.5rem;
+  --pw-space-7: 1.75rem;
   --pw-space-8: 2rem;
   --pw-space-card: 0.625rem;
   --pw-space-card-header: 0.625rem;
   --pw-space-card-row: 0.75rem;
+  --pw-docs-space-xs: 0.125rem;
   --pw-docs-space-sm: 0.375rem;
   --pw-docs-space-md: 0.625rem;
   --pw-nav-transition-duration: 160ms;
@@ -977,6 +980,603 @@ details[open] > .pw-schema-card__summary .pw-nav__chevron {
 
 .pw-footer__text {
   margin: 0;
+}
+
+/* ---------- Search dialog (adopted from the reference) ---------- */
+
+/* Tokens the adopted block consumes, mapped onto periwinkle's theme
+   variables; raw values are read verbatim from the reference theme
+   (developer-theme.css / docs.css). */
+:root {
+  --pw-size-control: 2.75rem;
+  --pw-size-control-compact: 2rem;
+  --pw-size-icon-lg: 1.5rem;
+  --pw-size-text-icon: 1.2cap;
+  --pw-text-body: 1.125rem;
+  --pw-text-code: 0.9375rem;
+  --pw-radius-keycap: 0.3125rem;
+  --pw-content-link-radius: 0.25rem;
+  --pw-motion-duration-fast: 80ms;
+  --pw-space-page-inline: 1.5rem;
+  --pw-shadow-color: rgba(0, 0, 0, 0.28);
+  --pw-sky-top: #0d1b28;
+  --pw-docs-card-chrome: var(--pw-surface-alt);
+  --pw-docs-search-dialog-max-width: 48rem;
+  --pw-docs-search-dialog-min-height: 20rem;
+  --pw-docs-search-dialog-top: calc(var(--pw-space-8) + var(--pw-space-6));
+  --pw-docs-search-dialog-viewport-gap: var(--pw-space-5);
+  --pw-docs-search-dialog-offset: var(--pw-space-3);
+  --pw-docs-search-dialog-input-surface: color-mix(
+    in srgb,
+    var(--pw-background) 82%,
+    var(--pw-surface-alt) 18%
+  );
+  --pw-docs-search-dialog-group-header-surface: color-mix(
+    in srgb,
+    var(--pw-docs-card-chrome) 84%,
+    var(--pw-background) 16%
+  );
+  --pw-docs-search-highlight-color: #f97316;
+  --pw-docs-search-highlight-padding-inline: var(--pw-space-2);
+  --pw-docs-search-highlight-padding-block: var(--pw-docs-space-xs);
+  --pw-docs-search-highlight-notice-offset: var(--pw-space-5);
+}
+
+/* Visually hidden but accessible content (dialog title, live status). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Sizing utilities used by the adopted markup (Tailwind-equivalent values). */
+.size-5 {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.size-6 {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Icon aligns against the cap height of the first text line, rather than
+   centering it against the complete wrapped paragraph. */
+.icon-text-first-line {
+  display: flex;
+  align-items: flex-start;
+}
+
+.icon-text-first-line__icon {
+  display: inline-flex;
+  width: var(--pw-size-text-icon);
+  height: 1lh;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: currentColor;
+}
+
+.icon-text-first-line__icon > .pw-icon,
+.icon-text-first-line__icon > svg {
+  width: var(--pw-size-text-icon);
+  height: var(--pw-size-text-icon);
+}
+
+/* One semantic shortcut can contain several independently legible keys.
+   The square surface deliberately contrasts with its parent, whether used
+   inside transparent navigation or an already-raised card. */
+.keycap {
+  --pw-keycap-size: calc(1em + var(--pw-space-1));
+  --pw-keycap-radius: var(--pw-radius-keycap);
+  --pw-keycap-surface: color-mix(in srgb, var(--pw-surface-alt) 92%, var(--pw-text) 8%);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pw-space-1);
+  color: var(--pw-text-muted);
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.keycap__key {
+  display: inline-grid;
+  width: var(--pw-keycap-size);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  border-radius: var(--pw-keycap-radius);
+  color: inherit;
+  background: var(--pw-keycap-surface);
+}
+
+/* Reusable glass surface. Compound components add their own semantic
+   header/body/footer markup without redefining this outer geometry. */
+.surface-card {
+  overflow: hidden;
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+}
+
+/* Native modal search palette. The dialog itself is the surface card so no
+   decorative card is nested inside another card. */
+.api-dialog.surface-card {
+  position: fixed;
+  top: var(--pw-docs-search-dialog-top);
+  inset-inline: 0;
+  width: min(
+    calc(100vw - var(--pw-space-page-inline) - var(--pw-space-page-inline)),
+    var(--pw-docs-search-dialog-max-width)
+  );
+  max-width: none;
+  min-height: var(--pw-docs-search-dialog-min-height);
+  max-height: calc(
+    100dvh -
+    var(--pw-docs-search-dialog-top) -
+    var(--pw-docs-search-dialog-viewport-gap)
+  );
+  margin: 0 auto;
+  overflow: hidden;
+  /* The reference resets element borders globally; periwinkle has no
+     preflight, so the native dialog border is removed here. */
+  border: 0;
+  border-radius: var(--pw-radius);
+  padding: 0;
+  color: var(--pw-text);
+  background: var(--pw-surface);
+  box-shadow: 0 var(--pw-space-5) var(--pw-space-8)
+    color-mix(in srgb, var(--pw-sky-top) 72%, transparent);
+}
+
+.api-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.api-dialog::backdrop {
+  background: color-mix(in srgb, var(--pw-sky-top) 72%, transparent);
+  backdrop-filter: blur(var(--pw-space-2));
+}
+
+.search-dialog[data-state="open"] {
+  animation: api-search-dialog-in var(--pw-nav-transition-duration) var(--pw-nav-transition-easing)
+    both;
+}
+
+.search-dialog[data-state="open"]::backdrop {
+  animation: api-search-backdrop-in var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.search-dialog[data-state="closing"] {
+  animation: api-search-dialog-out var(--pw-nav-transition-duration) var(--pw-nav-transition-easing)
+    both;
+}
+
+.search-dialog[data-state="closing"]::backdrop {
+  animation: api-search-backdrop-out var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.api-dialog__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-card-header);
+  background: var(--pw-docs-card-chrome);
+}
+
+.search-dialog__header-search {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: var(--pw-space-2);
+  min-height: var(--pw-size-control);
+  border: 1px solid var(--pw-border);
+  border-radius: calc(var(--pw-radius) / 2);
+  padding-inline: var(--pw-space-3) var(--pw-space-2);
+  color: var(--pw-text-muted);
+  background: var(--pw-docs-search-dialog-input-surface);
+}
+
+.search-dialog__header-search:focus-within {
+  border-color: var(--pw-accent);
+}
+
+.search-dialog__header-search-icon {
+  display: inline-flex;
+  color: var(--pw-text-muted);
+}
+
+.search-dialog__header-search-input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  color: var(--pw-text);
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--pw-text-body);
+}
+
+.search-dialog__header-search-input::placeholder {
+  color: var(--pw-text-faint);
+}
+
+.search-dialog__header-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-dialog__header-search-clear,
+.search-dialog__header-close {
+  display: inline-flex;
+  width: var(--pw-size-control);
+  min-height: var(--pw-size-control);
+  height: var(--pw-size-control);
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  color: var(--pw-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.search-dialog__header-search-clear {
+  width: var(--pw-size-icon-lg);
+  min-height: var(--pw-size-icon-lg);
+  height: var(--pw-size-icon-lg);
+}
+
+.search-dialog__header-search-clear:hover,
+.search-dialog__header-close:hover {
+  color: var(--pw-accent);
+}
+
+.api-dialog__header-addon {
+  display: flex;
+  align-items: center;
+}
+
+.api-dialog__body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--pw-surface);
+}
+
+.search-dialog__results {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding-block: var(--pw-space-2);
+  scroll-padding-block: var(--pw-space-2);
+}
+
+.search-dialog__results[hidden] {
+  display: none;
+}
+
+.search-dialog__group + .search-dialog__group {
+  margin-top: var(--pw-space-2);
+}
+
+.search-dialog__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-2) var(--pw-space-card-header);
+  color: var(--pw-text-muted);
+  background: var(--pw-docs-search-dialog-group-header-surface);
+}
+
+.search-dialog__group-header-title {
+  font-size: var(--pw-text-body);
+  font-weight: 600;
+}
+
+.search-dialog__group-header-addon {
+  min-width: var(--pw-space-7);
+  border: 1px solid var(--pw-border);
+  border-radius: calc(var(--pw-radius) / 2);
+  padding: var(--pw-docs-space-xs) var(--pw-docs-space-sm);
+  color: var(--pw-text-muted);
+  text-align: center;
+}
+
+.search-dialog__group-items {
+  display: grid;
+  gap: var(--pw-space-1);
+  padding: var(--pw-space-2);
+}
+
+.search-dialog__result {
+  display: grid;
+  grid-template-columns: var(--pw-size-text-icon) minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: var(--pw-space-3);
+  width: 100%;
+  min-height: var(--pw-size-control);
+  border: 0;
+  border-radius: calc(var(--pw-radius) / 2);
+  padding: var(--pw-space-3);
+  color: var(--pw-text-muted);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--pw-text-body);
+  text-align: left;
+  transition:
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.search-dialog__result:hover,
+.search-dialog__result[aria-selected="true"] {
+  color: var(--pw-text);
+  background: var(--pw-surface-alt);
+}
+
+.search-dialog__result[aria-selected="true"] {
+  outline: 1px solid color-mix(in srgb, var(--pw-accent) 48%, transparent);
+}
+
+.search-dialog__result-icon {
+  color: var(--pw-text);
+}
+
+.search-dialog__result-content {
+  display: grid;
+  min-width: 0;
+  gap: var(--pw-space-1);
+}
+
+.search-dialog__result-title {
+  color: var(--pw-text);
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.search-dialog__result-snippet {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-code);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.search-dialog__result-addon {
+  color: var(--pw-accent);
+  font-size: var(--pw-text-code);
+}
+
+.search-dialog__match {
+  border-radius: var(--pw-content-link-radius);
+  padding-inline: var(--pw-docs-space-xs);
+  color: var(--pw-text);
+  background: color-mix(in srgb, var(--pw-accent) 26%, transparent);
+}
+
+.search-dialog__empty {
+  display: grid;
+  min-height: var(--pw-docs-search-dialog-min-height);
+  flex: 1;
+  place-items: center;
+  padding: var(--pw-space-card);
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-body);
+  text-align: center;
+}
+
+.search-dialog__empty[hidden] {
+  display: none;
+}
+
+.api-dialog__footer {
+  padding: var(--pw-space-2) var(--pw-space-card-header);
+  color: var(--pw-text-faint);
+  background: var(--pw-docs-card-chrome);
+}
+
+.search-dialog__footer-hints {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--pw-space-3);
+}
+
+.search-dialog__footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
+}
+
+mark[data-api-search-highlight] {
+  border-radius: var(--pw-content-link-radius);
+  padding-inline: var(--pw-docs-search-highlight-padding-inline);
+  padding-block: var(--pw-docs-search-highlight-padding-block);
+  color: var(--pw-text);
+  background: color-mix(in srgb, var(--pw-docs-search-highlight-color) 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pw-docs-search-highlight-color) 52%, transparent);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: api-search-highlight-in var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.api-search-highlight-notice {
+  position: fixed;
+  z-index: 20;
+  top: calc(var(--pw-docs-search-highlight-notice-offset) + env(safe-area-inset-top));
+  right: calc(var(--pw-docs-search-highlight-notice-offset) + env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  max-width: calc(100vw - var(--pw-space-4));
+  border: 1px solid color-mix(in srgb, var(--pw-docs-search-highlight-color) 56%, var(--pw-border));
+  border-radius: var(--pw-radius);
+  padding: var(--pw-space-2) var(--pw-space-3);
+  color: var(--pw-text);
+  background: color-mix(in srgb, var(--pw-docs-search-highlight-color) 18%, var(--pw-surface));
+  box-shadow: 0 0.75rem 2rem var(--pw-shadow-color);
+  animation: api-search-highlight-notice-in var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+/* The statically rendered notice stays in the DOM; `hidden` must win over
+   the flex display above. */
+.api-search-highlight-notice[hidden] {
+  display: none;
+}
+
+.api-search-highlight-notice__text {
+  min-width: 0;
+  font-size: var(--pw-text-code);
+  font-weight: 600;
+}
+
+.api-search-highlight-notice__dismiss {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--pw-size-control-compact);
+  height: var(--pw-size-control-compact);
+  margin: calc(var(--pw-space-1) * -1);
+  border: 0;
+  border-radius: calc(var(--pw-radius) / 2);
+  color: var(--pw-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    background var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.api-search-highlight-notice__dismiss:hover,
+.api-search-highlight-notice__dismiss:focus-visible {
+  color: var(--pw-text);
+  background: var(--pw-surface-alt);
+}
+
+@keyframes api-search-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--pw-docs-search-dialog-offset)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes api-search-dialog-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--pw-docs-search-dialog-offset)) scale(0.98);
+  }
+}
+
+@keyframes api-search-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes api-search-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes api-search-highlight-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes api-search-highlight-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--pw-space-2) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --pw-docs-search-dialog-top: max(
+      var(--pw-space-5),
+      calc(env(safe-area-inset-top) + var(--pw-space-3))
+    );
+  }
+
+  .api-dialog.surface-card {
+    width: calc(100vw - var(--pw-space-2) - var(--pw-space-2));
+    min-height: min(var(--pw-docs-search-dialog-min-height), calc(100dvh - var(--pw-space-4)));
+    max-height: calc(
+      100dvh -
+      var(--pw-docs-search-dialog-top) -
+      var(--pw-docs-search-dialog-viewport-gap)
+    );
+  }
+
+  .api-dialog__header {
+    gap: var(--pw-space-2);
+    padding: var(--pw-space-2);
+  }
+
+  .search-dialog__result {
+    grid-template-columns: var(--pw-size-text-icon) minmax(0, 1fr);
+  }
+
+  .search-dialog__result-addon {
+    grid-column: 2;
+  }
+
+  .api-dialog__footer {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-dialog,
+  .api-dialog::backdrop,
+  .api-search-highlight-notice,
+  mark[data-api-search-highlight] {
+    animation: none;
+  }
 }
 
 /* ---------- Responsive ---------- */
