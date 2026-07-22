@@ -104,9 +104,8 @@ function NavSection({
         <h3 className="sidebar__section-header-title api-reference-nav__summary-title">{name}</h3>
         <div className="sidebar__section-header-addons api-reference-nav__summary-addons">
           <span className="api-reference-nav__count">{count}</span>
-          <span className="api-reference-nav__toggle" aria-hidden="true">
-            <ArrowCircleDownIcon className="api-reference-nav__toggle-down" />
-            <ArrowCircleUpIcon className="api-reference-nav__toggle-up" />
+          <span className="api-reference-nav__toggle pw-chevron" aria-hidden="true">
+            <ArrowCircleDownIcon />
           </span>
         </div>
       </summary>

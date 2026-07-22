@@ -549,21 +549,6 @@ code {
   transform: translate(-50%, -50%);
 }
 
-.api-reference-nav__toggle-up {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
-}
-
-[data-pw-expanded="true"] .api-reference-nav__toggle-down {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
-}
-
-[data-pw-expanded="true"] .api-reference-nav__toggle-up {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
 .api-reference-nav__content {
   height: 0;
   opacity: 0;
@@ -629,6 +614,23 @@ code {
       color-mix(in srgb, var(--pw-color-mask-opaque) 80%, transparent)
     );
   }
+}
+
+/* One disclosure chevron per section: closed points right, open rotates
+   90 degrees down. The wrapper rotates so the icon's own centering stays
+   intact; data-pw-expanded drives the JS-animated close before [open]
+   flips at the animation's end. */
+.pw-chevron {
+  transform: rotate(-90deg);
+  transition: transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+}
+
+details[open] .pw-chevron {
+  transform: rotate(0deg);
+}
+
+details[data-pw-expanded="false"] .pw-chevron {
+  transform: rotate(-90deg);
 }
 
 /* ---------- Method badges ---------- */
@@ -1047,27 +1049,12 @@ code {
     transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
 }
 
-.pw-schema-card__chevron-up {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-[data-pw-expanded="true"] .pw-schema-card__chevron-down {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-[data-pw-expanded="true"] .pw-schema-card__chevron-up {
-  opacity: 1;
-  transform: scale(1);
-}
-
 .pw-schema-card__title {
   flex: 1;
   color: var(--pw-text);
   font-family: var(--pw-font-heading);
   font-weight: 600;
-  font-size: var(--pw-text-card-title);
+  font-size: 1.375rem;
   line-height: 1.25;
 }
 
