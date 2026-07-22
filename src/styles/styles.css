@@ -719,14 +719,11 @@ details[data-pw-expanded="false"] .pw-chevron {
 }
 
 .pw-chapter__icon {
-  /* Align the icon against the cap-mid of the heading text. The reference
-     header (`text-box: trim-both cap alphabetic`) collapses its line-box so
-     the visual icon center already sits on the cap-mid. Barlow Condensed on
-     periwinkle's H2 leaves the icon roughly 2.6px above the cap-mid without
-     correction — measured in Chrome (delta iconMid − capMid = −2.594px on
-     the H2 "Integration guide"). A `translateY(0.075em)` (2.7px at 36px
-     font-size) drops the icon into the cap-mid without disturbing the
-     surrounding line rhythm. */
+  /* Align the icon to the cap-mid of the H2 text. Barlow Condensed's line
+     box carries ~2.5px of leading above the cap; without correction the
+     line-box-centered icon lands below the cap-mid. Verified in Chrome by
+     stepping the transform across candidate values against the range rect
+     of the first heading text node. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -734,7 +731,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: 1lh;
   color: var(--pw-accent);
   flex: none;
-  transform: translateY(0.075em);
+  transform: translateY(-0.07em);
 }
 
 .pw-chapter__icon svg,
