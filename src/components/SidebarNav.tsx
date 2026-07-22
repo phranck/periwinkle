@@ -147,6 +147,8 @@ export function SidebarNav({
         <input
           className="pw-nav__search-input"
           type="search"
+          id="pw-search"
+          name="pw-search"
           placeholder="Filter reference"
           aria-label="Filter reference"
           data-pw-search
