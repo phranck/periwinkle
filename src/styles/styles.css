@@ -23,7 +23,10 @@
   --pw-space-card: 0.625rem;
   --pw-space-card-header: 0.625rem;
   --pw-space-card-row: 0.75rem;
-  --pw-space-page-inline: 1.5rem;
+  /* Fallbacks only: the theme compiler (`compileThemeCss`) emits both
+     tokens after this stylesheet, so configured values always win. */
+  --pw-page-padding: 1.5rem;
+  --pw-container-max-width: 88rem;
   --pw-space-page-top: 3rem;
   --pw-space-page-bottom: 5rem;
   --pw-docs-space-xs: 0.125rem;
@@ -42,7 +45,6 @@
   --pw-text-section: 2.25rem;
   --pw-text-lead: 1.5rem;
   --pw-text-hero: 3.25rem;
-  --pw-container-max: 88rem;
   --pw-docs-sidebar-width: 20rem;
   --pw-docs-nav-toggle-size: var(--pw-space-7);
   --pw-docs-heading-icon-scale: 1em;
@@ -135,17 +137,32 @@ code {
   font-size: 0.9em;
 }
 
+/* Anchor targets clear the sticky top bar (0px when no top nav renders). */
 [id] {
-  scroll-margin-top: var(--pw-space-8);
+  scroll-margin-top: calc(var(--pw-space-8) + var(--pw-topnav-height, 0px));
 }
 
 /* ---------- Layout ---------- */
 
-.pw-shell {
+/* Page root: hosts the full-width top navigation bar plus the max-width
+   shell. Carries no geometry of its own — it exists so `:has()` state
+   (top-nav present) can cascade custom properties to both children. */
+.pw-app {
   min-height: 100vh;
-  max-width: var(--pw-container-max);
-  margin: 0 auto;
-  padding: var(--pw-space-page-top) var(--pw-space-page-inline) var(--pw-space-page-bottom);
+}
+
+/* Shared content width, adopted from the reference `.developer-shell`:
+   the public header's inner row and the page shell recenter on the same
+   measure so the nav pills line up with the content column. */
+.developer-shell,
+.pw-shell {
+  width: 100%;
+  max-width: var(--pw-container-max-width);
+  margin-inline: auto;
+}
+
+.pw-shell {
+  padding: var(--pw-space-page-top) var(--pw-page-padding) var(--pw-space-page-bottom);
 }
 
 /* Outer shell + inner layout mirror the reference `.api-reference-shell` +
@@ -156,14 +173,8 @@ code {
   min-width: 0;
 }
 
-.api-reference-layout {
-  display: grid;
-  align-items: start;
-  grid-template-columns: var(--pw-docs-sidebar-width) minmax(0, 1fr);
-  gap: var(--pw-space-6);
-}
-
-/* Compatibility alias for tests that still reference the old wrapper class. */
+/* `.pw-layout` is a compatibility alias; the markup carries both classes. */
+.api-reference-layout,
 .pw-layout {
   display: grid;
   align-items: start;
@@ -201,10 +212,6 @@ code {
   margin-bottom: var(--pw-space-8);
 }
 
-.pw-intro {
-  /* Free-standing intro copy uses the reference `--mc-card-content-inset`
-}
-
 .pw-intro__title {
   font-size: var(--pw-text-hero);
   font-weight: 500;
@@ -226,130 +233,149 @@ code {
 
 /* ---------- Top navigation ---------- */
 
-/* When the top nav is rendered, publish its measured height as a
-   custom property so the sidebar sticky offset can add it. */
-.pw-shell:has([data-pw-top-nav]) {
-  --pw-topnav-height: 3.75rem;
+/* When the top nav is rendered, publish its block size (control height plus
+   the inner's block padding) so the sidebar sticky offset and the anchor
+   scroll margin can account for the bar. */
+.pw-app:has([data-pw-top-nav]) {
+  --pw-topnav-height: calc(var(--pw-size-control) + var(--pw-space-5) * 2);
 }
 
-.pw-topnav {
+/* Adopted from the reference `.public-header`: a full-viewport-width sticky
+   layer whose translucent wash and blur let content pass beneath. The
+   inline padding adds the shared half-radius card inset to the page gutter
+   so the nav labels align with copy inside ordinary cards. */
+.public-header {
+  --pw-public-header-padding-inline: calc(var(--pw-page-padding) + var(--pw-card-content-inset));
+  /* Header surface (reference `--mc-public-header-surface` pattern): the
+     page background nudged 4% toward the text color, so the bar reads a
+     touch darker in light mode and a touch lighter in dark mode. */
+  --pw-public-header-surface: color-mix(in srgb, var(--pw-background) 96%, var(--pw-text));
   position: sticky;
   top: 0;
   z-index: 30;
   width: 100%;
-  background: color-mix(in srgb, var(--pw-background) 72%, transparent);
-  -webkit-backdrop-filter: blur(var(--pw-space-4)) saturate(1.05);
-  backdrop-filter: blur(var(--pw-space-4)) saturate(1.05);
+  background: color-mix(in srgb, var(--pw-public-header-surface) 72%, transparent);
+  -webkit-backdrop-filter: blur(var(--pw-space-4));
+  backdrop-filter: blur(var(--pw-space-4));
   transition:
     background-color 0s,
     box-shadow var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
 }
 
-.pw-topnav[data-pw-top-nav-scrolled="true"] {
-  background: color-mix(in srgb, var(--pw-background) 86%, transparent);
+/* periwinkle addition on top of the reference: once content scrolls behind
+   the bar, the wash deepens and a hairline separator appears. */
+.public-header[data-pw-top-nav-scrolled="true"] {
+  background: color-mix(in srgb, var(--pw-public-header-surface) 86%, transparent);
   box-shadow:
     inset 0 -1px 0 var(--pw-border),
     0 var(--pw-space-1) var(--pw-space-3) color-mix(in srgb, var(--pw-text) 6%, transparent);
 }
 
-.pw-topnav__inner {
+/* The inner row recenters on the shared shell measure via `.developer-shell`
+   (see Layout). The reference uses `space-between` because a wordmark sits
+   on the left; periwinkle renders no brand in the bar, so the single actions
+   cluster is pinned right with `flex-end`. */
+.public-header__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--pw-space-4);
-  max-width: var(--pw-container-max-width);
-  margin-inline: auto;
-  padding: var(--pw-space-3) var(--pw-page-padding);
+  padding: var(--pw-space-5) var(--pw-public-header-padding-inline);
 }
 
-.pw-topnav__leading {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.pw-topnav__home {
-  color: var(--pw-text);
-  font-family: var(--pw-font-heading);
-  font-weight: 600;
-  font-size: var(--pw-text-lead);
-  letter-spacing: 0;
-  text-decoration: none;
-}
-
-.pw-topnav__home:hover {
-  color: var(--pw-accent);
-  text-decoration: none;
-}
-
-.pw-topnav__actions {
+.public-header__actions {
   display: flex;
   align-items: center;
   gap: var(--pw-space-3);
-}
-
-.pw-topnav__search {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--pw-space-2);
-  min-height: calc(var(--pw-radius) * 1.75);
-  padding: 0 var(--pw-space-3);
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  background: color-mix(in srgb, var(--pw-surface) 72%, transparent);
-  color: var(--pw-text-muted);
-  font-family: var(--pw-font-base);
-  font-size: var(--pw-text-code);
-  cursor: pointer;
-}
-
-.pw-topnav__search:hover,
-.pw-topnav__search:focus-visible {
-  color: var(--pw-text);
-  border-color: color-mix(in srgb, var(--pw-border) 60%, var(--pw-text) 40%);
-}
-
-.pw-topnav__search-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: none;
-  color: var(--pw-text-muted);
-}
-
-.pw-topnav__search-label {
   min-width: 0;
 }
 
-.pw-topnav__github,
-.pw-topnav__theme-toggle {
-  display: inline-flex;
+.public-header__desktop {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: calc(var(--pw-radius) * 1.75);
-  height: calc(var(--pw-radius) * 1.75);
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--pw-text-muted);
-  cursor: pointer;
+  gap: var(--pw-space-2);
 }
 
-.pw-topnav__github:hover,
-.pw-topnav__theme-toggle:hover,
-.pw-topnav__github:focus-visible,
-.pw-topnav__theme-toggle:focus-visible {
-  color: var(--pw-accent);
-  background: var(--pw-surface);
+/* Adopted from the reference `.public-navigation__link`: a min-44px
+   pill-shaped anchor with icon + label, transparent by default, with a
+   soft surface backdrop that fades in on hover via an ::before pseudo. */
+.public-navigation__link {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-height: var(--pw-size-control, 2.75rem);
+  align-items: center;
+  gap: var(--pw-space-2);
+  border: 0;
+  border-radius: calc(var(--pw-radius) / 2);
+  padding: 0 var(--pw-space-3);
+  color: var(--pw-text-muted);
+  background: transparent;
+  font-family: var(--pw-font-base);
+  font-size: var(--pw-text-body);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+}
+
+.public-navigation__link::before {
+  position: absolute;
+  z-index: -1;
+  inset: var(--pw-space-1) 0;
+  border-radius: calc(var(--pw-radius) / 2);
+  background: transparent;
+  content: "";
+  transition: background-color var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+}
+
+.public-navigation__link:hover,
+.public-navigation__link:focus-visible {
+  color: var(--pw-text);
   text-decoration: none;
 }
 
-.pw-topnav__github-icon {
-  width: 1.35rem;
-  height: 1.35rem;
+/* Backdrop only fades in on hover — never on `:focus-visible`. Otherwise
+   opening the Search dialog and dismissing it with ESC returns keyboard
+   focus to the trigger, which browsers treat as a `:focus-visible`
+   context and would keep the pill tinted after the dialog closes. Keep
+   the color shift on focus for accessibility, and the browser's native
+   focus outline handles the ring. */
+.public-navigation__link:hover::before {
+  background: var(--pw-surface-alt);
 }
 
-.pw-topnav__theme-toggle svg {
+.public-navigation__link--active,
+.public-navigation__link[aria-current="page"] {
+  color: var(--pw-accent);
+}
+
+.public-navigation__link--active::before,
+.public-navigation__link[aria-current="page"]::before {
+  background: color-mix(in srgb, var(--pw-accent) 10%, transparent);
+}
+
+.public-navigation__item-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+}
+
+.public-navigation__label {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Theme toggle sits at the far right as a compact icon-only variant of
+   the same `.public-navigation__link` surface. */
+.public-header__theme-toggle {
+  padding: 0;
+  min-width: var(--pw-size-control, 2.75rem);
+  justify-content: center;
+}
+
+.public-header__theme-toggle .public-navigation__item-icon {
   width: 1.35rem;
   height: 1.35rem;
 }
@@ -357,12 +383,9 @@ code {
 /* ---------- Sidebar ---------- */
 
 /* Docs-nav tokens adopted from the reference `.api-reference-shell` block.
-   periwinkle has no sticky public header, so the reference's
-   `--mc-docs-public-header-block-size` term resolves to zero and the sticky
-   offset keeps only the reference's `--mc-space-4` gap term. The header
-   block size sums the two accepted header rows (brand title line at
-   `--pw-text-card-title` * 1.25 line-height plus the `--pw-size-control`
-   search field) with the header's padding and row gap. */
+   The sidebar's sticky offset mirrors the reference recipe: the sticky
+   public header's block size (`--pw-topnav-height`, published by `.pw-app`
+   when the top nav renders, `0px` otherwise) plus the `--pw-space-4` gap. */
 :root {
   --pw-docs-nav-padding: var(--pw-docs-space-md);
   --pw-docs-nav-bottom-fade-height: var(--pw-space-3);
@@ -378,13 +401,13 @@ code {
     var(--pw-docs-nav-viewport-gap)
   );
   --pw-docs-header-min-height: var(--pw-size-control);
+  /* One header row: padding + the title line (card-title at 1.25 line
+     height). The optional search row adds itself below via `:has()`. */
   --pw-docs-sidebar-header-block-size: calc(
     var(--pw-space-card-header) *
     2 +
-    var(--pw-space-3) +
     var(--pw-text-card-title) *
-    1.25 +
-    var(--pw-size-control)
+    1.25
   );
   --pw-docs-sidebar-header-surface: color-mix(in srgb, var(--pw-surface-alt) 56%, transparent);
   --pw-docs-nav-active-color: var(--pw-accent);
@@ -403,6 +426,20 @@ code {
   position: relative;
   overflow-x: hidden;
   padding: 0;
+}
+
+/* When the optional sidebar search renders, the header grows by its row:
+   the header grid gap plus the control-height search field. Without this
+   the body's header offset would leave a blank strip below the title. */
+.api-reference-nav:has(.pw-nav__search) {
+  --pw-docs-sidebar-header-block-size: calc(
+    var(--pw-space-card-header) *
+    2 +
+    var(--pw-space-3) +
+    var(--pw-text-card-title) *
+    1.25 +
+    var(--pw-size-control)
+  );
 }
 
 .sidebar__header {
@@ -556,9 +593,13 @@ code {
    win over `.pw-icon`'s base tint by document order. The former override
    forced currentColor at higher specificity and blanked those out. */
 
-/* Light mode renders icons slightly lifted so they do not read as black. */
+/* Light mode renders icons slightly lifted so they do not read as black.
+   The backdrop term cascades from the actual surface color under each icon
+   so the tint stays perceptible whether the icon sits on the page, a card
+   body, a card header, or a code frame (surface-specific overrides below). */
 :root {
   --pw-icon-tone: 60%;
+  --pw-icon-backdrop: var(--pw-background);
 }
 
 [data-theme="dark"] {
@@ -566,13 +607,6 @@ code {
   /* Dark palettes need a stronger mix to lift the chrome off the
      surrounding surface. */
   --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 12%, var(--pw-surface));
-}
-
-/* Icon-tone backdrop cascades from the actual surface color under each
-   icon so the tint stays perceptible whether the icon sits on the page,
-   on a card body, on a card header, or on a code frame. */
-:root {
-  --pw-icon-backdrop: var(--pw-background);
 }
 
 .surface-card,
@@ -634,48 +668,17 @@ code {
   display: inline;
 }
 
-/* Search trigger (periwinkle addition): the field adopts the reference
-   search dialog's header-search geometry so both search surfaces match. */
-.pw-nav__search {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) max-content;
-  align-items: center;
-  gap: var(--pw-space-2);
-  min-height: var(--pw-size-control);
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  padding-inline: var(--pw-space-3) var(--pw-space-2);
-  color: var(--pw-text-muted);
-  background: var(--pw-docs-search-dialog-input-surface);
+/* Search trigger (periwinkle addition): the field is a twin of the search
+   dialog's header search — the shared geometry lives in the combined
+   selectors of the search-dialog block below. Only the trigger behavior
+   differs: the whole field (readonly input included) acts as a button. */
+.pw-nav__search,
+.pw-nav__search-input {
   cursor: pointer;
-}
-
-.pw-nav__search:focus-within {
-  border-color: var(--pw-accent);
 }
 
 .pw-nav__search-icon {
   display: inline-flex;
-}
-
-.pw-nav__search-input {
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  padding: 0;
-  color: var(--pw-text);
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--pw-text-body);
-}
-
-.pw-nav__search-input::placeholder {
-  color: var(--pw-text-faint);
-}
-
-.pw-nav__search-input::-webkit-search-cancel-button {
-  display: none;
 }
 
 .sidebar__body {
@@ -1052,10 +1055,11 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 /* ---------- ContentCard + ContentPanel (adopted from the reference) ---------- */
 
-/* ContentCard is the outer radius for structured technical content. Every
-   recessed surface below it derives from this token, preserving concentric
-   card geometry (reference `.surface-card.content-card`). */
-.surface-card.content-card {
+/* Reusable glass surface (reference `.surface-card`): the outer radius for
+   structured technical content, the sidebar rail, and the dialogs. Compound
+   components (ContentCard, the dialogs) add their own semantic markup
+   without redefining this outer geometry. */
+.surface-card {
   overflow: hidden;
   border-radius: var(--pw-radius);
   background: var(--pw-surface);
@@ -1210,11 +1214,17 @@ details[data-pw-expanded="false"] .pw-chevron {
   color: var(--pw-link);
 }
 
-/* Below 40rem the integration grid collapses to one column, matching the
-   reference responsive rule. */
+/* Below 40rem the integration grid, parameter cards, and response cards
+   collapse to one column, matching the reference responsive rules. */
 @media (max-width: 40rem) {
-  .integration-panel-grid {
+  .integration-panel-grid,
+  .parameter-card {
     grid-template-columns: 1fr;
+  }
+
+  .pw-response {
+    grid-template-columns: 1fr;
+    gap: var(--pw-space-2);
   }
 }
 
@@ -1550,12 +1560,19 @@ details[data-pw-expanded="false"] .pw-chevron {
   --pw-response-color: var(--pw-method-delete);
 }
 
+/* One status line: the lead-size code at its 1.25 line height (reference
+   `--mc-docs-response-line-size`). Status and summary share it so a
+   single-line description centers against the icon/code unit. */
+.pw-response {
+  --pw-docs-response-line-size: calc(var(--pw-text-lead) * 1.25);
+}
+
 .pw-response__status {
   display: inline-grid;
   grid-template-columns: var(--pw-size-icon-lg) max-content;
   align-items: center;
   gap: var(--pw-space-2);
-  min-height: calc(var(--pw-text-lead) * 1.25);
+  min-height: var(--pw-docs-response-line-size);
 }
 
 .pw-response__icon {
@@ -1577,10 +1594,52 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-response__content {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--pw-docs-space-md);
   color: var(--pw-text-muted);
   min-width: 0;
-  flex: 1;
+}
+
+/* Grid grows for multiline Markdown while retaining one-line centering
+   against the indivisible response icon/code status unit (reference
+   `.response-card__summary`). */
+.pw-response__summary {
+  display: grid;
+  block-size: max-content;
+  min-height: var(--pw-docs-response-line-size);
+  align-items: center;
+}
+
+.pw-response__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pw-docs-space-md);
+}
+
+.pw-response__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pw-space-3);
+  align-items: center;
+}
+
+.pw-response__meta-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pw-space-1);
+}
+
+.pw-response__meta-label {
+  color: var(--pw-text-muted);
+}
+
+/* Plain mono values, deliberately chip-less (reference
+   `.response-card__media-type` / `.response-card__schema-name`). */
+.pw-response__media-type,
+.pw-response__schema-name {
+  color: var(--pw-docs-code-fg);
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
 }
 
 /* ---------- Schema cards ---------- */
@@ -2127,14 +2186,6 @@ details[data-pw-expanded="false"] .pw-chevron {
   background: var(--pw-keycap-surface);
 }
 
-/* Reusable glass surface. Compound components add their own semantic
-   header/body/footer markup without redefining this outer geometry. */
-.surface-card {
-  overflow: hidden;
-  border-radius: var(--pw-radius);
-  background: var(--pw-surface);
-}
-
 /* Native modal search palette. The dialog itself is the surface card so no
    decorative card is nested inside another card. */
 .api-dialog.surface-card {
@@ -2142,7 +2193,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   top: var(--pw-docs-search-dialog-top);
   inset-inline: 0;
   width: min(
-    calc(100vw - var(--pw-space-page-inline) - var(--pw-space-page-inline)),
+    calc(100vw - var(--pw-page-padding) - var(--pw-page-padding)),
     var(--pw-docs-search-dialog-max-width)
   );
   max-width: none;
@@ -2209,7 +2260,10 @@ details[data-pw-expanded="false"] .pw-chevron {
   background: var(--pw-docs-card-chrome);
 }
 
-.search-dialog__header-search {
+/* Shared with the sidebar's optional `.pw-nav__search` trigger, which
+   deliberately mirrors this field so both search surfaces look identical. */
+.search-dialog__header-search,
+.pw-nav__search {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr) max-content;
   align-items: center;
@@ -2222,7 +2276,8 @@ details[data-pw-expanded="false"] .pw-chevron {
   background: var(--pw-docs-search-dialog-input-surface);
 }
 
-.search-dialog__header-search:focus-within {
+.search-dialog__header-search:focus-within,
+.pw-nav__search:focus-within {
   border-color: var(--pw-accent);
 }
 
@@ -2231,7 +2286,8 @@ details[data-pw-expanded="false"] .pw-chevron {
   color: var(--pw-text-muted);
 }
 
-.search-dialog__header-search-input {
+.search-dialog__header-search-input,
+.pw-nav__search-input {
   min-width: 0;
   border: 0;
   outline: 0;
@@ -2242,11 +2298,13 @@ details[data-pw-expanded="false"] .pw-chevron {
   font-size: var(--pw-text-body);
 }
 
-.search-dialog__header-search-input::placeholder {
+.search-dialog__header-search-input::placeholder,
+.pw-nav__search-input::placeholder {
   color: var(--pw-text-faint);
 }
 
-.search-dialog__header-search-input::-webkit-search-cancel-button {
+.search-dialog__header-search-input::-webkit-search-cancel-button,
+.pw-nav__search-input::-webkit-search-cancel-button {
   display: none;
 }
 
@@ -2714,7 +2772,7 @@ mark[data-api-search-highlight] {
 .openapi-contract-dialog.surface-card {
   top: var(--pw-docs-contract-dialog-viewport-gap);
   width: min(
-    calc(100vw - var(--pw-space-page-inline) - var(--pw-space-page-inline)),
+    calc(100vw - var(--pw-page-padding) - var(--pw-page-padding)),
     var(--pw-docs-contract-dialog-max-width)
   );
   height: calc(
@@ -2931,6 +2989,7 @@ mark[data-api-search-highlight] {
 /* The reference collapses the two-column reference layout below 64rem and
    grows the compact nav controls to the full touch-target size. */
 @media (max-width: 63.999rem) {
+  .api-reference-layout,
   .pw-layout {
     grid-template-columns: minmax(0, 1fr);
   }

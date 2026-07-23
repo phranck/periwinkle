@@ -1,26 +1,42 @@
 /**
  * Sticky top navigation bar rendered above the reference shell.
  *
- * Structure (right-to-left): theme toggle, GitHub link (optional), search
- * trigger, home link. Every affordance is toggleable through
- * `navigation.*`; when the whole bar has no children the component returns
- * `null` and no markup is emitted.
+ * Structure adopted verbatim from `apps/developer/src/components/PublicHeader.astro`
+ * and `apps/developer/src/components/PublicNavigationItems.astro`:
  *
- * The bar sits above the document flow with `position: sticky; top: 0`.
- * `bindTopNavScrollState` in the client bundle observes scroll and sets
- * `data-pw-top-nav-scrolled="true"` once the page moves behind it so the
- * stylesheet raises the frosted-glass backdrop.
+ * ```
+ * div.public-header
+ *   header.public-header__inner.developer-shell
+ *     div.public-header__actions
+ *       nav.public-header__desktop
+ *         a.public-navigation__link (home)
+ *           <Icon class=public-navigation__item-icon />
+ *           <span class=public-navigation__label>API reference</span>
+ *         a.public-navigation__link data-public-search-command (search)
+ *           <Icon /> <span>Search</span> <KeyCap shortcut="⌘K" />
+ *         a.public-navigation__link (github)
+ *           <GithubMark /> <span>GitHub</span>
+ *         button.public-navigation__link (theme toggle, periwinkle addition)
+ *           <Sun /><Moon />
+ * ```
  *
- * The search trigger dispatches the `periwinkle:open-search-dialog` custom
- * event; the search dialog controller listens for it and opens the same
- * dialog the sidebar search field opens.
+ * Every entry uses the reference `.public-navigation__link` surface: an
+ * icon left of a text label, with a pill backdrop on hover. Search is a
+ * `<button>` (musiccloud renders an `<a href="/docs/api?search=1">` that
+ * routes to the search page; periwinkle opens the same document dialog
+ * inline, so a real anchor href would be misleading). Theme toggle is a
+ * periwinkle addition and follows the same visual recipe.
+ *
+ * Sticky at `top: 0`. `bindTopNavScrollState` toggles
+ * `data-pw-top-nav-scrolled="true"` once the page scrolls behind the bar
+ * so the stylesheet lifts the frosted-glass backdrop and separator.
  */
 
 import type { ResolvedConfig } from "../config/config.js";
-import { MoonIcon, SearchNormal1Icon, Sun1Icon } from "./icons.jsx";
+import { DataIcon, MoonIcon, SearchStatusIcon, Sun1Icon } from "./icons.jsx";
 import { KeyCap } from "./primitives.jsx";
 
-/** GitHub mark rendered inline; iconsax does not ship a GitHub logo. */
+/** GitHub mark rendered inline; iconsax ships no GitHub logo. */
 function GithubMark({ className }: { className?: string }) {
   return (
     <svg
@@ -52,60 +68,73 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
   if (!hasHome && !hasSearch && !hasGithub && !hasThemeToggle) return null;
 
   return (
-    <header className="pw-topnav" data-pw-top-nav>
-      <div className="pw-topnav__inner">
-        <div className="pw-topnav__leading">
-          {hasHome ? (
-            <a className="pw-topnav__home" href={navigation.homeHref}>
-              {navigation.homeLabel}
-            </a>
-          ) : null}
+    <div className="public-header" data-pw-top-nav>
+      <header className="public-header__inner developer-shell">
+        <div className="public-header__actions">
+          <nav
+            className="public-header__desktop"
+            aria-label="Primary"
+            data-public-navigation="desktop"
+          >
+            {hasHome ? (
+              <a
+                className="public-navigation__link public-navigation__link--active"
+                href={navigation.homeHref}
+                aria-current="page"
+              >
+                <DataIcon className="public-navigation__item-icon" aria-hidden="true" />
+                <span className="public-navigation__label">{navigation.homeLabel}</span>
+              </a>
+            ) : null}
+            {hasSearch ? (
+              <button
+                type="button"
+                className="public-navigation__link"
+                aria-label="Search API reference"
+                data-pw-search-trigger
+                data-public-search-command
+              >
+                <SearchStatusIcon className="public-navigation__item-icon" aria-hidden="true" />
+                <span className="public-navigation__label">Search</span>
+                <KeyCap shortcut="⌘K" />
+              </button>
+            ) : null}
+            {navigation.github ? (
+              <a
+                className="public-navigation__link"
+                href={navigation.github.url}
+                aria-label={navigation.github.label ?? "GitHub"}
+                title={navigation.github.label ?? "GitHub"}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <GithubMark className="public-navigation__item-icon" />
+                <span className="public-navigation__label">
+                  {navigation.github.label ?? "GitHub"}
+                </span>
+              </a>
+            ) : null}
+            {hasThemeToggle ? (
+              <button
+                type="button"
+                className="public-navigation__link public-header__theme-toggle"
+                aria-label="Toggle color scheme"
+                title="Toggle color scheme"
+                data-pw-theme-toggle
+              >
+                <Sun1Icon
+                  className="pw-nav__theme-icon pw-nav__theme-icon--light public-navigation__item-icon"
+                  aria-hidden="true"
+                />
+                <MoonIcon
+                  className="pw-nav__theme-icon pw-nav__theme-icon--dark public-navigation__item-icon"
+                  aria-hidden="true"
+                />
+              </button>
+            ) : null}
+          </nav>
         </div>
-        <div className="pw-topnav__actions">
-          {hasSearch ? (
-            <button
-              type="button"
-              className="pw-topnav__search"
-              aria-label="Search API reference"
-              data-pw-search-trigger
-            >
-              <SearchNormal1Icon className="pw-topnav__search-icon" aria-hidden="true" />
-              <span className="pw-topnav__search-label">Search</span>
-              <KeyCap shortcut="⌘K" />
-            </button>
-          ) : null}
-          {navigation.github ? (
-            <a
-              className="pw-topnav__github"
-              href={navigation.github.url}
-              aria-label={navigation.github.label ?? "GitHub"}
-              title={navigation.github.label ?? "GitHub"}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <GithubMark className="pw-topnav__github-icon" />
-            </a>
-          ) : null}
-          {hasThemeToggle ? (
-            <button
-              type="button"
-              className="pw-topnav__theme-toggle"
-              aria-label="Toggle color scheme"
-              title="Toggle color scheme"
-              data-pw-theme-toggle
-            >
-              <Sun1Icon
-                className="pw-nav__theme-icon pw-nav__theme-icon--light"
-                aria-hidden="true"
-              />
-              <MoonIcon
-                className="pw-nav__theme-icon pw-nav__theme-icon--dark"
-                aria-hidden="true"
-              />
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }

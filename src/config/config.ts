@@ -113,8 +113,10 @@ export interface GuideConfig {
  * @property showThemeToggle Show the light/dark theme toggle in the sidebar
  *   header. Default `false` (the top navigation carries the theme toggle
  *   by default; enable this if you want it in both places).
- * @property showSearch Show the search field (opens the document search
- *   dialog). Default `true`.
+ * @property showSearch Show the search field in the sidebar header (opens
+ *   the same document search dialog as the top navigation trigger).
+ *   Default `false` (the top navigation carries the search trigger by
+ *   default; enable this if you want it in both places).
  */
 export interface SidebarConfig {
   title?: string;
@@ -388,7 +390,7 @@ export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
   title: "Reference",
   showMethods: false,
   showThemeToggle: false,
-  showSearch: true,
+  showSearch: false,
 };
 
 /** Default top navigation bar: home + search + theme toggle, no GitHub link. */
