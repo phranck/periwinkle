@@ -399,9 +399,21 @@ code {
   opacity: var(--pw-docs-nav-toggle-secondary-opacity);
 }
 
-/* Icons align on the flex row axis, never on the text baseline. */
+/* Icons align on the flex row axis, never on the text baseline.
+   The base tint keeps every Iconsax icon perceptibly lifted in light
+   mode; icons that must carry an intent color override it locally. */
 .pw-icon {
   display: block;
+  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-background));
+}
+
+/* Icons that carry a functional color (status, success, method) must not
+   be washed out by the base tint. */
+.pw-response__icon,
+.pw-response__icon.pw-icon,
+.pw-response__icon .pw-icon,
+.code-block__copy-success-icon.pw-icon {
+  color: currentColor;
 }
 
 /* Light mode renders icons slightly lifted so they do not read as black. */
