@@ -429,14 +429,23 @@ function collectSchemaFields(
       for (const [propertyName, propertySchema] of schemaPropertiesInReadingOrder(properties)) {
         const nestedPath = parentPath ? `${parentPath}.${propertyName}` : propertyName;
         const schemaReference = extractSchemaTypeReference(propertySchema, schemas);
+        // The field-level description wins; when the field just re-uses a
+        // referenced component, fall back to that component's description
+        // so the key row stays informative even without an inline override.
+        const ownDescription = isRecord(propertySchema)
+          ? stringValue(propertySchema.description)
+          : undefined;
+        const referencedDescription =
+          !ownDescription && schemaReference && isRecord(schemas[schemaReference])
+            ? stringValue((schemas[schemaReference] as Record<string, unknown>).description)
+            : undefined;
+        const description = ownDescription ?? referencedDescription;
         fields.push({
           path: propertyName,
           depth,
           type: schemaTypeLabel(propertySchema, schemas),
           required: requiredProperties.has(propertyName),
-          ...(isRecord(propertySchema) && stringValue(propertySchema.description)
-            ? { description: stringValue(propertySchema.description) }
-            : {}),
+          ...(description ? { description } : {}),
           ...(schemaReference ? { schemaRef: schemaReference } : {}),
         });
 
