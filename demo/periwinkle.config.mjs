@@ -12,6 +12,9 @@ export default {
     basePath: "/periwinkle",
     serverUrl: "https://api.bookstore.example",
   },
+  navigation: {
+    logo: "resources/Logo_Banner/logo.svg",
+  },
   guide: {
     rateLimits: "This is a demo deployment of a fictional API — there are no real rate limits.",
   },

@@ -141,6 +141,9 @@ export interface NavigationGithubLink {
  * affordance is toggleable; when everything is disabled the bar is not
  * rendered.
  *
+ * @property logo Brand logo shown on the left side of the bar, linking to
+ *   `homeHref`. A local file path is bundled into the site output; URLs and
+ *   absolute paths pass through untouched. Default: none (no brand mark).
  * @property showHome Render the leading home link (title left-aligned).
  *   Default `true`.
  * @property homeLabel Text on the home link. Default `"API reference"`.
@@ -154,6 +157,7 @@ export interface NavigationGithubLink {
  *   theme toggle when set.
  */
 export interface NavigationConfig {
+  logo?: string;
   showHome?: boolean;
   homeLabel?: string;
   homeHref?: string;
@@ -306,7 +310,8 @@ export interface ResolvedConfig {
     fonts: ThemeFonts;
     radius: string;
   };
-  navigation: Required<Omit<NavigationConfig, "github">> & {
+  navigation: Required<Omit<NavigationConfig, "github" | "logo">> & {
+    logo: string | undefined;
     github: NavigationGithubLink | undefined;
   };
   sidebar: Required<SidebarConfig>;
@@ -393,10 +398,12 @@ export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
   showSearch: false,
 };
 
-/** Default top navigation bar: home + search + theme toggle, no GitHub link. */
-export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github">> & {
+/** Default top navigation bar: home + search + theme toggle, no logo, no GitHub link. */
+export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "logo">> & {
+  logo: string | undefined;
   github: NavigationGithubLink | undefined;
 } = {
+  logo: undefined,
   showHome: true,
   homeLabel: "API reference",
   homeHref: "#",
@@ -531,9 +538,10 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
   if (!isRecord(value)) fail("navigation must be an object.");
   assertKnownKeys(
     value,
-    ["showHome", "homeLabel", "homeHref", "showSearch", "showThemeToggle", "github"],
+    ["logo", "showHome", "homeLabel", "homeHref", "showSearch", "showThemeToggle", "github"],
     "navigation",
   );
+  assertOptionalString(value.logo, "navigation.logo");
   assertOptionalBoolean(value.showHome, "navigation.showHome");
   assertOptionalString(value.homeLabel, "navigation.homeLabel");
   assertOptionalString(value.homeHref, "navigation.homeHref");
@@ -553,6 +561,7 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
     };
   }
   return {
+    logo: (value.logo as string | undefined) ?? DEFAULT_NAVIGATION.logo,
     showHome: (value.showHome as boolean | undefined) ?? DEFAULT_NAVIGATION.showHome,
     homeLabel: (value.homeLabel as string | undefined) ?? DEFAULT_NAVIGATION.homeLabel,
     homeHref: (value.homeHref as string | undefined) ?? DEFAULT_NAVIGATION.homeHref,

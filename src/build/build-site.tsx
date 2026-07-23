@@ -116,19 +116,23 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   // Local logo/favicon files are copied into the site and referenced by
   // their base name; URLs and absolute paths pass through untouched.
   const siteConfig = structuredClone(config);
-  for (const key of ["logo", "favicon"] as const) {
-    const value = config.site[key];
-    if (value && isLocalAssetPath(value)) {
-      const source = resolve(cwd, value);
-      if (!existsSync(source)) {
-        throw new Error(`Configured site.${key} not found: ${source}`);
-      }
-      const fileName = basename(source);
-      copyFileSync(source, resolve(outDir, fileName));
-      files.push(fileName);
-      siteConfig.site[key] = withBase(config.site.basePath, fileName);
+  const bundleLocalAsset = (value: string | undefined, label: string): string | undefined => {
+    if (!value || !isLocalAssetPath(value)) return undefined;
+    const source = resolve(cwd, value);
+    if (!existsSync(source)) {
+      throw new Error(`Configured ${label} not found: ${source}`);
     }
+    const fileName = basename(source);
+    copyFileSync(source, resolve(outDir, fileName));
+    files.push(fileName);
+    return withBase(config.site.basePath, fileName);
+  };
+  for (const key of ["logo", "favicon"] as const) {
+    const bundled = bundleLocalAsset(config.site[key], `site.${key}`);
+    if (bundled) siteConfig.site[key] = bundled;
   }
+  const bundledNavigationLogo = bundleLocalAsset(config.navigation.logo, "navigation.logo");
+  if (bundledNavigationLogo) siteConfig.navigation.logo = bundledNavigationLogo;
 
   const data = await prepareDocsData(document, siteConfig);
   // Pre-highlight the full OpenAPI contract for the "View OpenAPI contract"
