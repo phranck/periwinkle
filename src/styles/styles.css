@@ -844,7 +844,7 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-endpoint__request {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--pw-space-3);
   min-width: 0;
