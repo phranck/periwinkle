@@ -411,6 +411,9 @@ code {
 
 [data-theme="dark"] {
   --pw-icon-tone: 100%;
+  /* Dark palettes need a slightly stronger mix to lift the chrome
+     off the surrounding surface. */
+  --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 8%, var(--pw-surface));
 }
 
 .pw-nav__search-icon,
@@ -1768,7 +1771,10 @@ details[data-pw-expanded="false"] .pw-chevron {
   --pw-content-link-radius: 0.25rem;
   --pw-shadow-color: rgba(0, 0, 0, 0.28);
   --pw-sky-top: #0d1b28;
-  --pw-docs-card-chrome: var(--pw-surface-alt);
+  /* Card header chrome is derived from the current text color so the
+     header always reads as noticeably darker in light mode and lifted in
+     dark mode, without hardcoding either palette. */
+  --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 6%, var(--pw-surface));
   --pw-docs-search-dialog-max-width: 48rem;
   --pw-docs-search-dialog-min-height: 20rem;
   --pw-docs-search-dialog-top: calc(var(--pw-space-8) + var(--pw-space-6));
