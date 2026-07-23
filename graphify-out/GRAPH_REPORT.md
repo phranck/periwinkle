@@ -1,16 +1,16 @@
 # Graph Report - periwinkle  (2026-07-23)
 
 ## Corpus Check
-- 40 files · ~22,986 words
+- 44 files · ~25,620 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 472 nodes · 825 edges · 23 communities
+- 508 nodes · 899 edges · 24 communities
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3a15eb12`
+- Built from commit: `321fda73`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,43 +36,44 @@
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
 - [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 23|Community 23]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `buildApiReference()` - 18 edges
 2. `resolveConfig()` - 15 edges
 3. `isRecord()` - 14 edges
 4. `compilerOptions` - 14 edges
-5. `setupPeriwinkle()` - 11 edges
-6. `DocsData` - 10 edges
-7. `ResolvedConfig` - 8 edges
-8. `fail()` - 8 edges
-9. `stringValue()` - 8 edges
-10. `prepareDocsData()` - 8 edges
+5. `setupPeriwinkle()` - 12 edges
+6. `cx()` - 10 edges
+7. `DocsData` - 10 edges
+8. `prepareDocsData()` - 9 edges
+9. `ResolvedConfig` - 8 edges
+10. `fail()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `printVersion()` --calls--> `require`  [INFERRED]
   src/cli.ts → scripts/verify-exports.mjs
+- `prepareDocsData()` --calls--> `buildApiReference()`  [EXTRACTED]
+  src/render/prepare.ts → src/model/api-reference.ts
 - `runBuild()` --calls--> `loadConfig()`  [EXTRACTED]
   src/cli.ts → src/config/load-config.ts
 - `runPreview()` --calls--> `startPreviewServer()`  [EXTRACTED]
   src/cli.ts → src/preview/serve.ts
-- `setupPeriwinkle()` --calls--> `bindSearchDialog()`  [EXTRACTED]
-  src/client/client.ts → src/client/search.ts
-- `sectionsAt()` --calls--> `customSectionsAt()`  [EXTRACTED]
-  src/components/ApiDocs.tsx → src/render/prepare.ts
+- `setupPeriwinkle()` --calls--> `bindOpenApiContractDialog()`  [EXTRACTED]
+  src/client/client.ts → src/client/openapi-contract-dialog.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (23 total, 0 thin omitted)
+## Communities (24 total, 0 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (57): GuideConfig, ResolvedConfig, LoadedConfig, ApiMediaType, ApiOperation, ApiOperationGroup, ApiParameter, ApiReference (+49 more)
+Cohesion: 0.13
+Nodes (31): ApiOperationGroup, ApiParameter, ApiRequestBody, ApiResponse, ApiSchemaField, ApiSchemaVariant, assertKnownSchemaRefs(), buildApiReference() (+23 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (42): ApiDocs(), sectionsAt(), EndpointBlock(), ArrowCircleDownIcon, ArrowCircleUpIcon, Book1Icon, BookIcon, BoundIcon (+34 more)
+Cohesion: 0.05
+Nodes (75): ApiDocs(), sectionsAt(), ContentCard, ContentPanel, EndpointBlock(), ArrowCircleDownIcon, ArrowCircleUpIcon, Book1Icon (+67 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.04
@@ -87,24 +88,24 @@ Cohesion: 0.07
 Nodes (39): content, description, content, description, content, description, description, schema (+31 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (26): assertKnownKeys(), assertOptionalString(), CUSTOM_SECTION_POSITIONS, CustomSectionPosition, DEFAULT_DARK_COLORS, DEFAULT_FONTS, DEFAULT_LIGHT_COLORS, defineConfig() (+18 more)
+Cohesion: 0.08
+Nodes (39): assertKnownKeys(), assertOptionalString(), CUSTOM_SECTION_POSITIONS, CustomSectionPosition, DEFAULT_DARK_COLORS, DEFAULT_FONTS, DEFAULT_LIGHT_COLORS, defineConfig() (+31 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.14
 Nodes (16): addTextMatches(), buildDocumentSearchIndex(), clearDocumentSearchHighlight(), DocumentSearchEntry, DocumentSearchResult, DocumentSearchResultGroup, escapeRegularExpression(), excludedHighlightParent() (+8 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.10
-Nodes (19): source, assist, actions, formatter, enabled, indentStyle, indentWidth, lineWidth (+11 more)
+Cohesion: 0.09
+Nodes (21): source, assist, actions, files, includes, formatter, enabled, indentStyle (+13 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.11
 Nodes (18): description, in, name, type, description, scheme, type, components (+10 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.15
-Nodes (13): CONTENT_TYPES, startPreviewServer(), missing, packageRoot, pkg, require, REQUIRED_EXPORTS, main() (+5 more)
+Cohesion: 0.30
+Nodes (11): BaseProps, ContentCardBody(), ContentCardBodyCopy(), ContentCardBodyIntro(), ContentCardBodyStack(), ContentCardFooter(), ContentCardHeader(), ContentCardHeaderAddon() (+3 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.12
@@ -150,24 +151,28 @@ Nodes (8): type, properties, required, type, type, code, message, ErrorResponse
 Cohesion: 0.50
 Nodes (4): type, tags, items, type
 
+### Community 23 - "Community 23"
+Cohesion: 0.36
+Nodes (8): BaseProps, ContentPanelContent(), ContentPanelFooter(), ContentPanelHeader(), ContentPanelHeaderTitle(), ContentPanelRoot(), cx(), PanelProps
+
 ## Knowledge Gaps
-- **163 isolated node(s):** `$schema`, `enabled`, `clientKind`, `useIgnoreFile`, `enabled` (+158 more)
+- **168 isolated node(s):** `$schema`, `enabled`, `clientKind`, `useIgnoreFile`, `includes` (+163 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `components` connect `Community 8` to `Community 18`?**
-  _High betweenness centrality (0.213) - this node is a cross-community bridge._
+  _High betweenness centrality (0.202) - this node is a cross-community bridge._
 - **Why does `schemas` connect `Community 18` to `Community 8`, `Community 12`, `Community 13`, `Community 14`, `Community 19`?**
-  _High betweenness centrality (0.187) - this node is a cross-community bridge._
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
 - **What connects `$schema`, `enabled`, `clientKind` to the rest of the system?**
-  _163 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _168 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07502131287297528 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.13445378151260504 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07130333138515488 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.050637730820483534 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.08170731707317073 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07822410147991543 - nodes in this community are weakly interconnected._

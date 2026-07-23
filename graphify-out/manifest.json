@@ -1,7 +1,7 @@
 {
   "biome.json": {
-    "mtime": 1784726276.7963247,
-    "ast_hash": "35940c23fabf0103def165187ab9b7b2",
+    "mtime": 1784795055.704372,
+    "ast_hash": "3be8e0779f4324b8e5e66d680eca78f9",
     "semantic_hash": ""
   },
   "demo/periwinkle.config.mjs": {
@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "src/client/client.ts": {
-    "mtime": 1784794247.75648,
-    "ast_hash": "b25a7000021aaebfe76e5f5a9e8895a4",
+    "mtime": 1784795538.8841066,
+    "ast_hash": "7d9cf9ebc373088052f4a1b2bba1662f",
     "semantic_hash": ""
   },
   "src/client/entry.ts": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/components/ApiDocs.tsx": {
-    "mtime": 1784741648.8477967,
-    "ast_hash": "ffac7d94db23bfad5ffcd1a19357fc73",
+    "mtime": 1784795870.4368832,
+    "ast_hash": "8c8b1e0641996fdaebf8399862d98c90",
     "semantic_hash": ""
   },
   "src/components/EndpointBlock.tsx": {
@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/components/SidebarNav.tsx": {
-    "mtime": 1784793767.123182,
-    "ast_hash": "a420159c8a7258398d4e79843ac210c4",
+    "mtime": 1784795470.8805244,
+    "ast_hash": "ea9957f3a95141c9877c6e0d0cabf7aa",
     "semantic_hash": ""
   },
   "src/components/icons.tsx": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/components/primitives.tsx": {
-    "mtime": 1784793343.1302252,
-    "ast_hash": "4dd1419d77e11aef096c2da6656f18a2",
+    "mtime": 1784795778.2814558,
+    "ast_hash": "5c0ffb674f12d67872188baf98e443ed",
     "semantic_hash": ""
   },
   "src/config/config.ts": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/index.ts": {
-    "mtime": 1784747578.814933,
-    "ast_hash": "a4c204f954bafefa959405ae9becaa55",
+    "mtime": 1784795936.8522928,
+    "ast_hash": "51d0c8b7ed55afecda609f26ee413271",
     "semantic_hash": ""
   },
   "src/model/api-reference.ts": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/render/curl.ts": {
-    "mtime": 1784726314.8183625,
-    "ast_hash": "323f395ca36c1e9f4d33526c07910368",
+    "mtime": 1784795806.4208448,
+    "ast_hash": "55dc1f9d52deba67fa625fc8b6432216",
     "semantic_hash": ""
   },
   "src/render/guide.ts": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/render/prepare.ts": {
-    "mtime": 1784759217.9180515,
-    "ast_hash": "5cbe7cac1337222cc14cb239f7f8d844",
+    "mtime": 1784795819.6767268,
+    "ast_hash": "199028b2d5f89bf77c614b53b302f9fa",
     "semantic_hash": ""
   },
   "tests/api-reference.test.ts": {
@@ -145,13 +145,13 @@
     "semantic_hash": ""
   },
   "tests/client.test.ts": {
-    "mtime": 1784794384.866935,
-    "ast_hash": "636920d8e823e92c10068c1f70172702",
+    "mtime": 1784796148.2765172,
+    "ast_hash": "d1198d1d4a2f1702f701b4200a80ee20",
     "semantic_hash": ""
   },
   "tests/components.test.tsx": {
-    "mtime": 1784759751.362123,
-    "ast_hash": "b79870883705b73ff1ba12826bd4dcb0",
+    "mtime": 1784796148.268238,
+    "ast_hash": "2e607dd1082a802e74b6b0e8d58c0aa9",
     "semantic_hash": ""
   },
   "tests/config.test.ts": {
@@ -207,6 +207,26 @@
   "docs/DESIGN.md": {
     "mtime": 1784724203.8031754,
     "ast_hash": "efc4ea5390c30b06bbf3aa9778a30024",
+    "semantic_hash": ""
+  },
+  "src/client/openapi-contract-dialog.ts": {
+    "mtime": 1784795902.914854,
+    "ast_hash": "261bc377f14777bacccd8d670e379caa",
+    "semantic_hash": ""
+  },
+  "src/components/ContentCard.tsx": {
+    "mtime": 1784795490.4499798,
+    "ast_hash": "3b1c69afd809c3b9bd601a4331970ba1",
+    "semantic_hash": ""
+  },
+  "src/components/ContentPanel.tsx": {
+    "mtime": 1784795501.4183538,
+    "ast_hash": "9a2872f82a199bf0e23c5362ec04a61a",
+    "semantic_hash": ""
+  },
+  "src/components/OpenApiContractDialog.tsx": {
+    "mtime": 1784795870.435987,
+    "ast_hash": "fd4773ebd07101640cdb1b79cad8c5e1",
     "semantic_hash": ""
   }
 }
