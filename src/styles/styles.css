@@ -1244,6 +1244,10 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: 1lh;
   color: var(--pw-accent);
   flex: none;
+  /* Same cap-mid alignment logic as the H2 chapter icon: the flex-row
+     centering lands above the cap-mid, so lower the icon back onto it
+     (verified in Chrome against the H4 text's range rect). */
+  transform: translateY(0.15em);
 }
 
 .pw-endpoint__section-icon svg,
