@@ -16,9 +16,10 @@ Static API documentation generator for OpenAPI 3.x — turn a spec plus a small 
 **Live demo:** [phranck.github.io/periwinkle](https://phranck.github.io/periwinkle/) — built from a fictional bookstore contract on every push.
 
 - Static output: `index.html`, one stylesheet, one small vanilla-JS bundle. No runtime framework, deployable to any host.
+- Sticky top navigation with a frosted-glass backdrop: optional brand logo, home link, search, GitHub link, and theme toggle — every affordance toggleable via config.
 - Sidebar navigation with endpoint groups, integration guide, endpoint blocks with generated curl examples, schema cards with field tables and raw JSON view.
 - Light/dark theming via CSS custom properties, fully configurable (colors, fonts, logo, radius).
-- Search filter, persisted collapsible sections, and theme toggle — all progressive enhancement over working plain HTML.
+- Document search dialog (`⌘K`) and persisted collapsible sections — all progressive enhancement over working plain HTML.
 - Embeddable React components for host apps (e.g. Astro via `@astrojs/react`).
 
 ## Quickstart
@@ -87,10 +88,13 @@ export default defineConfig({
 | `site.serverUrl` | Base URL in curl examples | first spec `servers` entry |
 | `site.title` | Page title override | spec `info.title` |
 | `site.logo` / `site.favicon` | Local file (bundled) or URL | — |
-| `navigation.logo` | Brand logo on the left of the top bar, links to `navigation.homeHref` (local file or URL) | — |
 | `theme.colors.light` / `.dark` | Partial palette overrides | periwinkle palette |
 | `theme.fonts` | Font stacks + external font stylesheets | system fonts |
 | `theme.radius` | Corner radius token (cards full, compact controls half) | `1rem` |
+| `navigation.*` | Top bar: `logo` (local file or URL, links to `homeHref`), `showHome`, `homeLabel`, `homeHref`, `showSearch`, `showThemeToggle`, `github` | home + search + theme toggle, no logo/GitHub |
+| `sidebar.*` | `title`, `showMethods`, `showThemeToggle`, `showSearch` | `"Reference"`, all toggles `false` |
+| `features.*` | `openApiContract`, `accessBadge`, `deprecatedBadge`, `copyButton` | all `true` |
+| `sizing.*` / `motion.*` | Typography and layout dimensions / animation timing (CSS length and duration strings) | reference values |
 | `guide.*` | Markdown per section (`intro`, `auth`, `requests`, `errors`, `rateLimits`, `versioning`), `false` disables | derived from the spec |
 | `customSections` | Free Markdown sections with `position` (`before-guide`, `after-guide`, `after-reference`) | `[]` |
 | `footer` | Links and text | — |
@@ -128,7 +132,7 @@ const data = await prepareDocsData(openApiDocument, resolveConfig({ site: { base
 <ApiDocs data={data} />
 ```
 
-Add `periwinkle/client.js` as a deferred script for search, collapsing, and the theme toggle, and emit `compileThemeCss(config.theme)` into a `<style>` tag. All interactivity binds via `data-pw-*` attributes; the markup works without JavaScript.
+Add `periwinkle/client.js` as a deferred script for search, collapsing, and the theme toggle, and emit `compileThemeCss(config)` (it takes the full resolved config, since sizing and motion tokens compile alongside the palette) into a `<style>` tag placed after the stylesheet link. All interactivity binds via `data-pw-*` attributes; the markup works without JavaScript.
 
 ## CLI
 
