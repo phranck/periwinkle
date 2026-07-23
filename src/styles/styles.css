@@ -178,21 +178,31 @@ code {
   gap: var(--pw-space-8);
 }
 
-/* Free-standing intro copy uses the reference `.card-content-inset` treatment
-   so its text aligns with the copy inside surrounding cards. Bottom margin
-   mirrors the reference `mb-8` gap between intro and layout. */
-.card-content-inset {
+/* ---------- Card content inset (centralized) ----------
+   The reference indents free-standing headlines and copy by the same
+   `--pw-card-content-inset` so their left edge aligns with the text
+   inside surrounding cards. Every element that participates in that
+   alignment is listed here once, instead of repeating the padding on
+   each block. */
+.card-content-inset,
+.pw-intro,
+.pw-chapter__header,
+.pw-chapter__lead,
+.pw-entry__title,
+.content-card__body-intro,
+.content-card__copy {
   padding-inline: var(--pw-card-content-inset);
 }
 
+/* Free-standing intro copy uses the reference `.card-content-inset` treatment
+   so its text aligns with the copy inside surrounding cards. Bottom margin
+   mirrors the reference `mb-8` gap between intro and layout. */
 .mb-8 {
   margin-bottom: var(--pw-space-8);
 }
 
 .pw-intro {
   /* Free-standing intro copy uses the reference `--mc-card-content-inset`
-     treatment so its text aligns with the copy inside surrounding cards. */
-  padding-inline: var(--pw-card-content-inset);
 }
 
 .pw-intro__title {
@@ -837,7 +847,6 @@ details[data-pw-expanded="false"] .pw-chevron {
   /* Reference `.api-content__chapter-header` (docs.css § api-content) indents
      free-standing chapter headers by --mc-card-content-inset so their text
      lines up with the copy inside the section's cards. */
-  padding-inline: var(--pw-card-content-inset);
   font-size: var(--pw-text-section);
   font-weight: 500;
   letter-spacing: 0;
@@ -868,7 +877,6 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-chapter__lead {
   margin: 0 0 var(--pw-space-4);
-  padding-inline: var(--pw-card-content-inset);
   color: var(--pw-text-muted);
 }
 
@@ -881,7 +889,6 @@ details[data-pw-expanded="false"] .pw-chevron {
 .pw-entry__title {
   /* Reference `.api-content__entry-title` (docs.css § api-content) indents
      entry headings by the same card-content inset as the chapter headers. */
-  padding-inline: var(--pw-card-content-inset);
   font-size: var(--pw-text-subsection);
   font-weight: 500;
   margin-bottom: var(--pw-space-4);
@@ -970,12 +977,10 @@ details[data-pw-expanded="false"] .pw-chevron {
 .content-card__body-intro {
   gap: var(--pw-space-2);
   margin-bottom: var(--pw-space-6);
-  padding-inline: var(--pw-card-content-inset);
 }
 
 .content-card__copy {
   gap: var(--pw-space-6);
-  padding-inline: var(--pw-card-content-inset);
 }
 
 .content-card__body-stack {
@@ -1083,7 +1088,6 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-endpoint {
   background: var(--pw-surface);
-  border: 1px solid var(--pw-border);
   border-radius: var(--pw-radius);
   overflow: hidden;
 }
@@ -1103,7 +1107,6 @@ details[data-pw-expanded="false"] .pw-chevron {
   padding: var(--pw-space-card-header);
   padding-inline-start: calc(var(--pw-space-card-header) * 1.7);
   background: color-mix(in srgb, var(--pw-request-method-color) 12%, var(--pw-surface));
-  border-bottom: 1px solid var(--pw-border);
 }
 
 .pw-endpoint__header--get {
@@ -1256,60 +1259,95 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: var(--pw-docs-section-icon-size);
 }
 
-/* Parameters */
-
-.pw-params {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--pw-space-2);
-}
-
-.pw-param {
-  background: var(--pw-background);
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  padding: var(--pw-space-card-row);
-  display: grid;
-  gap: var(--pw-space-1);
-}
-
-.pw-param__header {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--pw-space-2);
-}
-
-.pw-param__name {
-  font-size: var(--pw-text-code);
-  font-weight: 650;
-}
-
-.pw-param__location,
+/* Media-type chip is still used by request/response media rows. */
 .pw-media__type {
   font-size: var(--pw-text-code);
   color: var(--pw-text-faint);
-  border: 1px solid var(--pw-border);
   border-radius: calc(var(--pw-radius) / 2);
   padding: max(0px, calc(var(--pw-docs-space-xs) - 1px)) var(--pw-docs-space-sm)
     var(--pw-docs-space-xs);
   font-family: var(--pw-font-mono);
+  background: var(--pw-surface-alt);
 }
 
-.pw-param__type {
-  font-size: var(--pw-text-code);
-  color: var(--pw-accent);
+/* ---------- Parameter card (adopted from the reference) ----------
+   Structure ported 1:1 from `apps/developer/src/components/docs/ParameterCard.tsx`
+   + `.parameter-card*` and `.content-panel*` rules in docs.css. Values
+   mapped onto periwinkle tokens (surface, surface-alt, accent, spacing). */
+
+:root {
+  --pw-docs-parameter-name-width: 10rem;
+  --pw-docs-parameter-chip-padding-block-start: max(0px, calc(var(--pw-docs-space-xs) - 1px));
+  --pw-docs-parameter-chip-padding-block-end: var(--pw-docs-space-xs);
+  --pw-docs-code-bg: var(--pw-surface-alt);
+  --pw-docs-code-fg: var(--pw-text);
 }
 
-.pw-param__required {
+.content-panel-list {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pw-space-3);
+  margin: 0;
+  padding: 0;
+}
+
+.parameter-card {
+  display: grid;
+  grid-template-columns:
+    minmax(var(--pw-docs-parameter-name-width), 0.75fr)
+    minmax(0, 1.25fr);
+}
+
+.parameter-card__header {
+  display: grid;
+  grid-template-columns: max-content max-content minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: var(--pw-space-2);
+  padding: var(--pw-space-card-row);
+  background: var(--pw-docs-code-bg);
+  margin: 0;
+}
+
+.parameter-card__name {
+  color: var(--pw-docs-code-fg);
+  font-family: var(--pw-font-mono);
   font-size: var(--pw-text-code);
+}
+
+.parameter-card__location,
+.parameter-card__requirement {
+  align-self: start;
+  border-radius: calc(var(--pw-radius) / 2);
+  padding: var(--pw-docs-parameter-chip-padding-block-start) var(--pw-docs-space-sm)
+    var(--pw-docs-parameter-chip-padding-block-end);
+  font-size: var(--pw-text-code);
+  transform: translateY(
+    calc(
+      (
+        var(--pw-docs-parameter-chip-padding-block-start) +
+        var(--pw-docs-parameter-chip-padding-block-end)
+      ) *
+      -0.5
+    )
+  );
+}
+
+.parameter-card__location {
+  box-shadow: inset 0 0 0 1px var(--pw-border);
+  color: var(--pw-text-muted);
+  background: var(--pw-surface);
+}
+
+.parameter-card__requirement {
+  grid-column: 4;
   color: var(--pw-accent);
   background: color-mix(in srgb, var(--pw-accent) 12%, transparent);
-  border-radius: calc(var(--pw-radius) / 2);
-  padding: max(0px, calc(var(--pw-docs-space-xs) - 1px)) var(--pw-docs-space-sm)
-    var(--pw-docs-space-xs);
+}
+
+.parameter-card__body {
+  padding: var(--pw-space-card-row);
+  margin: 0;
 }
 
 .pw-param__description {
@@ -1415,7 +1453,6 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-schema-card {
   background: var(--pw-surface);
-  border: 1px solid var(--pw-border);
   border-radius: var(--pw-radius);
   overflow: hidden;
 }
@@ -1507,7 +1544,6 @@ details[data-pw-expanded="false"] .pw-chevron {
    recipe as the sidebar section content, so long field tables don't
    invalidate the surrounding page layout during the animation. */
 .pw-schema-card__body {
-  border-top: 1px solid var(--pw-border);
   padding: var(--pw-space-card);
   display: grid;
   gap: var(--pw-space-4);
