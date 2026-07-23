@@ -1,3 +1,14 @@
+<div align="center">
+
+[![CI](https://github.com/phranck/periwinkle/actions/workflows/ci.yml/badge.svg)](https://github.com/phranck/periwinkle/actions/workflows/ci.yml)
+[![Deploy demo to GitHub Pages](https://github.com/phranck/periwinkle/actions/workflows/pages.yml/badge.svg)](https://phranck.github.io/periwinkle/)
+[![License](https://img.shields.io/github/license/phranck/periwinkle)](https://layered.mit-license.org)
+[![Last commit](https://img.shields.io/github/last-commit/phranck/periwinkle)](https://github.com/phranck/periwinkle/commits/main)
+
+![periwinkle banner](resources/Logo_Banner/banner.png)
+
+</div>
+
 # periwinkle
 
 Static API documentation generator for OpenAPI 3.x — turn a spec plus a small config into a polished, themable, self-contained docs site. Named after the violet-blooming periwinkle flower (Vinca).
