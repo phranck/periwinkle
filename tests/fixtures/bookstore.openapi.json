@@ -3,7 +3,7 @@
   "info": {
     "title": "Bookstore API",
     "version": "1.2.3",
-    "description": "A neutral example API used as periwinkle test fixture."
+    "description": "**This API documentation is a live demo of the [periwinkle](https://github.com/phranck/periwinkle) project**, a static documentation generator for OpenAPI 3.x contracts. The Bookstore API described below is a neutral example contract invented for this demo — none of its endpoints actually exist."
   },
   "tags": [
     { "name": "Books", "description": "Browse and manage books." },
