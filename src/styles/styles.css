@@ -692,6 +692,36 @@ details[data-pw-expanded="false"] .pw-chevron {
   transform: rotate(0deg);
 }
 
+/* Chapter-header toggle-all: not a details element, so the rotation
+   binds to the button's own data-pw-all-expanded state. */
+.api-content__chapter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pw-text-muted);
+  cursor: pointer;
+  flex: none;
+}
+
+.api-content__chapter-toggle:hover {
+  color: var(--pw-accent);
+}
+
+.api-content__chapter-toggle[data-pw-all-expanded="true"].pw-chevron {
+  transform: rotate(180deg);
+}
+
+.api-content__chapter-header-addon {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
 /* ---------- Sidebar operation items ---------- */
 
 /* Accepted periwinkle deviation from the reference: each operation link is a

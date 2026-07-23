@@ -181,20 +181,23 @@ export function Chapter({
   id,
   title,
   icon,
+  addon,
   children,
 }: {
   id: string;
   title: string;
   icon: ReactNode;
+  addon?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="pw-chapter" aria-labelledby={id}>
-      <h2 className="pw-chapter__header" id={id}>
-        <span className="pw-chapter__icon" aria-hidden="true">
+      <h2 className="pw-chapter__header api-content__chapter-header" id={id}>
+        <span className="pw-chapter__icon api-content__chapter-header-icon" aria-hidden="true">
           {icon}
         </span>
-        <span className="pw-chapter__title">{title}</span>
+        <span className="pw-chapter__title api-content__chapter-header-title">{title}</span>
+        {addon ? <span className="api-content__chapter-header-addon">{addon}</span> : null}
       </h2>
       <div className="pw-chapter__body">{children}</div>
     </section>

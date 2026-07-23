@@ -17,7 +17,7 @@ import { customSectionsAt, type DocsData } from "../render/prepare.js";
 import { ContentCard } from "./ContentCard.jsx";
 import { ContentPanel } from "./ContentPanel.jsx";
 import { EndpointBlock } from "./EndpointBlock.jsx";
-import { Book1Icon, BookIcon, CategoryIcon, CodeIcon } from "./icons.jsx";
+import { ArrowCircleDownIcon, Book1Icon, BookIcon, CategoryIcon, CodeIcon } from "./icons.jsx";
 import { OpenApiContractDialog, OpenApiContractDialogTrigger } from "./OpenApiContractDialog.jsx";
 import { Chapter, CodeBlock, Markdown } from "./primitives.jsx";
 import { SchemaCard } from "./SchemaCard.jsx";
@@ -248,7 +248,22 @@ export function ApiDocs({
             ))}
 
             {schemas.length > 0 ? (
-              <Chapter id="schemas-heading" title="Schemas" icon={<CodeIcon />}>
+              <Chapter
+                id="schemas-heading"
+                title="Schemas"
+                icon={<CodeIcon />}
+                addon={
+                  <button
+                    type="button"
+                    className="api-content__chapter-toggle pw-chevron"
+                    aria-label="Expand all schema cards"
+                    title="Expand all schema cards"
+                    data-pw-schema-cards-toggle
+                  >
+                    <ArrowCircleDownIcon aria-hidden="true" />
+                  </button>
+                }
+              >
                 {schemas.map((schema) => (
                   <SchemaCard schema={schema} data={data} key={schema.anchor} />
                 ))}
