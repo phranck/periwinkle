@@ -7,6 +7,8 @@
  * ```
  * div.public-header
  *   header.public-header__inner.developer-shell
+ *     a.public-header__brand (optional logo, links to homeHref)
+ *       <img class=public-header__brand-logo />
  *     div.public-header__actions
  *       nav.public-header__desktop
  *         a.public-navigation__link (home)
@@ -61,15 +63,27 @@ function GithubMark({ className }: { className?: string }) {
  * @param props.navigation The resolved navigation config.
  */
 export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"] }) {
+  const hasLogo = Boolean(navigation.logo);
   const hasHome = navigation.showHome;
   const hasSearch = navigation.showSearch;
   const hasGithub = Boolean(navigation.github);
   const hasThemeToggle = navigation.showThemeToggle;
-  if (!hasHome && !hasSearch && !hasGithub && !hasThemeToggle) return null;
+  if (!hasLogo && !hasHome && !hasSearch && !hasGithub && !hasThemeToggle) return null;
 
   return (
     <div className="public-header" data-pw-top-nav>
       <header className="public-header__inner developer-shell">
+        {hasLogo ? (
+          // Brand mark on the left, mirroring the reference `Wordmark` slot:
+          // first child of the inner row, linking home.
+          <a
+            className="public-header__brand"
+            href={navigation.homeHref}
+            aria-label={navigation.homeLabel}
+          >
+            <img className="public-header__brand-logo" src={navigation.logo} alt="" />
+          </a>
+        ) : null}
         <div className="public-header__actions">
           <nav
             className="public-header__desktop"

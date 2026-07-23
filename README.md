@@ -87,6 +87,7 @@ export default defineConfig({
 | `site.serverUrl` | Base URL in curl examples | first spec `servers` entry |
 | `site.title` | Page title override | spec `info.title` |
 | `site.logo` / `site.favicon` | Local file (bundled) or URL | — |
+| `navigation.logo` | Brand logo on the left of the top bar, links to `navigation.homeHref` (local file or URL) | — |
 | `theme.colors.light` / `.dark` | Partial palette overrides | periwinkle palette |
 | `theme.fonts` | Font stacks + external font stylesheets | system fonts |
 | `theme.radius` | Corner radius token (cards full, compact controls half) | `1rem` |
