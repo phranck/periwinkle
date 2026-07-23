@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!graphify-out", "!dist", "!node_modules"]
+    "includes": ["**", "!graphify-out", "!dist", "!node_modules", "!resources"]
   },
   "formatter": {
     "enabled": true,
