@@ -463,6 +463,21 @@ code {
   color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
+/* Sidebar affordances (chevrons + theme toggle) deserve a touch more
+   contrast in light mode than plain content icons; dark mode already
+   sits at 100% so the override there is a no-op. */
+.pw-chevron,
+.api-reference-nav__toggle-all,
+.pw-nav__theme-icon {
+  --pw-icon-tone: 88%;
+}
+
+[data-theme="dark"] .pw-chevron,
+[data-theme="dark"] .api-reference-nav__toggle-all,
+[data-theme="dark"] .pw-nav__theme-icon {
+  --pw-icon-tone: 100%;
+}
+
 .pw-nav__theme-icon--dark {
   display: none;
 }
@@ -1372,6 +1387,9 @@ details[data-pw-expanded="false"] .pw-chevron {
   width: var(--pw-size-icon-lg);
   height: var(--pw-size-icon-lg);
   color: var(--pw-response-color);
+  /* Nudge the status icon 1px lower so it sits on the numeric code's
+     cap-mid instead of a touch above it. */
+  transform: translateY(1px);
 }
 
 .pw-response__code {
