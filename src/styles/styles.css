@@ -731,7 +731,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: 1lh;
   color: var(--pw-accent);
   flex: none;
-  transform: translateY(-0.07em);
+  transform: translateY(0.034em);
 }
 
 .pw-chapter__icon svg,
@@ -870,9 +870,11 @@ details[data-pw-expanded="false"] .pw-chevron {
 }
 
 .pw-endpoint__deprecated {
-  font-size: var(--pw-text-code);
+  font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--pw-status-error);
   border: 1px solid var(--pw-status-error);
   border-radius: 999px;
@@ -1537,7 +1539,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   );
   --pw-docs-search-highlight-color: #f97316;
   --pw-docs-search-highlight-padding-inline: var(--pw-space-2);
-  --pw-docs-search-highlight-padding-block: var(--pw-docs-space-xs);
+  --pw-docs-search-highlight-padding-block: 0;
   --pw-docs-search-highlight-notice-offset: var(--pw-space-5);
 }
 
