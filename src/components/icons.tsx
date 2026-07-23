@@ -24,12 +24,14 @@ import {
   Code,
   Copy,
   CopySuccess,
+  Data,
   Diagram,
   type Icon,
   type IconProps,
   Key,
   Moon,
   SearchNormal1,
+  SearchStatus,
   Send2,
   Sun1,
   TickCircle,
@@ -83,10 +85,12 @@ export const CloseCircleIcon = bulk(CloseCircle);
 export const CodeIcon = bulk(Code);
 export const CopyIcon = bulk(Copy);
 export const CopySuccessIcon = bulk(CopySuccess);
+export const DataIcon = bulk(Data);
 export const DiagramIcon = bulk(Diagram);
 export const KeyIcon = bulk(Key);
 export const MoonIcon = bulk(Moon);
 export const SearchNormal1Icon = bulk(SearchNormal1);
+export const SearchStatusIcon = bulk(SearchStatus);
 export const Send2Icon = bulk(Send2);
 export const Sun1Icon = bulk(Sun1);
 export const TickCircleIcon = bulk(TickCircle);

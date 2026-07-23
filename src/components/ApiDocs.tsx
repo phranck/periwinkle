@@ -216,95 +216,104 @@ export function ApiDocs({
   const hasGuide = data.guideSections.length > 0;
 
   return (
-    <div className="pw-shell">
+    // The top nav must sit OUTSIDE the max-width shell: `.public-header` is a
+    // full-viewport-width sticky bar (its `.developer-shell` inner recenters
+    // the content), exactly like the reference page structure.
+    <div className="pw-app">
       <TopNav navigation={config.navigation} />
-      <div className="api-reference-shell">
-        <div className="card-content-inset mb-8 pw-intro" data-api-reference-intro="">
-          <h1 className="pw-intro__title">{data.title}</h1>
-          <p className="pw-intro__lead">
-            Generated from the OpenAPI contract for version {reference.version}.
-          </p>
-          {reference.description ? (
-            <Markdown className="pw-intro__description" content={reference.description} />
-          ) : null}
-        </div>
-
-        <div className="api-reference-layout pw-layout">
-          <SidebarNav data={data} />
-          <main className="pw-content" data-api-search-root="">
-            {sectionsAt(data, "before-guide").map((section) => (
-              <CustomSectionChapter section={section} key={section.id} />
-            ))}
-
-            {hasGuide ? <GuideChapter data={data} contractSourceJson={contractSourceJson} /> : null}
-
-            {sectionsAt(data, "after-guide").map((section) => (
-              <CustomSectionChapter section={section} key={section.id} />
-            ))}
-
-            {reference.groups.map((group) => (
-              <Chapter
-                id={`group-${group.name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}`}
-                title={group.name}
-                icon={<CategoryIcon />}
-                key={group.name}
-              >
-                {group.description ? <p className="pw-chapter__lead">{group.description}</p> : null}
-                {group.operations.map((operation) => (
-                  <EndpointBlock
-                    operation={operation}
-                    data={data}
-                    searchGroup={group.name}
-                    key={operation.anchor}
-                  />
-                ))}
-              </Chapter>
-            ))}
-
-            {schemas.length > 0 ? (
-              <Chapter
-                id="schemas-heading"
-                title="Schemas"
-                icon={<CodeIcon />}
-                addon={
-                  <button
-                    type="button"
-                    className="api-content__chapter-toggle pw-chevron"
-                    aria-label="Expand all schema cards"
-                    title="Expand all schema cards"
-                    data-pw-schema-cards-toggle
-                  >
-                    <ArrowCircleDownIcon aria-hidden="true" />
-                  </button>
-                }
-              >
-                {schemas.map((schema) => (
-                  <SchemaCard schema={schema} data={data} key={schema.anchor} />
-                ))}
-              </Chapter>
+      <div className="pw-shell">
+        <div className="api-reference-shell">
+          <div className="card-content-inset mb-8 pw-intro" data-api-reference-intro="">
+            <h1 className="pw-intro__title">{data.title}</h1>
+            <p className="pw-intro__lead">
+              Generated from the OpenAPI contract for version {reference.version}.
+            </p>
+            {reference.description ? (
+              <Markdown className="pw-intro__description" content={reference.description} />
             ) : null}
+          </div>
 
-            {sectionsAt(data, "after-reference").map((section) => (
-              <CustomSectionChapter section={section} key={section.id} />
-            ))}
+          <div className="api-reference-layout pw-layout">
+            <SidebarNav data={data} />
+            <main className="pw-content" data-api-search-root="">
+              {sectionsAt(data, "before-guide").map((section) => (
+                <CustomSectionChapter section={section} key={section.id} />
+              ))}
 
-            {config.footer.links.length > 0 || config.footer.text ? (
-              <footer className="pw-footer">
-                {config.footer.links.length > 0 ? (
-                  <ul className="pw-footer__links">
-                    {config.footer.links.map((link) => (
-                      <li key={link.href}>
-                        <a href={link.href}>{link.label}</a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {config.footer.text ? (
-                  <p className="pw-footer__text">{config.footer.text}</p>
-                ) : null}
-              </footer>
-            ) : null}
-          </main>
+              {hasGuide ? (
+                <GuideChapter data={data} contractSourceJson={contractSourceJson} />
+              ) : null}
+
+              {sectionsAt(data, "after-guide").map((section) => (
+                <CustomSectionChapter section={section} key={section.id} />
+              ))}
+
+              {reference.groups.map((group) => (
+                <Chapter
+                  id={`group-${group.name.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}`}
+                  title={group.name}
+                  icon={<CategoryIcon />}
+                  key={group.name}
+                >
+                  {group.description ? (
+                    <p className="pw-chapter__lead">{group.description}</p>
+                  ) : null}
+                  {group.operations.map((operation) => (
+                    <EndpointBlock
+                      operation={operation}
+                      data={data}
+                      searchGroup={group.name}
+                      key={operation.anchor}
+                    />
+                  ))}
+                </Chapter>
+              ))}
+
+              {schemas.length > 0 ? (
+                <Chapter
+                  id="schemas-heading"
+                  title="Schemas"
+                  icon={<CodeIcon />}
+                  addon={
+                    <button
+                      type="button"
+                      className="api-content__chapter-toggle pw-chevron"
+                      aria-label="Expand all schema cards"
+                      title="Expand all schema cards"
+                      data-pw-schema-cards-toggle
+                    >
+                      <ArrowCircleDownIcon aria-hidden="true" />
+                    </button>
+                  }
+                >
+                  {schemas.map((schema) => (
+                    <SchemaCard schema={schema} data={data} key={schema.anchor} />
+                  ))}
+                </Chapter>
+              ) : null}
+
+              {sectionsAt(data, "after-reference").map((section) => (
+                <CustomSectionChapter section={section} key={section.id} />
+              ))}
+
+              {config.footer.links.length > 0 || config.footer.text ? (
+                <footer className="pw-footer">
+                  {config.footer.links.length > 0 ? (
+                    <ul className="pw-footer__links">
+                      {config.footer.links.map((link) => (
+                        <li key={link.href}>
+                          <a href={link.href}>{link.label}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {config.footer.text ? (
+                    <p className="pw-footer__text">{config.footer.text}</p>
+                  ) : null}
+                </footer>
+              ) : null}
+            </main>
+          </div>
         </div>
       </div>
       <SearchDialog />

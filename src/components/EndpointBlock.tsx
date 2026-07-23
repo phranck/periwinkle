@@ -173,23 +173,30 @@ export function EndpointBlock({
                     </span>
                     <div className="pw-response__content">
                       {response.description ? (
-                        <InlineMarkdown content={response.description} />
+                        <div className="pw-response__summary">
+                          <InlineMarkdown content={response.description} />
+                        </div>
                       ) : null}
                       {response.mediaTypes.length > 0 ? (
                         <div className="pw-response__meta">
                           {response.mediaTypes.map((media) => (
-                            <span className="pw-media__header" key={media.mediaType}>
-                              <code className="pw-media__type">{media.mediaType}</code>
+                            <div className="pw-response__meta-row" key={media.mediaType}>
+                              <span className="pw-response__meta-item">
+                                <span className="pw-response__meta-label">Content-Type:</span>
+                                <code className="pw-response__media-type">{media.mediaType}</code>
+                              </span>
                               {mediaSchemaRefs(media).map((ref) => (
-                                <a
-                                  className="pw-schema-link"
-                                  href={`#${schemaAnchor(ref)}`}
-                                  key={ref}
-                                >
-                                  {ref}
-                                </a>
+                                <span className="pw-response__meta-item" key={ref}>
+                                  <span className="pw-response__meta-label">Response Object:</span>
+                                  <a
+                                    className="content-link pw-response__schema-link"
+                                    href={`#${schemaAnchor(ref)}`}
+                                  >
+                                    <code className="pw-response__schema-name">{ref}</code>
+                                  </a>
+                                </span>
                               ))}
-                            </span>
+                            </div>
                           ))}
                         </div>
                       ) : null}
