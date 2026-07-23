@@ -53,6 +53,7 @@ export function EndpointBlock({
   const anchor = operation.anchor;
   const requiresAuth = operation.security.length > 0;
   const curlBlock = data.codeBlocks[codeKey(anchor, "curl")];
+  const { features } = data.config;
 
   return (
     <Entry title={operation.navTitle}>
@@ -74,19 +75,21 @@ export function EndpointBlock({
           <span className="pw-endpoint__request">
             <span className="pw-endpoint__method">{operation.method}</span>
             <code className="pw-endpoint__path">{operation.path}</code>
-            {operation.deprecated ? (
+            {operation.deprecated && features.deprecatedBadge ? (
               <span className="pw-endpoint__deprecated">Deprecated</span>
             ) : null}
           </span>
-          <span className="pw-endpoint__access">
-            {requiresAuth ? (
-              <>
-                <KeyIcon aria-hidden="true" /> Authentication required
-              </>
-            ) : (
-              "Public endpoint"
-            )}
-          </span>
+          {features.accessBadge ? (
+            <span className="pw-endpoint__access">
+              {requiresAuth ? (
+                <>
+                  <KeyIcon aria-hidden="true" /> Authentication required
+                </>
+              ) : (
+                "Public endpoint"
+              )}
+            </span>
+          ) : null}
         </header>
         <div className="pw-endpoint__body">
           {operation.summary ? <p className="pw-endpoint__summary">{operation.summary}</p> : null}
@@ -143,7 +146,13 @@ export function EndpointBlock({
                         </a>
                       ))}
                     </span>
-                    {exampleBlock ? <CodeBlock block={exampleBlock} label="Example" /> : null}
+                    {exampleBlock ? (
+                      <CodeBlock
+                        block={exampleBlock}
+                        label="Example"
+                        showCopyButton={features.copyButton}
+                      />
+                    ) : null}
                   </div>
                 );
               })}
@@ -194,7 +203,7 @@ export function EndpointBlock({
           {curlBlock ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-example`}>
               <SectionHeader icon={<CodeIcon />} id={`${anchor}-example`} title="Example request" />
-              <CodeBlock block={curlBlock} />
+              <CodeBlock block={curlBlock} showCopyButton={features.copyButton} />
             </section>
           ) : null}
         </div>

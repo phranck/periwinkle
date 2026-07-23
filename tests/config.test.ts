@@ -63,7 +63,7 @@ describe("resolveConfig", () => {
 
 describe("compileThemeCss", () => {
   it("emits root and dark blocks with all tokens", () => {
-    const css = compileThemeCss(resolveConfig().theme);
+    const css = compileThemeCss(resolveConfig());
     expect(css).toContain(":root {");
     expect(css).toContain('[data-theme="dark"] {');
     expect(css).toContain(`--pw-background: ${DEFAULT_LIGHT_COLORS.background};`);

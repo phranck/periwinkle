@@ -137,6 +137,7 @@ function GuideChapter({
     code: "",
     language: "bash" as const,
   };
+  const openApiContract = data.config.features.openApiContract;
   return (
     <Chapter id="integration-guide" title="Integration guide" icon={<BookIcon />}>
       <ContentCard>
@@ -149,33 +150,44 @@ function GuideChapter({
               {data.guideSections.map((section) => (
                 <GuidePanel key={section.id} section={section} />
               ))}
-              <OpenApiContractPanel contractUrl={data.serverUrl} />
+              {openApiContract ? <OpenApiContractPanel contractUrl={data.serverUrl} /> : null}
             </div>
-            {curlBlock.html ? <CodeBlock block={curlBlock} label="Authenticated request" /> : null}
+            {curlBlock.html ? (
+              <CodeBlock
+                block={curlBlock}
+                label="Authenticated request"
+                showCopyButton={data.config.features.copyButton}
+              />
+            ) : null}
           </ContentCard.Body.Stack>
         </ContentCard.Body>
       </ContentCard>
-      <OpenApiContractDialog
-        id={CONTRACT_DIALOG_ID}
-        titleId={CONTRACT_DIALOG_TITLE_ID}
-        sourceElementId={CONTRACT_SOURCE_ELEMENT_ID}
-        title={`Public OpenAPI contract, v${data.reference.version}`}
-      >
-        <CodeBlock
-          block={{
-            html: "",
-            code: "",
-            language: "json",
-          }}
-          fillAvailable
-        />
-      </OpenApiContractDialog>
-      <script
-        type="application/json"
-        id={CONTRACT_SOURCE_ELEMENT_ID}
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON.stringify output of the build-time Shiki payload; the surrounding CDATA is escaped at build time.
-        dangerouslySetInnerHTML={{ __html: contractSourceJson }}
-      />
+      {openApiContract ? (
+        <>
+          <OpenApiContractDialog
+            id={CONTRACT_DIALOG_ID}
+            titleId={CONTRACT_DIALOG_TITLE_ID}
+            sourceElementId={CONTRACT_SOURCE_ELEMENT_ID}
+            title={`Public OpenAPI contract, v${data.reference.version}`}
+          >
+            <CodeBlock
+              block={{
+                html: "",
+                code: "",
+                language: "json",
+              }}
+              fillAvailable
+              showCopyButton={data.config.features.copyButton}
+            />
+          </OpenApiContractDialog>
+          <script
+            type="application/json"
+            id={CONTRACT_SOURCE_ELEMENT_ID}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON.stringify output of the build-time Shiki payload; the surrounding CDATA is escaped at build time.
+            dangerouslySetInnerHTML={{ __html: contractSourceJson }}
+          />
+        </>
+      ) : null}
     </Chapter>
   );
 }
