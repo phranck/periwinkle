@@ -49,7 +49,7 @@
   --pw-docs-section-icon-size: calc(var(--pw-size-text-icon) + 2px);
   --pw-code-padding-block: 1rem;
   --pw-code-padding-inline: 1rem;
-  --pw-code-line-height: 1.7;
+  --pw-code-line-height: 1.5;
   --pw-code-gutter-number-width: 2.5ch;
   --pw-code-gutter-padding-inline: 0.75rem;
   --pw-code-gutter-code-gap: 1rem;
@@ -690,9 +690,9 @@ code {
   border-radius: calc(var(--pw-radius) / 2);
   padding-block: var(--pw-space-1);
   padding-inline: var(--pw-space-2);
-  transition:
-    background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
-    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+  /* Color-only transition; background-color transitions flashed the
+     sidebar rows across a theme switch. */
+  transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
 
 [data-pw-nav-item]:hover {
@@ -1056,9 +1056,9 @@ details[data-pw-expanded="false"] .pw-chevron {
   font-family: inherit;
   font-size: var(--pw-text-code);
   cursor: pointer;
-  transition:
-    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
-    border-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+  /* Only color transitions here; border-color transition caused a flash
+     across the button border when the theme flipped light/dark. */
+  transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
 
 .openapi-contract-dialog__trigger:hover,
