@@ -14,6 +14,7 @@ import {
   setupPeriwinkle,
   THEME_STORAGE_KEY,
 } from "../src/client/client.js";
+import { bindOpenApiContractDialog } from "../src/client/openapi-contract-dialog.js";
 import { bindSearchDialog } from "../src/client/search.js";
 import { SearchDialog } from "../src/components/SearchDialog.jsx";
 
@@ -444,5 +445,82 @@ describe("setupPeriwinkle", () => {
   it("wires everything without throwing", () => {
     expect(() => setupPeriwinkle(document)).not.toThrow();
     expect(document.documentElement.dataset.theme).toMatch(/^(light|dark)$/);
+  });
+});
+
+describe("openapi contract dialog", () => {
+  const DIALOG_FIXTURE_MARKUP = `
+    <button
+      type="button"
+      data-openapi-contract-trigger
+      aria-controls="openapi-contract-dialog"
+      aria-haspopup="dialog"
+    >View OpenAPI contract</button>
+    <dialog
+      id="openapi-contract-dialog"
+      class="api-dialog surface-card openapi-contract-dialog"
+      data-openapi-contract-dialog
+      data-openapi-contract-source="openapi-contract-source"
+      data-openapi-contract-state="loading"
+    >
+      <button type="button" data-openapi-contract-close>Close</button>
+      <div class="api-dialog__body">
+        <div class="openapi-contract-dialog__loading"><span class="sr-only">Loading</span></div>
+        <div class="code-block" data-code-block>
+          <div class="code-block__surface">
+            <div class="content-panel code-block__frame"></div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+    <script
+      type="application/json"
+      id="openapi-contract-source"
+    >"&lt;pre class=&quot;shiki&quot;&gt;&lt;code&gt;line-1\\nline-2&lt;/code&gt;&lt;/pre&gt;"</script>
+  `;
+
+  beforeEach(() => {
+    document.body.innerHTML = DIALOG_FIXTURE_MARKUP;
+    // happy-dom's HTMLDialogElement lacks showModal/close in some versions;
+    // patch minimal implementations so the client binder can drive the modal.
+    const dialog = document.querySelector<HTMLDialogElement>("dialog");
+    if (dialog) {
+      dialog.showModal = function showModal() {
+        this.open = true;
+        this.dispatchEvent(new Event("open"));
+      };
+      dialog.close = function close() {
+        if (!this.open) return;
+        this.open = false;
+        this.dispatchEvent(new Event("close"));
+      };
+    }
+  });
+
+  it("opens on trigger click and closes on Escape", () => {
+    bindOpenApiContractDialog(document);
+    const dialog = document.querySelector<HTMLDialogElement>("dialog");
+    const trigger = document.querySelector<HTMLButtonElement>("[data-openapi-contract-trigger]");
+
+    trigger?.click();
+    expect(dialog?.open).toBe(true);
+
+    // Native Escape dispatches a `cancel` event; the binder cancels the
+    // default and closes explicitly so animations can play.
+    const cancelEvent = new Event("cancel", { cancelable: true, bubbles: true });
+    dialog?.dispatchEvent(cancelEvent);
+    expect(dialog?.open).toBe(false);
+  });
+
+  it("closes when the dedicated close control is clicked", () => {
+    bindOpenApiContractDialog(document);
+    const dialog = document.querySelector<HTMLDialogElement>("dialog");
+    const trigger = document.querySelector<HTMLButtonElement>("[data-openapi-contract-trigger]");
+    const closeButton = document.querySelector<HTMLButtonElement>("[data-openapi-contract-close]");
+
+    trigger?.click();
+    expect(dialog?.open).toBe(true);
+    closeButton?.click();
+    expect(dialog?.open).toBe(false);
   });
 });

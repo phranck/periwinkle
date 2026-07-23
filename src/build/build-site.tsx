@@ -16,6 +16,7 @@ import { parse as parseYaml } from "yaml";
 
 import { ApiDocs } from "../components/ApiDocs.jsx";
 import type { ResolvedConfig } from "../config/config.js";
+import { highlightCode } from "../render/highlight.js";
 import { prepareDocsData } from "../render/prepare.js";
 import { renderHtmlDocument, withBase } from "./html.js";
 
@@ -130,7 +131,16 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   }
 
   const data = await prepareDocsData(document, siteConfig);
-  const bodyHtml = renderToStaticMarkup(<ApiDocs data={data} />);
+  // Pre-highlight the full OpenAPI contract for the "View OpenAPI contract"
+  // dialog. The rendered Shiki markup is JSON-encoded and placed inside a
+  // `<script type="application/json">` block so the client binder can hand
+  // it to the CodeBlock frame the first time the dialog opens (see
+  // `bindOpenApiContractDialog`).
+  const contractHighlighted = await highlightCode(`${JSON.stringify(document, null, 2)}\n`, "json");
+  const contractSourceJson = JSON.stringify(contractHighlighted).replace(/</g, "\\u003c");
+  const bodyHtml = renderToStaticMarkup(
+    <ApiDocs data={data} contractSourceJson={contractSourceJson} />,
+  );
   const html = renderHtmlDocument(data, bodyHtml, {
     stylesheet: "styles.css",
     clientScript: "client.js",

@@ -9,12 +9,14 @@
  * expand/collapse, the expand/collapse-all control, the header scroll
  * shadow, and the theme toggle via the `data-pw-*` hooks.
  *
- * Accepted deviations from the reference: the header carries the brand row
- * (title, expand/collapse-all, theme toggle) and the search trigger field
- * instead of the reference's static "Reference" title, and the search field
- * opens the document search dialog. Endpoint paths stay out of the rail to
- * keep it scannable — items show the operation's navigation title only,
- * exactly like the reference.
+ * The header layout mirrors the reference `Sidebar.Header` exactly: the
+ * fixed chapter title "Reference" sits on the left, and the addon cluster
+ * on the right carries the expand/collapse-all chevron button. periwinkle
+ * additions: the theme toggle sits next to the toggle-all button (spatially
+ * separated by a gap so the two never read as one control), and the search
+ * trigger field lives on a second row inside the header — the reference's
+ * search dialog is triggered from a global affordance which periwinkle
+ * embeds directly in the sidebar for convenience.
  *
  * Top-level links mirror the content's document order exactly (custom
  * sections before the guide link when placed `before-guide`, and so on);
@@ -171,6 +173,9 @@ export function SidebarNav({ data }: { data: DocsData }) {
   const { reference, config } = data;
   const schemas = Object.values(reference.schemas);
   const hasGuide = data.guideSections.length > 0;
+  // The reference sidebar renders no logo. periwinkle keeps the option so
+  // consumers can brand the surface; when set the mark sits next to the
+  // fixed chapter title without changing the two-column header grid.
   const logo = config.site.logo;
 
   return (
@@ -180,10 +185,10 @@ export function SidebarNav({ data }: { data: DocsData }) {
       data-pw-nav
     >
       <header className="sidebar__header">
-        <div className="pw-nav__brand">
+        <div className="sidebar__header-chapter">
           <h2 className="sidebar__header-title">
             {logo ? <img className="pw-nav__logo" src={logo} alt="" /> : null}
-            <span className="pw-nav__brand-title">{data.title}</span>
+            <span className="pw-nav__brand-title">Reference</span>
           </h2>
           <div className="sidebar__header-addon">
             <button

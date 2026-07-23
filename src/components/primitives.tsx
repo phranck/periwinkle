@@ -56,12 +56,25 @@ export function InlineMarkdown({ content }: { content: string }) {
  *   raw source is duplicated into the page.
  * - Bash snippets skip the gutter (`language !== "bash"` gates line
  *   numbers), and blocks longer than 20 lines scroll vertically.
+ * - `fillAvailable` lets the block claim the remaining viewport height of a
+ *   flex parent (used by the OpenAPI-contract dialog whose body owns the
+ *   scroll); the CSS token switch mirrors the reference
+ *   `data-code-fill-available` recipe.
  *
  * @param props.block The prepared code block (highlighted HTML, raw source,
  *   and language) from {@link PreparedCodeBlock}.
  * @param props.label Optional label shown above the block, e.g. "Example".
+ * @param props.fillAvailable Grow to fill the parent's remaining height.
  */
-export function CodeBlock({ block, label }: { block: PreparedCodeBlock; label?: string }) {
+export function CodeBlock({
+  block,
+  label,
+  fillAvailable,
+}: {
+  block: PreparedCodeBlock;
+  label?: string;
+  fillAvailable?: boolean;
+}) {
   const blockId = `code-${createHash("sha256")
     .update(`${label ?? ""}\n${block.language}\n${block.code}`)
     .digest("hex")
@@ -71,7 +84,11 @@ export function CodeBlock({ block, label }: { block: PreparedCodeBlock; label?: 
   const hasVerticalOverflow = lineCount > 20;
 
   return (
-    <div className="code-block" data-code-block="">
+    <div
+      className="code-block"
+      data-code-block=""
+      data-code-fill-available={fillAvailable ? "" : undefined}
+    >
       {label ? <p className="code-block__label text-code mb-2">{label}</p> : null}
       <div
         className="code-block__surface"

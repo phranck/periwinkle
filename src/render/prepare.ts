@@ -8,7 +8,7 @@
 
 import type { ResolvedConfig } from "../config/config.js";
 import { type ApiReference, buildApiReference } from "../model/api-reference.js";
-import { buildCurlExample } from "./curl.js";
+import { buildCurlExample, buildIntegrationCurl } from "./curl.js";
 import { type GuideSection, resolveGuideSections } from "./guide.js";
 import { type HighlightLanguage, highlightCode } from "./highlight.js";
 
@@ -104,6 +104,13 @@ export async function prepareDocsData(
   const guideSections = resolveGuideSections(reference, config.guide, serverUrl);
 
   const pending: Array<{ key: string; code: string; language: HighlightLanguage }> = [];
+
+  // Integration essentials curl example, shared by the guide chapter.
+  pending.push({
+    key: codeKey("integration-essentials", "curl"),
+    code: buildIntegrationCurl(serverUrl, reference.securitySchemes),
+    language: "bash",
+  });
 
   for (const group of reference.groups) {
     for (const operation of group.operations) {

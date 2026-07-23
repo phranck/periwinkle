@@ -69,3 +69,32 @@ export function buildCurlExample(
   ];
   return parts.join(" \\\n  ");
 }
+
+/**
+ * Builds the illustrative "authenticated request" shell snippet that pairs
+ * with the Integration essentials panel grid. When an API-key header scheme
+ * is declared the placeholder uses that header name; otherwise it falls
+ * back to a generic bearer-token hint (reference `ApiReferenceContent.astro`
+ * bakes an equivalent snippet with `MUSICCLOUD_API_KEY`).
+ *
+ * @param serverUrl Effective server base URL, when known.
+ * @param schemes All declared security schemes.
+ */
+export function buildIntegrationCurl(
+  serverUrl: string | undefined,
+  schemes: ApiSecurityScheme[],
+): string {
+  const apiKeyHeader = schemes.find(
+    (scheme) => scheme.type === "apiKey" && scheme.location === "header" && scheme.parameterName,
+  );
+  const baseUrl = (serverUrl ?? "https://api.example.test").replace(/\/+$/, "");
+  if (apiKeyHeader?.parameterName) {
+    return `# Requires the API key to be set in your shell environment.
+curl ${baseUrl}/resource \\
+  -H "${apiKeyHeader.parameterName}: \${API_KEY}" \\
+  -H "Content-Type: application/json"`;
+  }
+  return `curl ${baseUrl}/resource \\
+  -H "Authorization: Bearer \${API_TOKEN}" \\
+  -H "Content-Type: application/json"`;
+}

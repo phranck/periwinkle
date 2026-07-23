@@ -9,6 +9,7 @@
  * the schema view tabs.
  */
 
+import { bindOpenApiContractDialog } from "./openapi-contract-dialog.js";
 import { bindSearchDialog } from "./search.js";
 
 const STORAGE_PREFIX = "periwinkle:";
@@ -465,4 +466,5 @@ export function setupPeriwinkle(root: Document): void {
   bindSearchDialog(root);
   bindSchemaTabs(root);
   bindCopyButtons(root);
+  bindOpenApiContractDialog(root);
 }

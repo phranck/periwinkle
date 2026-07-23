@@ -72,6 +72,41 @@ describe("ApiDocs", () => {
     expect(defaultHtml).toContain("generated from API version 1.2.3");
   });
 
+  it("wraps the docs in a single surface-card shell", () => {
+    // The reference builds every page inside `.api-reference-shell` +
+    // `.api-reference-layout`; the sidebar itself carries `surface-card`.
+    expect(defaultHtml).toContain('class="api-reference-shell"');
+    expect(defaultHtml).toContain("api-reference-layout");
+    expect(defaultHtml).toContain('class="sidebar api-reference-nav surface-card"');
+  });
+
+  it("renders Integration essentials as one content-card with a panel grid", () => {
+    // Guide chapter body must contain the ContentCard header/title plus the
+    // integration-panel grid with individually addressable panels (five
+    // derived-guide sections + the OpenAPI-contract panel).
+    expect(defaultHtml).toContain('class="surface-card content-card"');
+    expect(defaultHtml).toMatch(/content-card__title[^>]*>Integration essentials</);
+    expect(defaultHtml).toContain("integration-panel-grid");
+    expect(defaultHtml).toContain('id="integration-openapi-contract"');
+    expect(defaultHtml).toMatch(/content-panel__header-title[^>]*>OpenAPI contract</);
+    expect(defaultHtml).toContain("View OpenAPI contract");
+  });
+
+  it("renders the OpenAPI-contract dialog with aria wiring", () => {
+    expect(defaultHtml).toContain('id="openapi-contract-dialog"');
+    expect(defaultHtml).toContain('data-openapi-contract-dialog=""');
+    expect(defaultHtml).toContain('aria-controls="openapi-contract-dialog"');
+    expect(defaultHtml).toContain('id="openapi-contract-source"');
+  });
+
+  it("renders the sidebar header with fixed 'Reference' chapter title", () => {
+    // The reference header labels the chapter as "Reference"; the site title
+    // stays in the intro headline, not in the sidebar.
+    expect(defaultHtml).toMatch(/sidebar__header-title[^>]*>[\s\S]*?Reference/);
+    expect(defaultHtml).toMatch(/data-pw-toggle-all/);
+    expect(defaultHtml).toMatch(/data-pw-theme-toggle/);
+  });
+
   it("renders the search dialog and marks searchable entries", () => {
     expect(defaultHtml).toContain("data-api-search-dialog");
     expect(defaultHtml).toContain("data-api-search-root");
