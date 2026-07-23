@@ -352,7 +352,7 @@ code {
   border: 0;
   padding: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-icon-backdrop));
   cursor: pointer;
   transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
@@ -404,7 +404,7 @@ code {
    mode; icons that must carry an intent color override it locally. */
 .pw-icon {
   display: block;
-  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
 /* Icons that carry a functional color (status, success, method) must not
@@ -428,10 +428,43 @@ code {
   --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 8%, var(--pw-surface));
 }
 
+/* Icon-tone backdrop cascades from the actual surface color under each
+   icon so the tint stays perceptible whether the icon sits on the page,
+   on a card body, on a card header, or on a code frame. */
+:root {
+  --pw-icon-backdrop: var(--pw-background);
+}
+
+.surface-card,
+.content-card,
+.pw-endpoint,
+.pw-endpoint__body,
+.pw-schema-card,
+.pw-schema-card__body,
+.content-panel,
+.pw-panel {
+  --pw-icon-backdrop: var(--pw-surface);
+}
+
+.content-card__header,
+.pw-endpoint__header,
+.integration-panel__header,
+.content-panel__header,
+.api-dialog__header,
+.pw-nav__brand,
+.pw-nav__search,
+.pw-nav__body {
+  --pw-icon-backdrop: var(--pw-docs-card-chrome);
+}
+
+.code-block__frame,
+.code-block__surface {
+  --pw-icon-backdrop: var(--pw-surface-alt);
+}
 .pw-nav__search-icon,
 .pw-chapter__icon,
 .pw-endpoint__section-icon {
-  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
 .pw-nav__theme-icon--dark {
@@ -579,7 +612,7 @@ code {
 
 .api-reference-nav__section-icon {
   flex: none;
-  color: color-mix(in srgb, var(--pw-text) var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, var(--pw-text) var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
 .api-reference-nav__count {
@@ -601,7 +634,7 @@ code {
   width: var(--pw-docs-nav-toggle-size);
   height: var(--pw-docs-nav-toggle-size);
   flex: none;
-  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
 .api-reference-nav__toggle svg {
@@ -1397,7 +1430,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   align-items: center;
   justify-content: center;
   flex: none;
-  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-background));
+  color: color-mix(in srgb, var(--pw-text-muted) var(--pw-icon-tone), var(--pw-icon-backdrop));
   pointer-events: none;
 }
 
