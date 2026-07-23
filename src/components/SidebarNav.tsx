@@ -26,7 +26,6 @@ import type { ApiOperation } from "../model/api-reference.js";
 import { customSectionsAt, type DocsData } from "../render/prepare.js";
 import {
   ArrowCircleDownIcon,
-  ArrowCircleUpIcon,
   Book1Icon,
   BookIcon,
   type BoundIcon,
@@ -194,11 +193,7 @@ export function SidebarNav({ data }: { data: DocsData }) {
               title="Expand all sections"
               data-pw-toggle-all
             >
-              <ArrowCircleDownIcon
-                className="api-reference-nav__toggle-all-down"
-                aria-hidden="true"
-              />
-              <ArrowCircleUpIcon className="api-reference-nav__toggle-all-up" aria-hidden="true" />
+              <ArrowCircleDownIcon aria-hidden="true" />
             </button>
             <button
               type="button"
