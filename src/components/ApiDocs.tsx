@@ -23,6 +23,7 @@ import { Chapter, CodeBlock, Markdown } from "./primitives.jsx";
 import { SchemaCard } from "./SchemaCard.jsx";
 import { SearchDialog } from "./SearchDialog.jsx";
 import { SidebarNav } from "./SidebarNav.jsx";
+import { TopNav } from "./TopNav.jsx";
 
 /** Stable DOM ids the trigger/dialog pair use for aria wiring. */
 const CONTRACT_DIALOG_ID = "openapi-contract-dialog";
@@ -216,6 +217,7 @@ export function ApiDocs({
 
   return (
     <div className="pw-shell">
+      <TopNav navigation={config.navigation} />
       <div className="api-reference-shell">
         <div className="card-content-inset mb-8 pw-intro" data-api-reference-intro="">
           <h1 className="pw-intro__title">{data.title}</h1>

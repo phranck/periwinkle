@@ -311,6 +311,9 @@ export function bindSearchDialog(root: Document): void {
     notice?.querySelector<HTMLButtonElement>(".api-search-highlight-notice__dismiss") ?? null;
   const iconTemplates = root.querySelector<HTMLElement>("[data-pw-search-icons]");
   const trigger = root.querySelector<HTMLInputElement>("[data-pw-search]");
+  // Additional trigger buttons (e.g. the top navigation search button) that
+  // open the same dialog on click.
+  const topNavTriggers = root.querySelectorAll<HTMLElement>("[data-pw-search-trigger]");
   if (!foundInput || !foundStatus || !foundResults || !foundEmpty || !foundClear || !foundClose) {
     return;
   }
@@ -598,6 +601,11 @@ export function bindSearchDialog(root: Document): void {
     trigger.addEventListener("focus", () => {
       if (restoringFocus || dialog.open) return;
       openDialog(trigger);
+    });
+  }
+  for (const topNavTrigger of topNavTriggers) {
+    topNavTrigger.addEventListener("click", () => {
+      if (!dialog.open) openDialog(topNavTrigger);
     });
   }
 }

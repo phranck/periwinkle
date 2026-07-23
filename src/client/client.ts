@@ -275,6 +275,26 @@ export function bindSidebarScrollState(root: Document): void {
   }
 }
 
+/**
+ * Toggles `data-pw-top-nav-scrolled="true"` on every `[data-pw-top-nav]`
+ * once the window scrolls behind it. The stylesheet reads that attribute
+ * to raise a frosted-glass backdrop and a subtle border under the bar so
+ * it separates from the content that scrolls beneath it.
+ *
+ * @param root The document containing the top navigation.
+ */
+export function bindTopNavScrollState(root: Document): void {
+  const bars = root.querySelectorAll<HTMLElement>("[data-pw-top-nav]");
+  if (bars.length === 0) return;
+  const view = root.defaultView ?? window;
+  const update = (): void => {
+    const scrolled = view.scrollY > 0;
+    for (const bar of bars) bar.dataset.pwTopNavScrolled = String(scrolled);
+  };
+  update();
+  view.addEventListener("scroll", update, { passive: true });
+}
+
 /** Keyboard keys that move focus/selection inside the schema view tablist. */
 const SCHEMA_TAB_NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "Home", "End"]);
 
@@ -463,6 +483,7 @@ export function setupPeriwinkle(root: Document): void {
   bindCollapsibles(root);
   bindToggleAll(root);
   bindSidebarScrollState(root);
+  bindTopNavScrollState(root);
   bindSchemaCardsToggleAll(root);
   bindSearchDialog(root);
   bindSchemaTabs(root);
