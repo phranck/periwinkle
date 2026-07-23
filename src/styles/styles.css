@@ -137,9 +137,11 @@ code {
   font-size: 0.9em;
 }
 
-/* Anchor targets clear the sticky top bar (0px when no top nav renders). */
+/* Anchor targets share the sidebar's sticky offset (top bar height plus the
+   `--pw-space-4` gap), so a card scrolled to from the sidebar aligns its top
+   edge flush with the sticky sidebar's top edge. */
 [id] {
-  scroll-margin-top: calc(var(--pw-space-8) + var(--pw-topnav-height, 0px));
+  scroll-margin-top: var(--pw-docs-nav-sticky-offset, var(--pw-space-8));
 }
 
 /* ---------- Layout ---------- */
@@ -272,15 +274,28 @@ code {
 }
 
 /* The inner row recenters on the shared shell measure via `.developer-shell`
-   (see Layout). The reference uses `space-between` because a wordmark sits
-   on the left; periwinkle renders no brand in the bar, so the single actions
-   cluster is pinned right with `flex-end`. */
+   (see Layout). `space-between` matches the reference: the optional brand
+   logo sits left, the actions cluster right. */
 .public-header__inner {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: var(--pw-space-4);
   padding: var(--pw-space-5) var(--pw-public-header-padding-inline);
+}
+
+/* Optional brand mark (reference `Wordmark` slot): a square logo scaled to
+   the control height so the bar keeps its measure with or without it. */
+.public-header__brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+.public-header__brand-logo {
+  display: block;
+  width: auto;
+  height: var(--pw-size-control);
 }
 
 .public-header__actions {
@@ -288,6 +303,9 @@ code {
   align-items: center;
   gap: var(--pw-space-3);
   min-width: 0;
+  /* Keeps the cluster pinned right even when no brand logo renders and
+     `space-between` has only one child to distribute. */
+  margin-inline-start: auto;
 }
 
 .public-header__desktop {
@@ -390,16 +408,8 @@ code {
   --pw-docs-nav-padding: var(--pw-docs-space-md);
   --pw-docs-nav-bottom-fade-height: var(--pw-space-3);
   --pw-docs-nav-toggle-secondary-opacity: 0.3;
-  /* Top-navigation bar (when present) claims the top of the viewport;
-     the sidebar's own sticky offset accounts for its height so long
-     sections don't slip under the bar. */
   --pw-topnav-height: 0px;
-  --pw-docs-nav-sticky-offset: calc(var(--pw-space-4) + var(--pw-topnav-height));
   --pw-docs-nav-viewport-gap: 4rem;
-  --pw-docs-nav-viewport-clearance: calc(
-    var(--pw-docs-nav-sticky-offset) +
-    var(--pw-docs-nav-viewport-gap)
-  );
   --pw-docs-header-min-height: var(--pw-size-control);
   /* One header row: padding + the title line (card-title at 1.25 line
      height). The optional search row adds itself below via `:has()`. */
@@ -418,6 +428,20 @@ code {
      already carries `padding-inline-start: --mc-docs-content-card-copy-inset`
      (identical value). Adopted verbatim as `--pw-card-content-inset`. */
   --pw-card-content-inset: calc(var(--pw-radius) / 2);
+}
+
+/* The derived sticky offsets must be declared on `.pw-app`, NOT on `:root`:
+   custom properties substitute their `var()` references at the declaring
+   element, and `--pw-topnav-height` only carries the bar's height on
+   `.pw-app` (via the `:has()` rule above). Declared on `:root` the offset
+   would freeze at the root's `0px` fallback and every descendant would
+   inherit a sticky offset that ignores the top bar. */
+.pw-app {
+  --pw-docs-nav-sticky-offset: calc(var(--pw-space-4) + var(--pw-topnav-height));
+  --pw-docs-nav-viewport-clearance: calc(
+    var(--pw-docs-nav-sticky-offset) +
+    var(--pw-docs-nav-viewport-gap)
+  );
 }
 
 .api-reference-nav {
@@ -589,7 +613,7 @@ code {
 }
 
 /* Intent-colored icons keep their own color from later single-class
-   rules (`.pw-response__icon`, `.code-block__copy-success-icon`), which
+   rules (`.response-card__icon`, `.code-block__copy-success-icon`), which
    win over `.pw-icon`'s base tint by document order. The former override
    forced currentColor at higher specificity and blanked those out. */
 
@@ -1131,11 +1155,17 @@ details[data-pw-expanded="false"] .pw-chevron {
   font-size: var(--pw-text-code);
 }
 
-/* Shared inner surface panel for content nested inside a ContentCard.
-   Derived radius keeps the panel flush inside the card (reference
-   `.content-panel`). Note: the `.content-panel` rule further down under the
-   code-block block already provides the same surface + radius; the compound
-   panel adds only the header/content sub-elements. */
+/* Shared inner surface panel for content nested inside a ContentCard or an
+   endpoint section (reference `.content-panel`). The card variants built on
+   top (parameter, request-body, response) override the surface by document
+   order, so this base rule must precede them. */
+.content-panel {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--pw-docs-content-panel-radius);
+  background: color-mix(in srgb, var(--pw-surface-alt) 72%, transparent);
+}
+
 .content-panel__header,
 .content-panel__footer {
   background: var(--pw-docs-card-chrome);
@@ -1222,7 +1252,7 @@ details[data-pw-expanded="false"] .pw-chevron {
     grid-template-columns: 1fr;
   }
 
-  .pw-response {
+  .response-card {
     grid-template-columns: 1fr;
     gap: var(--pw-space-2);
   }
@@ -1350,11 +1380,8 @@ details[data-pw-expanded="false"] .pw-chevron {
   gap: var(--pw-space-6);
 }
 
-/* Adopt the same minmax(0, 1fr) recipe on each nested section stack so long
-   source lines never widen `.pw-media` or the response content column. */
-.pw-endpoint__section,
-.pw-media,
-.pw-response__content {
+/* Zero-minimum so long source lines never widen a section beyond the card. */
+.pw-endpoint__section {
   min-width: 0;
 }
 
@@ -1403,17 +1430,6 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: var(--pw-docs-section-icon-size);
 }
 
-/* Media-type chip is still used by request/response media rows. */
-.pw-media__type {
-  font-size: var(--pw-text-code);
-  color: var(--pw-text-faint);
-  border-radius: calc(var(--pw-radius) / 2);
-  padding: max(0px, calc(var(--pw-docs-space-xs) - 1px)) var(--pw-docs-space-sm)
-    var(--pw-docs-space-xs);
-  font-family: var(--pw-font-mono);
-  background: var(--pw-surface-alt);
-}
-
 /* ---------- Parameter card (adopted from the reference) ----------
    Structure ported 1:1 from `apps/developer/src/components/docs/ParameterCard.tsx`
    + `.parameter-card*` and `.content-panel*` rules in docs.css. Values
@@ -1453,7 +1469,13 @@ details[data-pw-expanded="false"] .pw-chevron {
   margin: 0;
 }
 
-.parameter-card__name {
+/* Plain mono values shared across the card family (reference groups the
+   same four selectors): parameter names, request-body media types, and the
+   chip-less response meta values. */
+.parameter-card__name,
+.request-body-card__media-type,
+.response-card__media-type,
+.response-card__schema-name {
   color: var(--pw-docs-code-fg);
   font-family: var(--pw-font-mono);
   font-size: var(--pw-text-code);
@@ -1498,36 +1520,34 @@ details[data-pw-expanded="false"] .pw-chevron {
   color: var(--pw-text-muted);
 }
 
-/* Request/response media */
+/* ---------- Request-body card (adopted from the reference) ---------- */
 
-.pw-media {
-  display: grid;
-  gap: var(--pw-space-2);
-}
-
-.pw-media__header {
+/* Media compound built on the shared ContentPanel surface (reference
+   `RequestBodyCard`): header row with mono media type + schema link on the
+   panel chrome, body slot carrying the example code block. */
+.request-body-card__header {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--pw-space-3);
+  padding: var(--pw-space-card-row);
 }
 
-.pw-schema-link {
-  font-family: var(--pw-font-mono);
-  font-size: var(--pw-text-code);
-  font-weight: 600;
+.request-body-card__body {
+  padding: var(--pw-space-card-row);
 }
 
-.pw-responses {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--pw-space-2);
-}
+/* ---------- Response card (adopted from the reference) ---------- */
 
-.pw-response {
+/* Tone-tinted `content-panel` variant (reference `.response-card`): the
+   status unit (icon + code) sits left, the content column right. The
+   surface override wins over the `.content-panel` base by document order. */
+.response-card {
   --pw-response-color: var(--pw-text-muted);
+  /* One status line: the lead-size code at its 1.25 line height (reference
+     `--mc-docs-response-line-size`). Status and summary share it so a
+     single-line description centers against the icon/code unit. */
+  --pw-docs-response-line-size: calc(var(--pw-text-lead) * 1.25);
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: start;
@@ -1538,36 +1558,28 @@ details[data-pw-expanded="false"] .pw-chevron {
     var(--pw-response-color) var(--pw-response-tint),
     var(--pw-surface)
   );
-  border-radius: calc(var(--pw-radius) / 2);
 }
 
-.pw-response--success {
+.response-card--success {
   --pw-response-color: var(--pw-method-post);
 }
 
 /* User-defined tone: 3xx responses read as a discreet accent (velvet) since
    blue is reserved for information notes elsewhere in the reference and its
    own success/warning/error triple already covers 2xx/4xx/5xx. */
-.pw-response--redirect {
+.response-card--redirect {
   --pw-response-color: var(--pw-accent);
 }
 
-.pw-response--client-error {
+.response-card--client-error {
   --pw-response-color: var(--pw-method-put);
 }
 
-.pw-response--server-error {
+.response-card--server-error {
   --pw-response-color: var(--pw-method-delete);
 }
 
-/* One status line: the lead-size code at its 1.25 line height (reference
-   `--mc-docs-response-line-size`). Status and summary share it so a
-   single-line description centers against the icon/code unit. */
-.pw-response {
-  --pw-docs-response-line-size: calc(var(--pw-text-lead) * 1.25);
-}
-
-.pw-response__status {
+.response-card__status {
   display: inline-grid;
   grid-template-columns: var(--pw-size-icon-lg) max-content;
   align-items: center;
@@ -1575,7 +1587,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   min-height: var(--pw-docs-response-line-size);
 }
 
-.pw-response__icon {
+.response-card__icon {
   width: var(--pw-size-icon-lg);
   height: var(--pw-size-icon-lg);
   color: var(--pw-response-color);
@@ -1584,7 +1596,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   transform: translateY(1px);
 }
 
-.pw-response__code {
+.response-card__code {
   color: var(--pw-response-color);
   font-family: var(--pw-font-mono);
   font-size: var(--pw-text-lead);
@@ -1592,7 +1604,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   line-height: 1.25;
 }
 
-.pw-response__content {
+.response-card__content {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--pw-docs-space-md);
@@ -1603,46 +1615,44 @@ details[data-pw-expanded="false"] .pw-chevron {
 /* Grid grows for multiline Markdown while retaining one-line centering
    against the indivisible response icon/code status unit (reference
    `.response-card__summary`). */
-.pw-response__summary {
+.response-card__summary {
   display: grid;
   block-size: max-content;
   min-height: var(--pw-docs-response-line-size);
   align-items: center;
 }
 
-.pw-response__meta {
+.response-card__meta {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--pw-docs-space-md);
 }
 
-.pw-response__meta-row {
+.response-card__meta-row {
   display: flex;
   flex-wrap: wrap;
   gap: var(--pw-space-3);
   align-items: center;
 }
 
-.pw-response__meta-item {
+.response-card__meta-item {
   display: inline-flex;
   align-items: baseline;
   gap: var(--pw-space-1);
 }
 
-.pw-response__meta-label {
+.response-card__meta-label {
   color: var(--pw-text-muted);
 }
 
-/* Plain mono values, deliberately chip-less (reference
-   `.response-card__media-type` / `.response-card__schema-name`). */
-.pw-response__media-type,
-.pw-response__schema-name {
-  color: var(--pw-docs-code-fg);
+/* ---------- Schema cards ---------- */
+
+/* Mono link mark used by schema field types and variant lists. */
+.pw-schema-link {
   font-family: var(--pw-font-mono);
   font-size: var(--pw-text-code);
+  font-weight: 600;
 }
-
-/* ---------- Schema cards ---------- */
 
 .pw-schema-card {
   background: var(--pw-surface);
@@ -1840,15 +1850,6 @@ details[data-pw-expanded="false"] .pw-chevron {
     var(--pw-docs-code-surface) 88%,
     var(--pw-surface-alt) 12%
   );
-}
-
-/* Shared inner-surface panel for content nested inside a card. The code
-   frame reuses its derived radius recipe (reference `.content-panel`). */
-.content-panel {
-  min-width: 0;
-  overflow: hidden;
-  border-radius: var(--pw-docs-content-panel-radius);
-  background: color-mix(in srgb, var(--pw-surface-alt) 72%, transparent);
 }
 
 /* Keep the scrollable code surface within every compound-card slot. Long
@@ -2081,8 +2082,8 @@ details[data-pw-expanded="false"] .pw-chevron {
     var(--pw-docs-card-chrome) 84%,
     var(--pw-background) 16%
   );
-  --pw-docs-search-highlight-color: #f97316;
-  --pw-docs-search-highlight-padding-inline: var(--pw-space-2);
+  --pw-docs-search-highlight-color: #facc15;
+  --pw-docs-search-highlight-padding-inline: calc(var(--pw-space-2) - 1px);
   --pw-docs-search-highlight-padding-block: 0;
   --pw-docs-search-highlight-notice-offset: var(--pw-space-5);
 }
