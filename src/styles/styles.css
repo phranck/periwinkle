@@ -406,7 +406,7 @@ code {
 
 /* Light mode renders icons slightly lifted so they do not read as black. */
 :root {
-  --pw-icon-tone: 78%;
+  --pw-icon-tone: 60%;
 }
 
 [data-theme="dark"] {
@@ -769,7 +769,7 @@ details[data-pw-expanded="false"] .pw-chevron {
   height: 1lh;
   color: var(--pw-accent);
   flex: none;
-  transform: translateY(0.034em);
+  transform: translateY(calc(0.034em + 1px));
 }
 
 .pw-chapter__icon svg,
@@ -1908,7 +1908,7 @@ details[data-pw-expanded="false"] .pw-chevron {
    stays neutral (dark: near-black GitHub background; light: a soft off-white
    wash) without ever introducing a blue cast the palette does not carry. */
 .api-dialog::backdrop {
-  background: color-mix(in srgb, var(--pw-background) 72%, transparent);
+  background: color-mix(in srgb, var(--pw-background) 44%, transparent);
   backdrop-filter: blur(var(--pw-space-2));
 }
 
@@ -2348,6 +2348,76 @@ mark[data-api-search-highlight] {
 
   .openapi-contract-dialog.surface-card {
     transition: none;
+  }
+}
+
+.openapi-contract-dialog {
+  animation: openapi-contract-dialog-out var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.openapi-contract-dialog::backdrop {
+  animation: openapi-contract-backdrop-out var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.openapi-contract-dialog[data-state="open"] {
+  animation: openapi-contract-dialog-in var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.openapi-contract-dialog[data-state="open"]::backdrop {
+  animation: openapi-contract-backdrop-in var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.openapi-contract-dialog[data-state="closing"] {
+  animation: openapi-contract-dialog-out var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+.openapi-contract-dialog[data-state="closing"]::backdrop {
+  animation: openapi-contract-backdrop-out var(--pw-nav-transition-duration)
+    var(--pw-nav-transition-easing) both;
+}
+
+@keyframes openapi-contract-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes openapi-contract-dialog-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes openapi-contract-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes openapi-contract-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 

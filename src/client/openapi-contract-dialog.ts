@@ -93,9 +93,34 @@ export function bindOpenApiContractDialog(root: Document): () => void {
       if (view?.requestAnimationFrame) view.requestAnimationFrame(callback);
       else setTimeout(callback, 16);
     };
+    const readMotionDuration = (): number => {
+      if (!view) return 0;
+      const raw = view
+        .getComputedStyle(dialog)
+        .getPropertyValue("--pw-nav-transition-duration")
+        .trim();
+      const parsed = Number.parseFloat(raw);
+      if (!Number.isFinite(parsed)) return 0;
+      return raw.endsWith("ms") ? parsed : parsed * 1000;
+    };
+    let closeTimer: number | undefined;
     const close = () => {
       renderSession += 1;
-      dialog.close();
+      if (!dialog.open) return;
+      const duration = readMotionDuration();
+      if (duration <= 0) {
+        dialog.close();
+        return;
+      }
+      dialog.dataset.state = "closing";
+      if (closeTimer !== undefined) view?.clearTimeout(closeTimer);
+      const finalize = () => {
+        closeTimer = undefined;
+        dialog.close();
+      };
+      closeTimer = view
+        ? view.setTimeout(finalize, duration)
+        : (setTimeout(finalize, duration) as unknown as number);
     };
     const renderCode = (session: number) => {
       if (session !== renderSession || highlighted) return;
@@ -136,11 +161,17 @@ export function bindOpenApiContractDialog(root: Document): () => void {
       opener = trigger;
       if (highlighted) {
         dialog.dataset.openapiContractState = "ready";
-        if (!dialog.open) dialog.showModal();
+        if (!dialog.open) {
+          dialog.dataset.state = "open";
+          dialog.showModal();
+        }
         return;
       }
       dialog.dataset.openapiContractState = "loading";
-      if (!dialog.open) dialog.showModal();
+      if (!dialog.open) {
+        dialog.dataset.state = "open";
+        dialog.showModal();
+      }
       const session = ++renderSession;
       scheduleTask(() => renderCode(session));
     };
@@ -152,6 +183,7 @@ export function bindOpenApiContractDialog(root: Document): () => void {
       close();
     };
     const restoreFocus = () => {
+      delete dialog.dataset.state;
       opener?.focus();
       opener = null;
     };
