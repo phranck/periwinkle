@@ -31,8 +31,9 @@ describe("ApiDocs", () => {
     // (reference .endpoint-card__method), not as a pill badge.
     expect(defaultHtml).toContain("pw-endpoint__header--post");
     expect(defaultHtml).toContain('class="pw-endpoint__method">POST<');
-    // Sidebar operation items show the method as a right-aligned text label.
-    expect(defaultHtml).toContain("pw-nav__item-method--post");
+    // sidebar.showMethods defaults to false (reference behavior), so no
+    // method chip appears next to sidebar operations by default.
+    expect(defaultHtml).not.toContain("pw-nav__item-method--post");
     expect(defaultHtml).toContain("Authentication required");
     expect(defaultHtml).toContain("Public endpoint");
   });

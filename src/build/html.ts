@@ -52,7 +52,7 @@ export function renderHtmlDocument(
   assets: { stylesheet: string; clientScript: string; favicon?: string },
 ): string {
   const { basePath } = data.config.site;
-  const themeCss = compileThemeCss(data.config.theme);
+  const themeCss = compileThemeCss(data.config);
   const fontLinks = data.config.theme.fonts.stylesheets
     .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
     .join("\n    ");
@@ -71,9 +71,9 @@ export function renderHtmlDocument(
     ${faviconLink}
     ${fontLinks}
     <script>${EARLY_THEME_SCRIPT}</script>
+    <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
     <style>
 ${themeCss}    </style>
-    <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
   </head>
   <body>
     ${bodyHtml}

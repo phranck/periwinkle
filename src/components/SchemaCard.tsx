@@ -162,7 +162,9 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
           data-schema-view-panel="json"
           hidden
         >
-          {jsonBlock ? <CodeBlock block={jsonBlock} /> : null}
+          {jsonBlock ? (
+            <CodeBlock block={jsonBlock} showCopyButton={data.config.features.copyButton} />
+          ) : null}
         </div>
       </div>
     </details>

@@ -188,7 +188,7 @@ export function SidebarNav({ data }: { data: DocsData }) {
         <div className="sidebar__header-chapter">
           <h2 className="sidebar__header-title">
             {logo ? <img className="pw-nav__logo" src={logo} alt="" /> : null}
-            <span className="pw-nav__brand-title">Reference</span>
+            <span className="pw-nav__brand-title">{config.sidebar.title}</span>
           </h2>
           <div className="sidebar__header-addon">
             <button
@@ -200,40 +200,44 @@ export function SidebarNav({ data }: { data: DocsData }) {
             >
               <ArrowCircleDownIcon aria-hidden="true" />
             </button>
-            <button
-              type="button"
-              className="pw-nav__icon-button"
-              aria-label="Toggle color scheme"
-              title="Toggle color scheme"
-              data-pw-theme-toggle
-            >
-              <Sun1Icon
-                className="pw-nav__theme-icon pw-nav__theme-icon--light"
-                aria-hidden="true"
-              />
-              <MoonIcon
-                className="pw-nav__theme-icon pw-nav__theme-icon--dark"
-                aria-hidden="true"
-              />
-            </button>
+            {config.sidebar.showThemeToggle ? (
+              <button
+                type="button"
+                className="pw-nav__icon-button"
+                aria-label="Toggle color scheme"
+                title="Toggle color scheme"
+                data-pw-theme-toggle
+              >
+                <Sun1Icon
+                  className="pw-nav__theme-icon pw-nav__theme-icon--light"
+                  aria-hidden="true"
+                />
+                <MoonIcon
+                  className="pw-nav__theme-icon pw-nav__theme-icon--dark"
+                  aria-hidden="true"
+                />
+              </button>
+            ) : null}
           </div>
         </div>
-        <label className="pw-nav__search">
-          <span className="pw-nav__search-icon">
-            <SearchNormal1Icon className="size-5" aria-hidden="true" />
-          </span>
-          <input
-            className="pw-nav__search-input"
-            type="search"
-            id="pw-search"
-            name="pw-search"
-            placeholder="Search the API reference"
-            aria-label="Search API reference"
-            readOnly
-            data-pw-search
-          />
-          <KeyCap shortcut="⌘K" />
-        </label>
+        {config.sidebar.showSearch ? (
+          <label className="pw-nav__search">
+            <span className="pw-nav__search-icon">
+              <SearchNormal1Icon className="size-5" aria-hidden="true" />
+            </span>
+            <input
+              className="pw-nav__search-input"
+              type="search"
+              id="pw-search"
+              name="pw-search"
+              placeholder="Search the API reference"
+              aria-label="Search API reference"
+              readOnly
+              data-pw-search
+            />
+            <KeyCap shortcut="⌘K" />
+          </label>
+        ) : null}
       </header>
       <div className="sidebar__body" data-pw-nav-body>
         {customSectionsAt(config, "before-guide").map((section) => (
@@ -262,7 +266,7 @@ export function SidebarNav({ data }: { data: DocsData }) {
                 title={operationDescription(operation)}
                 ariaLabel={`${operation.navTitle}: ${operationDescription(operation)}`}
                 searchText={operationSearchText(operation)}
-                method={operation.method}
+                {...(config.sidebar.showMethods ? { method: operation.method } : {})}
               >
                 {operation.navTitle}
               </NavItem>

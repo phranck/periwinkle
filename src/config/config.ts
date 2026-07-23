@@ -104,6 +104,104 @@ export interface GuideConfig {
 }
 
 /**
+ * Sidebar customization. Controls the chapter header label and the visibility
+ * of individual sidebar affordances.
+ *
+ * @property title Header label above the section list. Default `"Reference"`.
+ * @property showMethods Render the HTTP method (`GET`, `POST`, …) right-aligned
+ *   inside each endpoint nav item. Default `false`.
+ * @property showThemeToggle Show the light/dark theme toggle in the sidebar
+ *   header. Default `true`.
+ * @property showSearch Show the search field (opens the document search
+ *   dialog). Default `true`.
+ */
+export interface SidebarConfig {
+  title?: string;
+  showMethods?: boolean;
+  showThemeToggle?: boolean;
+  showSearch?: boolean;
+}
+
+/**
+ * Feature toggles. Each flag defaults to `true`; set to `false` to remove the
+ * corresponding affordance from every rendered page.
+ *
+ * @property openApiContract "OpenAPI contract" panel in the integration guide
+ *   and the dialog that shows the raw spec.
+ * @property accessBadge "Authentication required" / "Public endpoint" pill in
+ *   the endpoint header.
+ * @property deprecatedBadge "Deprecated" pill next to the request line when the
+ *   operation is marked `deprecated: true`.
+ * @property copyButton Copy button in every rendered code block.
+ */
+export interface FeatureFlags {
+  openApiContract?: boolean;
+  accessBadge?: boolean;
+  deprecatedBadge?: boolean;
+  copyButton?: boolean;
+}
+
+/**
+ * Typography sizes and layout dimensions. Every value is a CSS length string
+ * (`rem`, `px`, `em`, …). Motion and code line-height sit under
+ * {@link MotionConfig} because they belong to the animation family.
+ *
+ * @property fontBody Body copy font size.
+ * @property fontCode Inline and block code font size.
+ * @property fontLead Lead paragraphs and prominent labels.
+ * @property fontCardTitle Schema card / content card title size.
+ * @property fontSubsection Endpoint entry titles.
+ * @property fontSection H2 chapter header size.
+ * @property fontHero Intro title above the sidebar and content grid.
+ * @property sidebarWidth Sidebar column width.
+ * @property containerMaxWidth Maximum content column width.
+ * @property pagePadding Outer page padding on the reference shell.
+ */
+export interface SizingConfig {
+  fontBody?: string;
+  fontCode?: string;
+  fontLead?: string;
+  fontCardTitle?: string;
+  fontSubsection?: string;
+  fontSection?: string;
+  fontHero?: string;
+  sidebarWidth?: string;
+  containerMaxWidth?: string;
+  pagePadding?: string;
+}
+
+/**
+ * Animation timings, easing, and color-mix intensities that shape the visual
+ * texture of the docs. Any value can be authored as a CSS-valid string.
+ *
+ * @property duration Base transition/animation duration for nav expand,
+ *   dialog fade, chevron rotation, and similar affordances. Set to `"0ms"` to
+ *   effectively disable animations without losing state hooks.
+ * @property easing Timing function for the same set of transitions.
+ * @property codeLineHeight Line-height inside code blocks.
+ * @property responseTintLight Response-card status color mix in light mode
+ *   (e.g. `"12%"` mixes 12% of the status color into the surface).
+ * @property responseTintDark Response-card status color mix in dark mode.
+ * @property cardChromeMixLight Card header chrome text-color mix in light
+ *   mode (higher = darker header separation).
+ * @property cardChromeMixDark Card header chrome text-color mix in dark mode.
+ * @property iconToneLight Iconsax icon opacity mix in light mode (lower =
+ *   lighter icons; `"100%"` is full currentColor).
+ * @property iconToneDark Icon tone in dark mode.
+ */
+export interface MotionConfig {
+  duration?: string;
+  easing?: string;
+  codeLineHeight?: string;
+  responseTintLight?: string;
+  responseTintDark?: string;
+  cardChromeMixLight?: string;
+  cardChromeMixDark?: string;
+  iconToneLight?: string;
+  iconToneDark?: string;
+}
+
+/**
  * Configuration authored by periwinkle consumers in `periwinkle.config.ts`.
  * Every field is optional; unset values fall back to defaults derived from
  * the OpenAPI document and the built-in periwinkle theme.
@@ -132,6 +230,10 @@ export interface PeriwinkleConfig {
     /** Corner radius applied to cards, badges, and buttons, e.g. `6px`. */
     radius?: string;
   };
+  sidebar?: SidebarConfig;
+  features?: FeatureFlags;
+  sizing?: SizingConfig;
+  motion?: MotionConfig;
   guide?: GuideConfig;
   customSections?: CustomSection[];
   footer?: {
@@ -163,6 +265,10 @@ export interface ResolvedConfig {
     fonts: ThemeFonts;
     radius: string;
   };
+  sidebar: Required<SidebarConfig>;
+  features: Required<FeatureFlags>;
+  sizing: Required<SizingConfig>;
+  motion: Required<MotionConfig>;
   guide: GuideConfig;
   customSections: CustomSection[];
   footer: {
@@ -235,6 +341,49 @@ export const DEFAULT_FONTS: ThemeFonts = {
 /** Default corner radius token: cards render at this radius, compact controls at half of it. */
 export const DEFAULT_RADIUS = "1rem";
 
+/** Default sidebar affordances (mirroring the current shipped behaviour). */
+export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
+  title: "Reference",
+  showMethods: false,
+  showThemeToggle: true,
+  showSearch: true,
+};
+
+/** Default feature flags: every affordance shipped by periwinkle is on. */
+export const DEFAULT_FEATURES: Required<FeatureFlags> = {
+  openApiContract: true,
+  accessBadge: true,
+  deprecatedBadge: true,
+  copyButton: true,
+};
+
+/** Default typography sizes and layout dimensions. */
+export const DEFAULT_SIZING: Required<SizingConfig> = {
+  fontBody: "1.125rem",
+  fontCode: "1rem",
+  fontLead: "1.5rem",
+  fontCardTitle: "1.375rem",
+  fontSubsection: "1.625rem",
+  fontSection: "2.25rem",
+  fontHero: "3.25rem",
+  sidebarWidth: "20rem",
+  containerMaxWidth: "88rem",
+  pagePadding: "1.5rem",
+};
+
+/** Default motion timings and color-mix intensities. */
+export const DEFAULT_MOTION: Required<MotionConfig> = {
+  duration: "160ms",
+  easing: "ease-in-out",
+  codeLineHeight: "1.5",
+  responseTintLight: "12%",
+  responseTintDark: "16%",
+  cardChromeMixLight: "6%",
+  cardChromeMixDark: "12%",
+  iconToneLight: "60%",
+  iconToneDark: "100%",
+};
+
 const CUSTOM_SECTION_POSITIONS: ReadonlySet<string> = new Set([
   "before-guide",
   "after-guide",
@@ -251,6 +400,13 @@ function fail(message: string): never {
 
 function assertOptionalString(value: unknown, label: string): asserts value is string | undefined {
   if (value !== undefined && typeof value !== "string") fail(`${label} must be a string.`);
+}
+
+function assertOptionalBoolean(
+  value: unknown,
+  label: string,
+): asserts value is boolean | undefined {
+  if (value !== undefined && typeof value !== "boolean") fail(`${label} must be a boolean.`);
 }
 
 function assertKnownKeys(value: Record<string, unknown>, known: string[], label: string): void {
@@ -314,6 +470,67 @@ function validateFooterLinks(value: unknown): FooterLink[] {
   });
 }
 
+function validateSidebar(value: unknown): Required<SidebarConfig> {
+  if (value === undefined) return { ...DEFAULT_SIDEBAR };
+  if (!isRecord(value)) fail("sidebar must be an object.");
+  assertKnownKeys(value, ["title", "showMethods", "showThemeToggle", "showSearch"], "sidebar");
+  assertOptionalString(value.title, "sidebar.title");
+  assertOptionalBoolean(value.showMethods, "sidebar.showMethods");
+  assertOptionalBoolean(value.showThemeToggle, "sidebar.showThemeToggle");
+  assertOptionalBoolean(value.showSearch, "sidebar.showSearch");
+  return {
+    title: (value.title as string | undefined) ?? DEFAULT_SIDEBAR.title,
+    showMethods: (value.showMethods as boolean | undefined) ?? DEFAULT_SIDEBAR.showMethods,
+    showThemeToggle:
+      (value.showThemeToggle as boolean | undefined) ?? DEFAULT_SIDEBAR.showThemeToggle,
+    showSearch: (value.showSearch as boolean | undefined) ?? DEFAULT_SIDEBAR.showSearch,
+  };
+}
+
+function validateFeatures(value: unknown): Required<FeatureFlags> {
+  if (value === undefined) return { ...DEFAULT_FEATURES };
+  if (!isRecord(value)) fail("features must be an object.");
+  assertKnownKeys(
+    value,
+    ["openApiContract", "accessBadge", "deprecatedBadge", "copyButton"],
+    "features",
+  );
+  assertOptionalBoolean(value.openApiContract, "features.openApiContract");
+  assertOptionalBoolean(value.accessBadge, "features.accessBadge");
+  assertOptionalBoolean(value.deprecatedBadge, "features.deprecatedBadge");
+  assertOptionalBoolean(value.copyButton, "features.copyButton");
+  return {
+    openApiContract:
+      (value.openApiContract as boolean | undefined) ?? DEFAULT_FEATURES.openApiContract,
+    accessBadge: (value.accessBadge as boolean | undefined) ?? DEFAULT_FEATURES.accessBadge,
+    deprecatedBadge:
+      (value.deprecatedBadge as boolean | undefined) ?? DEFAULT_FEATURES.deprecatedBadge,
+    copyButton: (value.copyButton as boolean | undefined) ?? DEFAULT_FEATURES.copyButton,
+  };
+}
+
+function validateSizing(value: unknown): Required<SizingConfig> {
+  if (value === undefined) return { ...DEFAULT_SIZING };
+  if (!isRecord(value)) fail("sizing must be an object.");
+  const knownKeys = Object.keys(DEFAULT_SIZING);
+  assertKnownKeys(value, knownKeys, "sizing");
+  for (const key of knownKeys) {
+    assertOptionalString(value[key], `sizing.${key}`);
+  }
+  return { ...DEFAULT_SIZING, ...(value as Partial<Required<SizingConfig>>) };
+}
+
+function validateMotion(value: unknown): Required<MotionConfig> {
+  if (value === undefined) return { ...DEFAULT_MOTION };
+  if (!isRecord(value)) fail("motion must be an object.");
+  const knownKeys = Object.keys(DEFAULT_MOTION);
+  assertKnownKeys(value, knownKeys, "motion");
+  for (const key of knownKeys) {
+    assertOptionalString(value[key], `motion.${key}`);
+  }
+  return { ...DEFAULT_MOTION, ...(value as Partial<Required<MotionConfig>>) };
+}
+
 /**
  * Identity helper for typed config authoring:
  *
@@ -343,7 +560,18 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
   if (!isRecord(config)) fail("config must be an object.");
   assertKnownKeys(
     config,
-    ["spec", "site", "theme", "guide", "customSections", "footer"],
+    [
+      "spec",
+      "site",
+      "theme",
+      "sidebar",
+      "features",
+      "sizing",
+      "motion",
+      "guide",
+      "customSections",
+      "footer",
+    ],
     "the config root",
   );
 
@@ -422,6 +650,10 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
       },
       radius: (theme.radius as string | undefined) ?? DEFAULT_RADIUS,
     },
+    sidebar: validateSidebar(config.sidebar),
+    features: validateFeatures(config.features),
+    sizing: validateSizing(config.sizing),
+    motion: validateMotion(config.motion),
     guide: {
       ...(validateGuideSection(guide.intro, "guide.intro") !== undefined
         ? { intro: validateGuideSection(guide.intro, "guide.intro") }

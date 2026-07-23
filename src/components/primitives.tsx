@@ -70,10 +70,17 @@ export function CodeBlock({
   block,
   label,
   fillAvailable,
+  showCopyButton = true,
 }: {
   block: PreparedCodeBlock;
   label?: string;
   fillAvailable?: boolean;
+  /**
+   * Renders the copy control on the block; consumers set this to `false`
+   * via the config flag `features.copyButton` to remove the affordance
+   * everywhere.
+   */
+  showCopyButton?: boolean;
 }) {
   const blockId = `code-${createHash("sha256")
     .update(`${label ?? ""}\n${block.language}\n${block.code}`)
@@ -95,29 +102,31 @@ export function CodeBlock({
         data-code-line-numbers={hasLineNumbers ? "" : undefined}
         data-code-vertical-scroll={hasVerticalOverflow ? "" : undefined}
       >
-        <div className="code-block__actions" data-api-search-ignore="">
-          <button
-            type="button"
-            className="code-block__copy text-fg-muted"
-            aria-label="Copy code"
-            title="Copy code"
-            data-copy-code=""
-            data-copy-target={blockId}
-          >
-            <span className="code-block__copy-icon-wrap" data-copy-icon="" aria-hidden="true">
-              <CopyIcon className="code-block__copy-icon" aria-hidden="true" />
-            </span>
-            <span
-              className="code-block__copy-success"
-              data-copy-success=""
-              hidden
-              aria-hidden="true"
+        {showCopyButton ? (
+          <div className="code-block__actions" data-api-search-ignore="">
+            <button
+              type="button"
+              className="code-block__copy text-fg-muted"
+              aria-label="Copy code"
+              title="Copy code"
+              data-copy-code=""
+              data-copy-target={blockId}
             >
-              <CopySuccessIcon className="code-block__copy-success-icon" aria-hidden="true" />
-            </span>
-          </button>
-        </div>
-        <span className="sr-only" aria-live="polite" data-copy-status="" />
+              <span className="code-block__copy-icon-wrap" data-copy-icon="" aria-hidden="true">
+                <CopyIcon className="code-block__copy-icon" aria-hidden="true" />
+              </span>
+              <span
+                className="code-block__copy-success"
+                data-copy-success=""
+                hidden
+                aria-hidden="true"
+              >
+                <CopySuccessIcon className="code-block__copy-success-icon" aria-hidden="true" />
+              </span>
+            </button>
+            <span className="sr-only" aria-live="polite" data-copy-status="" />
+          </div>
+        ) : null}
         <div
           className="content-panel code-block__frame"
           id={blockId}
