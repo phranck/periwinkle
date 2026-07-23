@@ -87,7 +87,9 @@ export function CodeBlock({ block, label }: { block: PreparedCodeBlock; label?: 
             data-copy-code=""
             data-copy-target={blockId}
           >
-            <CopyIcon className="code-block__copy-icon" data-copy-icon="" aria-hidden="true" />
+            <span className="code-block__copy-icon-wrap" data-copy-icon="" aria-hidden="true">
+              <CopyIcon className="code-block__copy-icon" aria-hidden="true" />
+            </span>
             <span
               className="code-block__copy-success"
               data-copy-success=""
