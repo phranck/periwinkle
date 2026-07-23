@@ -20,7 +20,13 @@ export {
 } from "./build/build-site.jsx";
 export { renderHtmlDocument, withBase } from "./build/html.js";
 export { ApiDocs } from "./components/ApiDocs.jsx";
+export { ContentCard } from "./components/ContentCard.jsx";
+export { ContentPanel } from "./components/ContentPanel.jsx";
 export { EndpointBlock } from "./components/EndpointBlock.jsx";
+export {
+  OpenApiContractDialog,
+  OpenApiContractDialogTrigger,
+} from "./components/OpenApiContractDialog.jsx";
 export {
   Chapter,
   CodeBlock,
@@ -73,7 +79,7 @@ export {
   schemaTypeLabel,
 } from "./model/api-reference.js";
 export { startPreviewServer } from "./preview/serve.js";
-export { buildCurlExample } from "./render/curl.js";
+export { buildCurlExample, buildIntegrationCurl } from "./render/curl.js";
 export { type GuideSection, resolveGuideSections } from "./render/guide.js";
 export { type HighlightLanguage, highlightCode } from "./render/highlight.js";
 export { renderInlineMarkdown, renderMarkdown } from "./render/markdown.js";

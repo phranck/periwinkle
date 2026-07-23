@@ -143,16 +143,32 @@ code {
 
 .pw-shell {
   min-height: 100vh;
+  max-width: var(--pw-container-max);
+  margin: 0 auto;
+  padding: var(--pw-space-page-top) var(--pw-space-page-inline) var(--pw-space-page-bottom);
 }
 
+/* Outer shell + inner layout mirror the reference `.api-reference-shell` +
+   `.api-reference-layout` compound: the intro sits above the two-column
+   grid, and everything shares the token cascade defined on this element. */
+.api-reference-shell {
+  display: block;
+  min-width: 0;
+}
+
+.api-reference-layout {
+  display: grid;
+  align-items: start;
+  grid-template-columns: var(--pw-docs-sidebar-width) minmax(0, 1fr);
+  gap: var(--pw-space-6);
+}
+
+/* Compatibility alias for tests that still reference the old wrapper class. */
 .pw-layout {
   display: grid;
   align-items: start;
   grid-template-columns: var(--pw-docs-sidebar-width) minmax(0, 1fr);
   gap: var(--pw-space-6);
-  max-width: var(--pw-container-max);
-  margin: 0 auto;
-  padding: var(--pw-space-page-top) var(--pw-space-page-inline) var(--pw-space-page-bottom);
 }
 
 .pw-content {
@@ -162,10 +178,20 @@ code {
   gap: var(--pw-space-8);
 }
 
+/* Free-standing intro copy uses the reference `.card-content-inset` treatment
+   so its text aligns with the copy inside surrounding cards. Bottom margin
+   mirrors the reference `mb-8` gap between intro and layout. */
+.card-content-inset {
+  padding-inline: var(--pw-card-content-inset);
+}
+
+.mb-8 {
+  margin-bottom: var(--pw-space-8);
+}
+
 .pw-intro {
-  /* The reference indents free-standing copy by --mc-card-content-inset so
-     paragraph text aligns with the copy inside cards (whose headers already
-     carry `padding-inline-start: --mc-docs-content-card-copy-inset`). */
+  /* Free-standing intro copy uses the reference `--mc-card-content-inset`
+     treatment so its text aligns with the copy inside surrounding cards. */
   padding-inline: var(--pw-card-content-inset);
 }
 
@@ -237,7 +263,9 @@ code {
 
 .sidebar__header {
   /* The header and the scrolling body intentionally overlap. This gives
-     Safari actual scrolling content to sample for the glass backdrop. */
+     Safari actual scrolling content to sample for the glass backdrop. The
+     first row is the reference-style Chapter header (title + toggle-all +
+     theme toggle); the second row hosts the search field. */
   position: relative;
   z-index: 3;
   grid-area: stack;
@@ -248,6 +276,15 @@ code {
   background: var(--pw-docs-sidebar-header-surface);
   -webkit-backdrop-filter: blur(var(--pw-space-4)) saturate(1.15);
   backdrop-filter: blur(var(--pw-space-4)) saturate(1.15);
+}
+
+/* Chapter row: title on the left, control cluster on the right (reference
+   `Sidebar.Header` grid layout). */
+.sidebar__header-chapter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--pw-space-3);
 }
 
 .api-reference-nav[data-pw-nav-scrolled="true"] .sidebar__header {
@@ -764,12 +801,9 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 /* ---------- Panels (guide & custom sections) ---------- */
 
-.pw-guide {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--pw-space-3);
-}
-
+/* Legacy custom-section panel (still used for non-guide custom sections).
+   Kept as a plain surface with border so any consumer that renders a
+   `.pw-panel` continues to look right. */
 .pw-panel {
   background: var(--pw-surface);
   border: 1px solid var(--pw-border);
@@ -785,6 +819,176 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 .pw-panel .pw-markdown {
   color: var(--pw-text-muted);
+}
+
+/* ---------- ContentCard + ContentPanel (adopted from the reference) ---------- */
+
+/* ContentCard is the outer radius for structured technical content. Every
+   recessed surface below it derives from this token, preserving concentric
+   card geometry (reference `.surface-card.content-card`). */
+.surface-card.content-card {
+  overflow: hidden;
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+}
+
+.content-card__header,
+.content-card__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-card-row);
+  min-height: var(--pw-docs-header-min-height);
+  padding: var(--pw-space-card-header);
+  background: var(--pw-docs-card-chrome);
+}
+
+.content-card__header {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.content-card__title {
+  padding-inline-start: var(--pw-card-content-inset);
+  color: var(--pw-text);
+  font-family: var(--pw-font-heading);
+  font-size: var(--pw-text-card-title);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.content-card__header-addon {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  margin-left: auto;
+}
+
+.content-card__body {
+  padding: var(--pw-space-card);
+}
+
+.content-card__body-intro,
+.content-card__copy,
+.content-card__body-stack {
+  /* An explicit zero-minimum track prevents long Markdown and nested panels
+     from expanding a card beyond its available inline space (reference
+     `.content-card__body-*` set). */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.content-card__body-intro {
+  gap: var(--pw-space-2);
+  margin-bottom: var(--pw-space-6);
+  padding-inline: var(--pw-card-content-inset);
+}
+
+.content-card__copy {
+  gap: var(--pw-space-6);
+  padding-inline: var(--pw-card-content-inset);
+}
+
+.content-card__body-stack {
+  gap: var(--pw-space-6);
+}
+
+.content-card__footer {
+  justify-content: space-between;
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-code);
+}
+
+/* Shared inner surface panel for content nested inside a ContentCard.
+   Derived radius keeps the panel flush inside the card (reference
+   `.content-panel`). Note: the `.content-panel` rule further down under the
+   code-block block already provides the same surface + radius; the compound
+   panel adds only the header/content sub-elements. */
+.content-panel__header,
+.content-panel__footer {
+  background: var(--pw-docs-card-chrome);
+}
+
+.content-panel__header-title {
+  color: var(--pw-text);
+  font-family: var(--pw-font-heading);
+  font-size: var(--pw-text-body);
+  font-weight: 600;
+  margin: 0;
+}
+
+.integration-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pw-space-3);
+  min-width: 0;
+}
+
+.integration-panel .content-panel__header {
+  padding: var(--pw-space-3) var(--pw-space-4) var(--pw-space-2);
+}
+
+.integration-panel .content-panel__content {
+  padding: 0 var(--pw-space-4) var(--pw-space-3);
+}
+
+.integration-panel__stack {
+  display: grid;
+  gap: var(--pw-space-3);
+}
+
+.integration-panel .pw-markdown {
+  color: var(--pw-text-muted);
+}
+
+.integration-panel .pw-markdown > p {
+  margin: 0;
+}
+
+/* View OpenAPI contract trigger: adopted from the reference
+   `.openapi-contract-dialog__trigger`. Compact chrome consistent with other
+   inline controls, right-aligned in its content panel. */
+.openapi-contract-dialog__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  min-height: var(--pw-size-control-compact);
+  justify-self: end;
+  border: 1px solid var(--pw-border);
+  border-radius: calc(var(--pw-radius) / 2);
+  padding: 0 var(--pw-space-3);
+  color: var(--pw-text);
+  background: var(--pw-surface-alt);
+  font-family: inherit;
+  font-size: var(--pw-text-code);
+  cursor: pointer;
+  transition:
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    border-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.openapi-contract-dialog__trigger:hover,
+.openapi-contract-dialog__trigger:focus-visible {
+  color: var(--pw-accent);
+  border-color: var(--pw-accent);
+}
+
+.openapi-contract-dialog__trigger svg {
+  width: var(--pw-size-icon-md);
+  height: var(--pw-size-icon-md);
+}
+
+.content-link {
+  color: var(--pw-link);
+}
+
+/* Below 40rem the integration grid collapses to one column, matching the
+   reference responsive rule. */
+@media (max-width: 40rem) {
+  .integration-panel-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Endpoint blocks ---------- */
@@ -2137,8 +2341,144 @@ mark[data-api-search-highlight] {
   .api-dialog::backdrop,
   .api-search-highlight-notice,
   mark[data-api-search-highlight],
-  .code-block__copy-success {
+  .code-block__copy-success,
+  .openapi-contract-dialog__loading-spinner {
     animation: none;
+  }
+
+  .openapi-contract-dialog.surface-card {
+    transition: none;
+  }
+}
+
+/* ---------- OpenAPI contract dialog (adopted from the reference) ---------- */
+
+:root {
+  --pw-docs-contract-dialog-max-width: 72rem;
+  --pw-docs-contract-dialog-viewport-gap: var(--pw-space-5);
+  --pw-docs-contract-dialog-close-icon-size: calc(var(--pw-size-icon-lg) + 2px);
+  --pw-docs-contract-dialog-header-block-size: calc(
+    var(--pw-text-card-title) *
+    1.25 +
+    var(--pw-space-card-header) +
+    var(--pw-space-card-header)
+  );
+  --pw-docs-contract-dialog-loading-height: calc(
+    var(--pw-docs-contract-dialog-header-block-size) +
+    var(--pw-space-card) +
+    var(--pw-space-card) +
+    var(--pw-size-icon-lg) +
+    var(--pw-space-8) +
+    var(--pw-space-8)
+  );
+}
+
+.openapi-contract-dialog.surface-card {
+  top: var(--pw-docs-contract-dialog-viewport-gap);
+  width: min(
+    calc(100vw - var(--pw-space-page-inline) - var(--pw-space-page-inline)),
+    var(--pw-docs-contract-dialog-max-width)
+  );
+  height: calc(
+    100dvh -
+    var(--pw-docs-contract-dialog-viewport-gap) -
+    var(--pw-docs-contract-dialog-viewport-gap)
+  );
+  min-height: 0;
+  max-height: none;
+  transition: height var(--pw-motion-duration-slow) var(--pw-nav-transition-easing);
+}
+
+.openapi-contract-dialog[data-openapi-contract-state="loading"] {
+  height: var(--pw-docs-contract-dialog-loading-height);
+}
+
+.openapi-contract-dialog__header-title {
+  padding-inline-start: var(--pw-card-content-inset);
+  color: var(--pw-text);
+  font-family: var(--pw-font-heading);
+  font-size: var(--pw-text-card-title);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.openapi-contract-dialog__close {
+  display: inline-flex;
+  width: var(--pw-size-control);
+  min-height: var(--pw-size-control);
+  height: var(--pw-size-control);
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  color: var(--pw-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+  box-shadow: none;
+}
+
+.openapi-contract-dialog__close:hover,
+.openapi-contract-dialog__close:focus-visible {
+  color: var(--pw-accent);
+}
+
+.openapi-contract-dialog__close-icon {
+  width: var(--pw-docs-contract-dialog-close-icon-size);
+  height: var(--pw-docs-contract-dialog-close-icon-size);
+}
+
+.openapi-contract-dialog .api-dialog__body {
+  padding: var(--pw-space-card);
+}
+
+.openapi-contract-dialog__loading {
+  display: none;
+  padding-block: var(--pw-space-8);
+}
+
+.openapi-contract-dialog[data-openapi-contract-state="loading"] .api-dialog__body {
+  display: grid;
+  flex: none;
+  place-items: center;
+}
+
+.openapi-contract-dialog[data-openapi-contract-state="loading"] [data-code-block] {
+  display: none;
+}
+
+.openapi-contract-dialog[data-openapi-contract-state="loading"] .openapi-contract-dialog__loading {
+  display: grid;
+  place-items: center;
+}
+
+.openapi-contract-dialog__loading-spinner {
+  width: var(--pw-size-icon-lg);
+  height: var(--pw-size-icon-lg);
+  border: var(--pw-docs-space-xs) solid color-mix(in srgb, var(--pw-text) 36%, transparent);
+  border-top-color: var(--pw-text);
+  border-radius: 999px;
+  animation: openapi-contract-spinner var(--pw-motion-duration-slow) linear infinite;
+}
+
+.code-block[data-code-fill-available],
+.code-block[data-code-fill-available] .code-block__surface,
+.code-block[data-code-fill-available] .code-block__frame {
+  display: flex;
+  min-block-size: 0;
+  flex: 1;
+}
+
+.code-block[data-code-fill-available] .code-block__frame {
+  max-block-size: none;
+}
+
+@keyframes openapi-contract-spinner {
+  to {
+    transform: rotate(1turn);
   }
 }
 
