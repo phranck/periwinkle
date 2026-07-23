@@ -407,14 +407,10 @@ code {
   color: color-mix(in srgb, currentColor var(--pw-icon-tone), var(--pw-icon-backdrop));
 }
 
-/* Icons that carry a functional color (status, success, method) must not
-   be washed out by the base tint. */
-.pw-response__icon,
-.pw-response__icon.pw-icon,
-.pw-response__icon .pw-icon,
-.code-block__copy-success-icon.pw-icon {
-  color: currentColor;
-}
+/* Intent-colored icons keep their own color from later single-class
+   rules (`.pw-response__icon`, `.code-block__copy-success-icon`), which
+   win over `.pw-icon`'s base tint by document order. The former override
+   forced currentColor at higher specificity and blanked those out. */
 
 /* Light mode renders icons slightly lifted so they do not read as black. */
 :root {
