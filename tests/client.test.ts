@@ -83,6 +83,7 @@ const PAGE_FIXTURE = `
       <details
         id="schema-book"
         data-pw-schema-card="schema-book"
+        data-schema-view="fields"
         data-api-search-entry
         data-api-search-group="Schemas"
         data-api-search-title="Book"
@@ -91,12 +92,43 @@ const PAGE_FIXTURE = `
         data-api-search-target="schema-book"
       >
         <summary>
-          <button type="button" data-pw-tab="fields" aria-pressed="true">Fields</button>
-          <button type="button" data-pw-tab="json" aria-pressed="false">JSON</button>
+          <div class="segmented-control" role="tablist" aria-label="Schema view for Book">
+            <button
+              type="button"
+              class="segmented-control__item"
+              id="schema-book-fields-tab"
+              role="tab"
+              aria-controls="schema-book-fields"
+              aria-selected="true"
+              tabindex="0"
+              data-schema-view-tab="fields"
+            >Fields</button>
+            <button
+              type="button"
+              class="segmented-control__item"
+              id="schema-book-json-tab"
+              role="tab"
+              aria-controls="schema-book-json"
+              aria-selected="false"
+              tabindex="-1"
+              data-schema-view-tab="json"
+            >JSON</button>
+          </div>
         </summary>
         <div class="pw-schema-card__body">
-          <div data-pw-panel="fields"><p>A book record.</p></div>
-          <div data-pw-panel="json" hidden></div>
+          <div
+            id="schema-book-fields"
+            role="tabpanel"
+            aria-labelledby="schema-book-fields-tab"
+            data-schema-view-panel="fields"
+          ><p>A book record.</p></div>
+          <div
+            id="schema-book-json"
+            role="tabpanel"
+            aria-labelledby="schema-book-json-tab"
+            data-schema-view-panel="json"
+            hidden
+          ></div>
         </div>
       </details>
     </main>
@@ -265,16 +297,68 @@ describe("sidebar scroll state", () => {
 });
 
 describe("schema tabs", () => {
-  it("switches panels and pressed states without closing the card", () => {
+  function jsonTab(): HTMLButtonElement | null {
+    return document.querySelector<HTMLButtonElement>('[data-schema-view-tab="json"]');
+  }
+  function fieldsTab(): HTMLButtonElement | null {
+    return document.querySelector<HTMLButtonElement>('[data-schema-view-tab="fields"]');
+  }
+  function fieldsPanel(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('[data-schema-view-panel="fields"]');
+  }
+  function jsonPanel(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('[data-schema-view-panel="json"]');
+  }
+  function card(): HTMLDetailsElement | null {
+    return document.querySelector<HTMLDetailsElement>("[data-pw-schema-card]");
+  }
+
+  it("switches panels and aria-selected without closing the card", () => {
     bindSchemaTabs(document);
-    const card = document.querySelector<HTMLDetailsElement>("[data-pw-schema-card]");
-    if (card) card.open = true;
-    const jsonTab = document.querySelector<HTMLButtonElement>('[data-pw-tab="json"]');
-    jsonTab?.click();
-    expect(jsonTab?.getAttribute("aria-pressed")).toBe("true");
-    expect(document.querySelector<HTMLElement>('[data-pw-panel="fields"]')?.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>('[data-pw-panel="json"]')?.hidden).toBe(false);
-    expect(card?.open).toBe(true);
+    const c = card();
+    if (c) c.open = true;
+    jsonTab()?.click();
+    expect(jsonTab()?.getAttribute("aria-selected")).toBe("true");
+    expect(fieldsTab()?.getAttribute("aria-selected")).toBe("false");
+    expect(jsonTab()?.tabIndex).toBe(0);
+    expect(fieldsTab()?.tabIndex).toBe(-1);
+    expect(c?.dataset.schemaView).toBe("json");
+    expect(fieldsPanel()?.hidden).toBe(true);
+    expect(jsonPanel()?.hidden).toBe(false);
+    expect(c?.open).toBe(true);
+  });
+
+  it("moves selection with ArrowRight/ArrowLeft/Home/End and focuses the new tab", () => {
+    bindSchemaTabs(document);
+    fieldsTab()?.focus();
+    fieldsTab()?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(document.activeElement).toBe(jsonTab());
+    expect(jsonTab()?.getAttribute("aria-selected")).toBe("true");
+
+    jsonTab()?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    expect(document.activeElement).toBe(fieldsTab());
+    expect(fieldsTab()?.getAttribute("aria-selected")).toBe("true");
+
+    fieldsTab()?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    expect(document.activeElement).toBe(jsonTab());
+
+    jsonTab()?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    expect(document.activeElement).toBe(fieldsTab());
+  });
+
+  it("persists the selected view per card and restores it on rebind", () => {
+    bindSchemaTabs(document);
+    jsonTab()?.click();
+    expect(window.localStorage.getItem("periwinkle:schema-view:schema-book")).toBe("json");
+
+    // Reset DOM to the pristine fixture (fields selected) and rebind — the
+    // controller must restore the persisted view.
+    document.body.innerHTML = PAGE_FIXTURE + DIALOG_FIXTURE;
+    bindSchemaTabs(document);
+    expect(card()?.dataset.schemaView).toBe("json");
+    expect(jsonTab()?.getAttribute("aria-selected")).toBe("true");
+    expect(fieldsPanel()?.hidden).toBe(true);
+    expect(jsonPanel()?.hidden).toBe(false);
   });
 });
 

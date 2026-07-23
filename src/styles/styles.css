@@ -338,20 +338,14 @@ code {
   transform: translate(-50%, -50%);
 }
 
-/* Expand/collapse-all: crossfade the direction matching the next action. */
-.api-reference-nav__toggle-all-up {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
+/* Expand/collapse-all: one chevron that flips 180 degrees between the
+   two states, matching the section chevrons. */
+.api-reference-nav__toggle-all svg {
+  transform: translate(-50%, -50%) rotate(0deg);
 }
 
-[data-pw-all-expanded="true"] .api-reference-nav__toggle-all-down {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
-}
-
-[data-pw-all-expanded="true"] .api-reference-nav__toggle-all-up {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+[data-pw-all-expanded="true"] .api-reference-nav__toggle-all svg {
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 
 /* Iconsax Bulk hardcodes opacity .4 on the secondary layer; lift it so the
@@ -570,10 +564,16 @@ code {
   transform: translate(-50%, -50%);
 }
 
+/* The section body is height/opacity-animated by the client. `contain: layout paint`
+   isolates layout and paint invalidations to this subtree so the WAAPI height
+   interpolation cannot force full-document reflows during expand/collapse;
+   `will-change` hints the compositor to promote it to its own layer. */
 .api-reference-nav__content {
   height: 0;
   opacity: 0;
   overflow: clip;
+  contain: layout paint;
+  will-change: height, opacity;
 }
 
 .api-reference-nav__section[open] .api-reference-nav__content {
@@ -642,16 +642,17 @@ code {
    intact; data-pw-expanded drives the JS-animated close before [open]
    flips at the animation's end. */
 .pw-chevron {
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
   transition: transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+  will-change: transform;
 }
 
 details[open] .pw-chevron {
-  transform: rotate(0deg);
+  transform: rotate(180deg);
 }
 
 details[data-pw-expanded="false"] .pw-chevron {
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
 }
 
 /* ---------- Sidebar operation items ---------- */
@@ -1170,37 +1171,49 @@ details[data-pw-expanded="false"] .pw-chevron {
   line-height: 1.25;
 }
 
+/* Schema-card tabs adopt the reference segmented control (see
+   "Segmented control (adopted from the reference)" block below). Local slot
+   sizing mirrors the reference `.schema-card { --segmented-control-* }` map,
+   with derived radii keeping the switch flush inside the card. */
+.pw-schema-card {
+  --pw-schema-toggle-inset: var(--pw-docs-space-xs);
+  --pw-schema-toggle-radius-trim: 1px;
+  --pw-schema-toggle-radius: max(
+    0px,
+    calc(
+      var(--pw-docs-content-panel-radius) -
+      var(--pw-space-1) -
+      var(--pw-schema-toggle-radius-trim)
+    )
+  );
+  --pw-schema-toggle-tab-radius: max(
+    0px,
+    calc(var(--pw-schema-toggle-radius) - var(--pw-schema-toggle-inset))
+  );
+  --pw-schema-toggle-tab-height: calc(var(--pw-size-control-compact) - var(--pw-space-1));
+  --segmented-control-inset: var(--pw-schema-toggle-inset);
+  --segmented-control-radius: var(--pw-schema-toggle-radius);
+  --segmented-control-item-radius: var(--pw-schema-toggle-tab-radius);
+  --segmented-control-item-min-height: var(--pw-schema-toggle-tab-height);
+  --segmented-control-item-padding-inline: var(--pw-space-3);
+}
+
+/* The switch keeps interaction active even though the card summary hosts it,
+   matching the reference `.schema-card .segmented-control { pointer-events: auto; }`. */
 .pw-schema-card__tabs {
-  display: inline-flex;
-  border: 1px solid var(--pw-border);
-  border-radius: calc(var(--pw-radius) / 2);
-  overflow: hidden;
+  pointer-events: auto;
 }
 
-.pw-schema-card__tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(var(--pw-size-control-compact) - var(--pw-space-1));
-  border: none;
-  background: transparent;
-  color: var(--pw-text-muted);
-  font-family: var(--pw-font-base);
-  font-size: var(--pw-text-code);
-  padding: 0 var(--pw-space-3);
-  cursor: pointer;
-}
-
-.pw-schema-card__tab[aria-pressed="true"] {
-  background: var(--pw-accent);
-  color: var(--pw-background);
-}
-
+/* The card body is height/opacity-animated by the client. Same containment
+   recipe as the sidebar section content, so long field tables don't
+   invalidate the surrounding page layout during the animation. */
 .pw-schema-card__body {
   border-top: 1px solid var(--pw-border);
   padding: var(--pw-space-card);
   display: grid;
   gap: var(--pw-space-4);
+  contain: layout paint;
+  will-change: height, opacity;
 }
 
 .pw-schema-card__variants {
@@ -2129,6 +2142,112 @@ mark[data-api-search-highlight] {
   }
 }
 
+/* ---------- Segmented control (adopted from the reference) ---------- */
+
+/* Reusable segmented control adopted verbatim from the reference
+   (`components.css` `.segmented-control` block). Local slot sizing is fed
+   from the consuming card through `--segmented-control-*` custom properties,
+   so future call sites can reuse this surface without editing the shared
+   rules. Color values are mapped to periwinkle's `--pw-*` tokens. */
+.segmented-control {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-width: 0;
+  border: 1px solid var(--pw-border);
+  border-radius: var(--segmented-control-radius, calc(var(--pw-radius) / 2));
+  padding: var(--segmented-control-inset, var(--pw-space-1));
+  background: var(--pw-docs-code-surface, var(--pw-surface-alt));
+}
+
+/* Selection indicator that slides between selected items. Position and size
+   come from `--segmented-control-indicator-*` custom properties written by
+   the client controller when it wires the segmented control. */
+.segmented-control::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: var(--segmented-control-indicator-width, 0px);
+  height: var(--segmented-control-indicator-height, 0px);
+  border-radius: var(--segmented-control-item-radius, calc(var(--pw-radius) / 2));
+  background: color-mix(in srgb, var(--pw-accent) 16%, var(--pw-surface-alt));
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(
+    var(--segmented-control-indicator-x, 0px),
+    var(--segmented-control-indicator-y, 0px),
+    0
+  );
+  transition:
+    transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing),
+    width var(--pw-nav-transition-duration) var(--pw-nav-transition-easing),
+    height var(--pw-nav-transition-duration) var(--pw-nav-transition-easing),
+    opacity var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.segmented-control[data-segmented-control-indicator-ready="true"]::before {
+  opacity: 1;
+}
+
+.segmented-control__item {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--segmented-control-item-gap, var(--pw-space-2));
+  min-height: var(--segmented-control-item-min-height, var(--pw-size-control-compact));
+  border: 0;
+  border-radius: var(--segmented-control-item-radius, calc(var(--pw-radius) / 2));
+  padding-inline: var(--segmented-control-item-padding-inline, var(--pw-space-3));
+  color: var(--pw-text-muted);
+  background: transparent;
+  font-family: var(--pw-font-base);
+  font-size: var(--pw-text-code);
+  cursor: pointer;
+  transition:
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.segmented-control__item:hover,
+.segmented-control__item:focus-visible {
+  color: var(--pw-text);
+}
+
+.segmented-control__item[aria-selected="true"] {
+  color: var(--pw-text);
+  background: color-mix(in srgb, var(--pw-accent) 16%, var(--pw-surface-alt));
+}
+
+/* Once the indicator has taken over, the selected item's own background
+   becomes transparent so the moving pill is the only lit surface. */
+.segmented-control[data-segmented-control-indicator-ready="true"]
+.segmented-control__item[aria-selected="true"] {
+  background: transparent;
+}
+
+.segmented-control__item-icon {
+  display: inline-flex;
+  width: var(--segmented-control-item-icon-size, var(--pw-size-icon-md));
+  height: var(--segmented-control-item-icon-size, var(--pw-size-icon-md));
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--segmented-control-item-icon-radius, 999px);
+  background: var(--segmented-control-item-icon-background, var(--pw-surface-alt));
+}
+
+.segmented-control__item-icon > img,
+.segmented-control__item-icon > svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ---------- Responsive ---------- */
 
 /* The reference collapses the two-column reference layout below 64rem and
@@ -2171,7 +2290,10 @@ mark[data-api-search-highlight] {
   .api-reference-nav__summary,
   .api-reference-nav__toggle-all svg,
   .pw-nav__icon-button svg,
-  .pw-schema-card__chevron {
+  .pw-schema-card__chevron,
+  .pw-chevron,
+  .segmented-control::before,
+  .segmented-control__item {
     transition: none;
   }
 }

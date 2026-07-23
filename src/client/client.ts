@@ -204,7 +204,7 @@ export function bindCollapsibles(root: Document): void {
 
     section.querySelector("summary")?.addEventListener("click", (event) => {
       // Tab buttons inside the summary switch views, they never toggle.
-      if (event.target instanceof Element && event.target.closest("[data-pw-tab]")) return;
+      if (event.target instanceof Element && event.target.closest("[data-schema-view-tab]")) return;
       event.preventDefault();
       const expanded = section.dataset.pwExpanded !== "true";
       setSectionOpen(section, expanded);
@@ -274,33 +274,91 @@ export function bindSidebarScrollState(root: Document): void {
   }
 }
 
+/** Keyboard keys that move focus/selection inside the schema view tablist. */
+const SCHEMA_TAB_NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "Home", "End"]);
+
+function schemaViewStorageKey(cardKey: string): string {
+  return `${STORAGE_PREFIX}schema-view:${cardKey}`;
+}
+
 /**
- * Binds the schema card view tabs: `[data-pw-tab]` buttons switch the
- * sibling `[data-pw-panel]` visibility inside the same card. Clicks must not
- * toggle the surrounding `details` element, so the handler stops the event.
+ * Binds one schema card's view switch. The switch is a segmented control
+ * with `role="tablist"`; each `[data-schema-view-tab]` sets a value the
+ * client mirrors onto the card via `data-schema-view`, keeps
+ * `aria-selected` and `tabIndex` in sync, and updates the sibling
+ * `[data-schema-view-panel]` visibility. Arrow/Home/End keys cycle focus
+ * exactly like the reference `SchemaCardsController`.
+ *
+ * The last selected view per card persists in `localStorage` under the
+ * `periwinkle:schema-view:<anchor>` key so a reload restores the caller's
+ * previous choice.
+ */
+function bindSchemaCard(card: HTMLElement): void {
+  const tabs = [...card.querySelectorAll<HTMLButtonElement>("[data-schema-view-tab]")];
+  if (tabs.length === 0) return;
+  const panels = [...card.querySelectorAll<HTMLElement>("[data-schema-view-panel]")];
+  const cardKey = card.dataset.pwSchemaCard;
+
+  /** Available view names, taken from the tab attributes so the map is source-of-truth. */
+  const views = new Set(tabs.map((tab) => tab.dataset.schemaViewTab ?? "fields"));
+
+  const select = (view: string, focus = false): void => {
+    if (!views.has(view)) return;
+    card.dataset.schemaView = view;
+    for (const tab of tabs) {
+      const selected = tab.dataset.schemaViewTab === view;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      if (selected && focus) tab.focus();
+    }
+    for (const panel of panels) {
+      panel.hidden = panel.dataset.schemaViewPanel !== view;
+    }
+    if (cardKey) storageSet(schemaViewStorageKey(cardKey), view);
+  };
+
+  // Restore the persisted view before wiring listeners so the initial paint
+  // reflects the user's last choice instead of the SSR default.
+  const stored = cardKey ? storageGet(schemaViewStorageKey(cardKey)) : null;
+  if (stored && views.has(stored)) select(stored);
+
+  for (const tab of tabs) {
+    tab.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const view = tab.dataset.schemaViewTab;
+      if (view) select(view);
+    });
+    tab.addEventListener("keydown", (event) => {
+      if (!SCHEMA_TAB_NAV_KEYS.has(event.key)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const currentIndex = tabs.indexOf(tab);
+      const nextIndex =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? tabs.length - 1
+            : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      const nextTab = tabs[nextIndex];
+      const nextView = nextTab?.dataset.schemaViewTab;
+      if (nextView) select(nextView, true);
+    });
+  }
+}
+
+/**
+ * Binds every schema card's tablist: click, keyboard navigation, and
+ * per-card persistence of the selected view. Clicks inside the tablist must
+ * not toggle the surrounding `details` element, which the summary handler
+ * in {@link bindCollapsibles} already guards against by ignoring events
+ * whose target sits inside `[data-schema-view-tab]`.
  *
  * @param root The document containing the schema cards.
  */
 export function bindSchemaTabs(root: Document): void {
   for (const card of root.querySelectorAll<HTMLElement>("[data-pw-schema-card]")) {
-    const tabs = [...card.querySelectorAll<HTMLButtonElement>("[data-pw-tab]")];
-    const panels = [...card.querySelectorAll<HTMLElement>("[data-pw-panel]")];
-    for (const tab of tabs) {
-      tab.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const view = tab.dataset.pwTab;
-        if (!view) return;
-        for (const other of tabs) {
-          other.setAttribute("aria-pressed", String(other === tab));
-        }
-        for (const panel of panels) {
-          panel.hidden = panel.dataset.pwPanel !== view;
-        }
-        const details = card.closest("details");
-        if (details && !details.open) details.open = true;
-      });
-    }
+    bindSchemaCard(card);
   }
 }
 

@@ -3,8 +3,11 @@
  * documentation table and the raw JSON schema.
  *
  * The card uses native `details`/`summary` for collapsing (usable without
- * JavaScript); the fields/JSON tab switch binds through `data-pw-*` hooks in
- * the client bundle. The fields view is the no-JS default.
+ * JavaScript); the view switch is a shared {@link SegmentedControl} exposing
+ * `role="tablist"` semantics and `data-schema-view-tab` hooks, so the client
+ * controller can wire keyboard navigation, `aria-selected` bookkeeping, and
+ * per-card persistence exactly like the reference implementation. The fields
+ * view is the no-JS default.
  */
 
 import type { ApiSchema } from "../model/api-reference.js";
@@ -12,6 +15,7 @@ import { schemaAnchor } from "../model/api-reference.js";
 import { codeKey, type DocsData } from "../render/prepare.js";
 import { ArrowCircleDownIcon } from "./icons.jsx";
 import { CodeBlock, InlineMarkdown, Markdown } from "./primitives.jsx";
+import { SegmentedControl } from "./SegmentedControl.jsx";
 
 /**
  * Pairs each field row with a render key that stays unique even when the
@@ -36,12 +40,17 @@ function withFieldKeys(fields: ApiSchema["fields"]): Array<[string, ApiSchema["f
 export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData }) {
   const jsonBlock = data.codeBlocks[codeKey(schema.anchor, "json")];
   const headingId = `${schema.anchor}-heading`;
+  const fieldsTabId = `${schema.anchor}-fields-tab`;
+  const jsonTabId = `${schema.anchor}-json-tab`;
+  const fieldsPanelId = `${schema.anchor}-fields`;
+  const jsonPanelId = `${schema.anchor}-json`;
 
   return (
     <details
       className="pw-schema-card"
       id={schema.anchor}
       data-pw-schema-card={schema.anchor}
+      data-schema-view="fields"
       data-api-search-entry=""
       data-api-search-group="Schemas"
       data-api-search-title={schema.name}
@@ -53,31 +62,45 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
         <span className="pw-schema-card__title" id={headingId}>
           {schema.name}
         </span>
-        <span className="pw-schema-card__tabs">
-          <button
-            type="button"
-            className="pw-schema-card__tab"
-            data-pw-tab="fields"
-            aria-pressed="true"
+        <SegmentedControl
+          className="pw-schema-card__tabs"
+          role="tablist"
+          aria-label={`Schema view for ${schema.name}`}
+        >
+          <SegmentedControl.Item
+            id={fieldsTabId}
+            role="tab"
+            aria-controls={fieldsPanelId}
+            aria-selected="true"
+            tabIndex={0}
+            data-schema-view-tab="fields"
           >
             Fields
-          </button>
-          <button
-            type="button"
-            className="pw-schema-card__tab"
-            data-pw-tab="json"
-            aria-pressed="false"
+          </SegmentedControl.Item>
+          <SegmentedControl.Item
+            id={jsonTabId}
+            role="tab"
+            aria-controls={jsonPanelId}
+            aria-selected="false"
+            tabIndex={-1}
+            data-schema-view-tab="json"
           >
             JSON schema
-          </button>
-        </span>
+          </SegmentedControl.Item>
+        </SegmentedControl>
         <span className="pw-schema-card__chevron pw-chevron" aria-hidden="true">
           <ArrowCircleDownIcon />
         </span>
       </summary>
       <div className="pw-schema-card__body">
         {schema.description ? <Markdown content={schema.description} /> : null}
-        <div className="pw-schema-card__panel" data-pw-panel="fields">
+        <div
+          className="pw-schema-card__panel"
+          id={fieldsPanelId}
+          role="tabpanel"
+          aria-labelledby={fieldsTabId}
+          data-schema-view-panel="fields"
+        >
           {schema.fields.length > 0 ? (
             <table className="pw-fields">
               <thead>
@@ -131,7 +154,14 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
             </div>
           ) : null}
         </div>
-        <div className="pw-schema-card__panel" data-pw-panel="json" hidden>
+        <div
+          className="pw-schema-card__panel"
+          id={jsonPanelId}
+          role="tabpanel"
+          aria-labelledby={jsonTabId}
+          data-schema-view-panel="json"
+          hidden
+        >
           {jsonBlock ? <CodeBlock block={jsonBlock} /> : null}
         </div>
       </div>
