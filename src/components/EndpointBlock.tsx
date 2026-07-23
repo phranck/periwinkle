@@ -97,25 +97,27 @@ export function EndpointBlock({
           {operation.parameters.length > 0 ? (
             <section className="pw-endpoint__section" aria-labelledby={`${anchor}-parameters`}>
               <SectionHeader icon={<CodeIcon />} id={`${anchor}-parameters`} title="Parameters" />
-              <ul className="pw-params">
+              <dl className="content-panel-list">
                 {operation.parameters.map((parameter) => (
-                  <li className="pw-param" key={`${parameter.location}-${parameter.name}`}>
-                    <span className="pw-param__header">
-                      <code className="pw-param__name">{parameter.name}</code>
-                      <span className="pw-param__location">{parameter.location}</span>
-                      <code className="pw-param__type">{parameter.typeLabel}</code>
+                  <div
+                    className="content-panel parameter-card"
+                    key={`${parameter.location}-${parameter.name}`}
+                  >
+                    <dt className="content-panel__header parameter-card__header">
+                      <code className="parameter-card__name">{parameter.name}</code>
+                      <span className="parameter-card__location">{parameter.location}</span>
                       {parameter.required ? (
-                        <span className="pw-param__required">Required</span>
+                        <span className="parameter-card__requirement">Required</span>
                       ) : null}
-                    </span>
+                    </dt>
                     {parameter.description ? (
-                      <span className="pw-param__description">
+                      <dd className="content-panel__content parameter-card__body">
                         <InlineMarkdown content={parameter.description} />
-                      </span>
+                      </dd>
                     ) : null}
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </dl>
             </section>
           ) : null}
 
