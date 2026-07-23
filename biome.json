@@ -5,6 +5,9 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": ["**", "!graphify-out/**", "!dist/**", "!node_modules/**"]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
