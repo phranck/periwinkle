@@ -111,7 +111,8 @@ export interface GuideConfig {
  * @property showMethods Render the HTTP method (`GET`, `POST`, …) right-aligned
  *   inside each endpoint nav item. Default `false`.
  * @property showThemeToggle Show the light/dark theme toggle in the sidebar
- *   header. Default `true`.
+ *   header. Default `false` (the top navigation carries the theme toggle
+ *   by default; enable this if you want it in both places).
  * @property showSearch Show the search field (opens the document search
  *   dialog). Default `true`.
  */
@@ -120,6 +121,43 @@ export interface SidebarConfig {
   showMethods?: boolean;
   showThemeToggle?: boolean;
   showSearch?: boolean;
+}
+
+/**
+ * Optional GitHub link surfaced in the top navigation. Set `url` to the
+ * repository or project home a visitor should reach; `label` overrides the
+ * default aria-label/title text `"GitHub"`.
+ */
+export interface NavigationGithubLink {
+  url: string;
+  label?: string;
+}
+
+/**
+ * Top navigation bar rendered above the reference shell. Sticky at the top
+ * with a frosted glass backdrop once the page scrolls behind it. Every
+ * affordance is toggleable; when everything is disabled the bar is not
+ * rendered.
+ *
+ * @property showHome Render the leading home link (title left-aligned).
+ *   Default `true`.
+ * @property homeLabel Text on the home link. Default `"API reference"`.
+ * @property homeHref Anchor the home link points at. Default `"#"` (jumps to
+ *   the top of the page).
+ * @property showSearch Render a search trigger button that opens the document
+ *   search dialog (same dialog the sidebar search field opens). Default `true`.
+ * @property showThemeToggle Render the theme toggle on the far right. Default
+ *   `true`.
+ * @property github Optional GitHub link. Renders a GitHub mark left of the
+ *   theme toggle when set.
+ */
+export interface NavigationConfig {
+  showHome?: boolean;
+  homeLabel?: string;
+  homeHref?: string;
+  showSearch?: boolean;
+  showThemeToggle?: boolean;
+  github?: NavigationGithubLink;
 }
 
 /**
@@ -230,6 +268,7 @@ export interface PeriwinkleConfig {
     /** Corner radius applied to cards, badges, and buttons, e.g. `6px`. */
     radius?: string;
   };
+  navigation?: NavigationConfig;
   sidebar?: SidebarConfig;
   features?: FeatureFlags;
   sizing?: SizingConfig;
@@ -264,6 +303,9 @@ export interface ResolvedConfig {
     };
     fonts: ThemeFonts;
     radius: string;
+  };
+  navigation: Required<Omit<NavigationConfig, "github">> & {
+    github: NavigationGithubLink | undefined;
   };
   sidebar: Required<SidebarConfig>;
   features: Required<FeatureFlags>;
@@ -341,12 +383,24 @@ export const DEFAULT_FONTS: ThemeFonts = {
 /** Default corner radius token: cards render at this radius, compact controls at half of it. */
 export const DEFAULT_RADIUS = "1rem";
 
-/** Default sidebar affordances (mirroring the current shipped behaviour). */
+/** Default sidebar affordances. */
 export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
   title: "Reference",
   showMethods: false,
-  showThemeToggle: true,
+  showThemeToggle: false,
   showSearch: true,
+};
+
+/** Default top navigation bar: home + search + theme toggle, no GitHub link. */
+export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github">> & {
+  github: NavigationGithubLink | undefined;
+} = {
+  showHome: true,
+  homeLabel: "API reference",
+  homeHref: "#",
+  showSearch: true,
+  showThemeToggle: true,
+  github: undefined,
 };
 
 /** Default feature flags: every affordance shipped by periwinkle is on. */
@@ -470,6 +524,43 @@ function validateFooterLinks(value: unknown): FooterLink[] {
   });
 }
 
+function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
+  if (value === undefined) return { ...DEFAULT_NAVIGATION };
+  if (!isRecord(value)) fail("navigation must be an object.");
+  assertKnownKeys(
+    value,
+    ["showHome", "homeLabel", "homeHref", "showSearch", "showThemeToggle", "github"],
+    "navigation",
+  );
+  assertOptionalBoolean(value.showHome, "navigation.showHome");
+  assertOptionalString(value.homeLabel, "navigation.homeLabel");
+  assertOptionalString(value.homeHref, "navigation.homeHref");
+  assertOptionalBoolean(value.showSearch, "navigation.showSearch");
+  assertOptionalBoolean(value.showThemeToggle, "navigation.showThemeToggle");
+  let github: NavigationGithubLink | undefined;
+  if (value.github !== undefined) {
+    if (!isRecord(value.github)) fail("navigation.github must be an object.");
+    assertKnownKeys(value.github, ["url", "label"], "navigation.github");
+    if (typeof value.github.url !== "string" || value.github.url.length === 0) {
+      fail("navigation.github.url must be a non-empty string.");
+    }
+    assertOptionalString(value.github.label, "navigation.github.label");
+    github = {
+      url: value.github.url,
+      ...(value.github.label !== undefined ? { label: value.github.label as string } : {}),
+    };
+  }
+  return {
+    showHome: (value.showHome as boolean | undefined) ?? DEFAULT_NAVIGATION.showHome,
+    homeLabel: (value.homeLabel as string | undefined) ?? DEFAULT_NAVIGATION.homeLabel,
+    homeHref: (value.homeHref as string | undefined) ?? DEFAULT_NAVIGATION.homeHref,
+    showSearch: (value.showSearch as boolean | undefined) ?? DEFAULT_NAVIGATION.showSearch,
+    showThemeToggle:
+      (value.showThemeToggle as boolean | undefined) ?? DEFAULT_NAVIGATION.showThemeToggle,
+    github,
+  };
+}
+
 function validateSidebar(value: unknown): Required<SidebarConfig> {
   if (value === undefined) return { ...DEFAULT_SIDEBAR };
   if (!isRecord(value)) fail("sidebar must be an object.");
@@ -564,6 +655,7 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
       "spec",
       "site",
       "theme",
+      "navigation",
       "sidebar",
       "features",
       "sizing",
@@ -650,6 +742,7 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
       },
       radius: (theme.radius as string | undefined) ?? DEFAULT_RADIUS,
     },
+    navigation: validateNavigation(config.navigation),
     sidebar: validateSidebar(config.sidebar),
     features: validateFeatures(config.features),
     sizing: validateSizing(config.sizing),
