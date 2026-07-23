@@ -463,8 +463,48 @@ export function setupPeriwinkle(root: Document): void {
   bindCollapsibles(root);
   bindToggleAll(root);
   bindSidebarScrollState(root);
+  bindSchemaCardsToggleAll(root);
   bindSearchDialog(root);
   bindSchemaTabs(root);
   bindCopyButtons(root);
   bindOpenApiContractDialog(root);
+}
+
+/**
+ * Binds the Schemas chapter's "expand/collapse all" affordance to every
+ * schema card on the page. Mirrors the sidebar toggle-all behaviour so both
+ * controls share the animated open/close, persistence, and the
+ * `data-pw-all-expanded` state hook the stylesheet reads to swap the
+ * chevron direction.
+ *
+ * @param root The document containing the chapter toggle and schema cards.
+ */
+export function bindSchemaCardsToggleAll(root: Document): void {
+  const button = root.querySelector<HTMLButtonElement>("[data-pw-schema-cards-toggle]");
+  if (!button) return;
+
+  const cards = (): HTMLDetailsElement[] => [
+    ...root.querySelectorAll<HTMLDetailsElement>("[data-pw-schema-card]"),
+  ];
+
+  const update = (): void => {
+    const list = cards();
+    const allExpanded = list.length > 0 && list.every((card) => card.open);
+    button.dataset.pwAllExpanded = String(allExpanded);
+    const label = allExpanded ? "Collapse all schema cards" : "Expand all schema cards";
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
+  };
+
+  button.addEventListener("click", () => {
+    const shouldExpand = cards().some((card) => !(sectionStates.get(card) ?? card.open));
+    for (const card of cards()) {
+      setSectionOpen(card, shouldExpand);
+      const key = card.dataset.pwSchemaCard;
+      if (key) storageSet(sectionStorageKey(key), String(shouldExpand));
+    }
+    update();
+  });
+  for (const card of cards()) card.addEventListener("toggle", update);
+  update();
 }
