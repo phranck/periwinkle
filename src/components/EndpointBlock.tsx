@@ -18,6 +18,15 @@ function responseTone(status: string): string {
   return "neutral";
 }
 
+/** Accessible card label per status class (reference `responseLabel`). */
+function responseLabel(status: string): string {
+  if (status.startsWith("2")) return "Success response";
+  if (status.startsWith("3")) return "Redirect response";
+  if (status.startsWith("4")) return "Client error response";
+  if (status.startsWith("5")) return "Server error response";
+  return "Response";
+}
+
 function mediaSchemaRefs(media: ApiMediaType): string[] {
   return media.schemaRefs ?? (media.schemaRef ? [media.schemaRef] : []);
 }
@@ -134,65 +143,79 @@ export function EndpointBlock({
               {operation.requestBody.description ? (
                 <Markdown content={operation.requestBody.description} />
               ) : null}
-              {operation.requestBody.mediaTypes.map((media) => {
-                const exampleBlock = data.codeBlocks[codeKey(anchor, "request", media.mediaType)];
-                return (
-                  <div className="pw-media" key={media.mediaType}>
-                    <span className="pw-media__header">
-                      <code className="pw-media__type">{media.mediaType}</code>
-                      {mediaSchemaRefs(media).map((ref) => (
-                        <a className="pw-schema-link" href={`#${schemaAnchor(ref)}`} key={ref}>
-                          {ref}
-                        </a>
-                      ))}
-                    </span>
-                    {exampleBlock ? (
-                      <CodeBlock
-                        block={exampleBlock}
-                        label="Example"
-                        showCopyButton={features.copyButton}
-                      />
-                    ) : null}
-                  </div>
-                );
-              })}
+              <div className="content-panel-list">
+                {operation.requestBody.mediaTypes.map((media) => {
+                  const exampleBlock = data.codeBlocks[codeKey(anchor, "request", media.mediaType)];
+                  return (
+                    <div className="content-panel request-body-card" key={media.mediaType}>
+                      <div className="content-panel__header request-body-card__header">
+                        <code className="request-body-card__media-type">{media.mediaType}</code>
+                        {mediaSchemaRefs(media).map((ref) => (
+                          <a
+                            className="content-link request-body-card__schema-link"
+                            href={`#${schemaAnchor(ref)}`}
+                            key={ref}
+                          >
+                            {ref}
+                          </a>
+                        ))}
+                      </div>
+                      {exampleBlock ? (
+                        <div className="content-panel__content request-body-card__body">
+                          <CodeBlock
+                            block={exampleBlock}
+                            label="Example"
+                            showCopyButton={features.copyButton}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
             </section>
           ) : null}
 
           <section className="pw-endpoint__section" aria-labelledby={`${anchor}-responses`}>
             <SectionHeader icon={<TickCircleIcon />} id={`${anchor}-responses`} title="Responses" />
-            <ul className="pw-responses">
+            <div className="content-panel-list">
               {operation.responses.map((response) => {
                 const tone = responseTone(response.status);
                 const StatusIcon = tone === "success" ? TickCircleIcon : Warning2Icon;
                 return (
-                  <li className={`pw-response pw-response--${tone}`} key={response.status}>
-                    <span className="pw-response__status">
-                      <StatusIcon className="pw-response__icon" aria-hidden="true" />
-                      <code className="pw-response__code">{response.status}</code>
+                  <article
+                    className={`content-panel response-card response-card--${tone}`}
+                    aria-label={responseLabel(response.status)}
+                    key={response.status}
+                  >
+                    <span className="response-card__status">
+                      <StatusIcon className="response-card__icon" aria-hidden="true" />
+                      <code className="response-card__code">{response.status}</code>
                     </span>
-                    <div className="pw-response__content">
+                    <div className="response-card__content">
                       {response.description ? (
-                        <div className="pw-response__summary">
+                        <div className="response-card__summary">
                           <InlineMarkdown content={response.description} />
                         </div>
                       ) : null}
                       {response.mediaTypes.length > 0 ? (
-                        <div className="pw-response__meta">
+                        <div className="response-card__meta">
                           {response.mediaTypes.map((media) => (
-                            <div className="pw-response__meta-row" key={media.mediaType}>
-                              <span className="pw-response__meta-item">
-                                <span className="pw-response__meta-label">Content-Type:</span>
-                                <code className="pw-response__media-type">{media.mediaType}</code>
+                            <div className="response-card__meta-row" key={media.mediaType}>
+                              <span className="response-card__meta-item">
+                                <span className="response-card__meta-label">Content-Type:</span>
+                                <code className="response-card__media-type">{media.mediaType}</code>
                               </span>
                               {mediaSchemaRefs(media).map((ref) => (
-                                <span className="pw-response__meta-item" key={ref}>
-                                  <span className="pw-response__meta-label">Response Object:</span>
+                                <span className="response-card__meta-item" key={ref}>
+                                  <span className="response-card__meta-label">
+                                    Response Object:
+                                  </span>
                                   <a
-                                    className="content-link pw-response__schema-link"
+                                    className="content-link response-card__schema-link"
                                     href={`#${schemaAnchor(ref)}`}
                                   >
-                                    <code className="pw-response__schema-name">{ref}</code>
+                                    <code className="response-card__schema-name">{ref}</code>
                                   </a>
                                 </span>
                               ))}
@@ -201,10 +224,10 @@ export function EndpointBlock({
                         </div>
                       ) : null}
                     </div>
-                  </li>
+                  </article>
                 );
               })}
-            </ul>
+            </div>
           </section>
 
           {curlBlock ? (

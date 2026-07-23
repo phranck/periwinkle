@@ -40,10 +40,10 @@ describe("ApiDocs", () => {
 
   it("renders responses without code blocks (reference behavior)", () => {
     // The reference response-card renders no CodeBlock for its media examples
-    // — only the media/schema header row. Verify no code-block markup appears
-    // inside any .pw-response.
+    // — only the labeled Content-Type / Response Object meta rows. Verify no
+    // code-block markup appears inside any .response-card.
     const responseSlices = [
-      ...defaultHtml.matchAll(/class="pw-response [^"]*"[\s\S]*?<\/li>/g),
+      ...defaultHtml.matchAll(/class="content-panel response-card [^"]*"[\s\S]*?<\/article>/g),
     ].map((match) => match[0]);
     expect(responseSlices.length).toBeGreaterThan(0);
     for (const slice of responseSlices) {
