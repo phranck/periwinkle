@@ -36,7 +36,7 @@
   --pw-size-icon-lg: 1.5rem;
   --pw-size-text-icon: 1.2cap;
   --pw-text-body: 1.125rem;
-  --pw-text-code: 0.9375rem;
+  --pw-text-code: 1rem;
   --pw-text-card-title: 1.75rem;
   --pw-text-subsection: 1.625rem;
   --pw-text-section: 2.25rem;
@@ -419,9 +419,9 @@ code {
 
 [data-theme="dark"] {
   --pw-icon-tone: 100%;
-  /* Dark palettes need a slightly stronger mix to lift the chrome
-     off the surrounding surface. */
-  --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 8%, var(--pw-surface));
+  /* Dark palettes need a stronger mix to lift the chrome off the
+     surrounding surface. */
+  --pw-docs-card-chrome: color-mix(in srgb, var(--pw-text) 12%, var(--pw-surface));
 }
 
 /* Icon-tone backdrop cascades from the actual surface color under each
@@ -598,7 +598,6 @@ code {
   cursor: pointer;
   font-family: var(--pw-font-mono);
   font-size: var(--pw-text-code);
-  transition: background-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
 }
 
 .api-reference-nav__summary:hover {
