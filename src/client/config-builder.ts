@@ -303,7 +303,7 @@ function createInitialState(): BuilderState {
     },
     navigation: {
       ...DEFAULT_NAVIGATION,
-      logo: "resources/Logo_Banner/logo.svg",
+      logo: "assets/Logo_Banner/logo.png",
       links: [
         { label: "Config builder", href: "/periwinkle/config-builder.html", target: "_blank" },
       ],

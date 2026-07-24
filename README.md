@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/phranck/periwinkle)](https://layered.mit-license.org)
 [![Last commit](https://img.shields.io/github/last-commit/phranck/periwinkle)](https://github.com/phranck/periwinkle/commits/main)
 
-![periwinkle banner](resources/Logo_Banner/banner.png)
+![periwinkle banner](assets/Logo_Banner/banner.jpg)
 
 </div>
 

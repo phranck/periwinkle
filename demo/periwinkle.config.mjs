@@ -13,7 +13,7 @@ export default {
     serverUrl: "https://api.bookstore.example",
   },
   navigation: {
-    logo: "resources/Logo_Banner/logo.svg",
+    logo: "assets/Logo_Banner/logo.png",
     // The "Config builder" nav link is added automatically by periwinkle
     // when the builder page is generated — no need to configure it here.
   },
