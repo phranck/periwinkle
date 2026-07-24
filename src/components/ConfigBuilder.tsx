@@ -320,7 +320,7 @@ function IconSave() {
 export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navigation"] }) {
   return (
     <div className="pw-app pw-cb-app">
-      <TopNav navigation={navigation} />
+      <TopNav navigation={navigation} currentPage="builder" />
       <section className="pw-cb__intro">
         <h1 className="pw-cb__title">Configuration Builder</h1>
         <p className="pw-cb__lead">

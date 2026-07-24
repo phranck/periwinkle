@@ -18,6 +18,8 @@
  * Step 5 wires the actual TypeScript serializer + preview highlighter.
  */
 
+import { bindThemeToggle, bindTopNavScrollState, initTheme } from "./client.js";
+
 // ---------- Defaults (mirrored from src/config/config.ts) ----------
 
 interface ColorPalette {
@@ -2079,6 +2081,13 @@ function applyReset(): void {
 export function setupConfigBuilder(doc: Document): void {
   const root = doc.querySelector<HTMLElement>("[data-pw-cb-root]");
   if (!root) return;
+
+  // Share the docs' top-nav interactivity so both pages behave the same:
+  // apply the stored/preferred theme, wire the theme toggle, and toggle the
+  // frosted-glass scroll state on the sticky bar.
+  initTheme(doc);
+  bindThemeToggle(doc);
+  bindTopNavScrollState(doc);
 
   // Section summaries carry data-pw-cb-toggle; the container carries
   // data-pw-cb-section with the section key. Restore any persisted

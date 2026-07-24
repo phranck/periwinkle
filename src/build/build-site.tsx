@@ -192,7 +192,17 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   // Only emitted when the client bundle path is available — tests can
   // opt out by omitting `assetPaths.configBuilderJs`.
   if (configBuilderJs) {
-    const builderBody = renderToStaticMarkup(<ConfigBuilder navigation={siteConfig.navigation} />);
+    // On the builder page, the home link ("API reference") must navigate
+    // back to the docs in the same window, so its href points at index.html
+    // instead of the docs' own homeHref (which is usually "#"). Search is
+    // dropped here: the builder has no searchable content and the client
+    // bundle never binds the trigger, so the button would be a dead affordance.
+    const builderNavigation: ResolvedConfig["navigation"] = {
+      ...siteConfig.navigation,
+      homeHref: withBase(siteConfig.site.basePath, "index.html"),
+      showSearch: false,
+    };
+    const builderBody = renderToStaticMarkup(<ConfigBuilder navigation={builderNavigation} />);
     const builderHtml = renderBuilderDocument(data, builderBody, {
       stylesheet: "styles.css",
       builderScript: "config-builder.js",
@@ -219,8 +229,8 @@ function addBuilderNavLink(navigation: ResolvedConfig["navigation"], basePath: s
   );
   if (alreadyHasBuilderLink) return;
   const builderHref = withBase(basePath, "config-builder.html");
-  navigation.links = [
-    { label: "Config builder", href: builderHref, target: "_blank" },
-    ...navigation.links,
-  ];
+  // No target: the builder opens in the same window (cross-linked with the
+  // docs home link), and on the builder page this item renders as the
+  // non-interactive active item instead.
+  navigation.links = [{ label: "Config builder", href: builderHref }, ...navigation.links];
 }

@@ -92,9 +92,25 @@ const CONFIG_BUILDER_HREF_RE = /config-builder\.html(?:$|[?#])/;
 /**
  * Renders the top navigation bar, or `null` when every affordance is off.
  *
+ * The two built-in destinations — the docs home ("API reference") and the
+ * generated config builder — cross-link. `currentPage` tells the bar which
+ * one is the page being rendered: that item renders as a non-interactive,
+ * highlighted `<span>` (no href, not focusable), while the other renders as
+ * a plain link that navigates in the same window. This makes the active
+ * item unclickable and keeps the two pages navigable back and forth.
+ *
  * @param props.navigation The resolved navigation config.
+ * @param props.currentPage Which page this bar renders on. `"docs"` (default)
+ *   marks the home link active; `"builder"` marks the config-builder link
+ *   active and turns the home link into a same-window link back to the docs.
  */
-export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"] }) {
+export function TopNav({
+  navigation,
+  currentPage = "docs",
+}: {
+  navigation: ResolvedConfig["navigation"];
+  currentPage?: "docs" | "builder";
+}) {
   const hasLogo = Boolean(navigation.logo);
   const hasHome = navigation.showHome;
   const hasSearch = navigation.showSearch;
@@ -104,6 +120,8 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
   if (!hasLogo && !hasHome && !hasSearch && !hasGithub && !hasThemeToggle && !hasCustomLinks) {
     return null;
   }
+
+  const homeActive = currentPage === "docs";
 
   return (
     <div className="public-header" data-pw-top-nav>
@@ -126,14 +144,20 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
             data-public-navigation="desktop"
           >
             {hasHome ? (
-              <a
-                className="public-navigation__link public-navigation__link--active"
-                href={navigation.homeHref}
-                aria-current="page"
-              >
-                <DataIcon className="public-navigation__item-icon" aria-hidden="true" />
-                <span className="public-navigation__label">{navigation.homeLabel}</span>
-              </a>
+              homeActive ? (
+                <span
+                  className="public-navigation__link public-navigation__link--active"
+                  aria-current="page"
+                >
+                  <DataIcon className="public-navigation__item-icon" aria-hidden="true" />
+                  <span className="public-navigation__label">{navigation.homeLabel}</span>
+                </span>
+              ) : (
+                <a className="public-navigation__link" href={navigation.homeHref}>
+                  <DataIcon className="public-navigation__item-icon" aria-hidden="true" />
+                  <span className="public-navigation__label">{navigation.homeLabel}</span>
+                </a>
+              )
             ) : null}
             {hasSearch ? (
               <button
@@ -149,8 +173,21 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
               </button>
             ) : null}
             {navigation.links.map((link) => {
-              const opensInNewTab = link.target === "_blank";
               const isConfigBuilder = CONFIG_BUILDER_HREF_RE.test(link.href);
+              const linkActive = isConfigBuilder && currentPage === "builder";
+              if (linkActive) {
+                return (
+                  <span
+                    key={`${link.label}-${link.href}`}
+                    className="public-navigation__link public-navigation__link--active"
+                    aria-current="page"
+                  >
+                    <ConfigBuilderMark className="public-navigation__item-icon" />
+                    <span className="public-navigation__label">{link.label}</span>
+                  </span>
+                );
+              }
+              const opensInNewTab = link.target === "_blank";
               return (
                 <a
                   key={`${link.label}-${link.href}`}

@@ -373,6 +373,9 @@ code {
 .public-navigation__link--active,
 .public-navigation__link[aria-current="page"] {
   color: var(--pw-accent);
+  /* The active item renders as a non-interactive <span> (current page),
+     so it must not present a clickable cursor. */
+  cursor: default;
 }
 
 .public-navigation__link--active::before,
