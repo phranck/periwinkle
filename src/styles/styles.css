@@ -958,6 +958,11 @@ details[data-pw-expanded="false"] .pw-chevron {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
+  /* Match the chapter icon's cap-mid correction (see .pw-chapter__icon) so the
+     toggle-all chevron sits on the heading's optical center, not the line box.
+     Applied to the wrapper, not the button, so the button keeps its rotation
+     transform (.pw-chevron) uncontested. */
+  transform: translateY(calc(0.034em + 1px));
 }
 
 /* ---------- Sidebar operation items ---------- */
@@ -1054,6 +1059,12 @@ details[data-pw-expanded="false"] .pw-chevron {
   display: flex;
   flex-direction: column;
   gap: var(--pw-space-7);
+}
+
+/* The schema list is a dense reference index rather than a stack of full
+   endpoint blocks, so its cards read better sitting a touch closer together. */
+.pw-chapter__body:has(> .pw-schema-card) {
+  gap: var(--pw-space-6);
 }
 
 .pw-entry__title {
