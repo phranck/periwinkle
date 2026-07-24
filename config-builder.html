@@ -1,0 +1,3071 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>periwinkle · Configuration Builder</title>
+    <meta name="color-scheme" content="light dark" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      /* ---------- Tokens ---------- */
+      :root {
+        --bg: #ffffff;
+        --surface: #f6f8fa;
+        --surface-alt: #eff2f5;
+        --text: #1f2328;
+        --text-muted: #59636e;
+        --text-faint: #818b98;
+        --accent: #6667ab;
+        --accent-strong: #5253a3;
+        --border: #d1d9e0;
+        --danger: #d1242f;
+        --success: #1a7f37;
+        --code-bg: #eff2f5;
+
+        --font-base: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        --font-heading: "Barlow Condensed", "Barlow", -apple-system, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+        --radius: 0.75rem;
+        --radius-sm: 0.375rem;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        --shadow-lift: 0 8px 24px rgba(0, 0, 0, 0.08);
+      }
+
+      html[data-theme="dark"] {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface-alt: #21262d;
+        --text: #e6edf3;
+        --text-muted: #8b949e;
+        --text-faint: #6e7681;
+        --accent: #9a9bd4;
+        --accent-strong: #a8a9e0;
+        --border: #30363d;
+        --danger: #f85149;
+        --success: #3fb950;
+        --code-bg: #0d1117;
+
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+        --shadow-lift: 0 8px 24px rgba(0, 0, 0, 0.48);
+      }
+
+      /* ---------- Base ---------- */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-base);
+        font-size: 18px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-heading);
+        margin: 0;
+        line-height: 1.15;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.875em;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      details > summary {
+        cursor: pointer;
+        list-style: none;
+      }
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      /* ---------- Layout ---------- */
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.875rem 1.5rem;
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+      .topbar__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        color: var(--text);
+        font-family: var(--font-heading);
+        font-size: 1.375rem;
+        font-weight: 600;
+      }
+      .topbar__brand img {
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+      .topbar__title-suffix {
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .topbar__actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        min-height: 2.25rem;
+        padding: 0 0.875rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--text);
+        font-weight: 500;
+        font-size: 0.9375rem;
+        transition:
+          background 120ms ease,
+          border-color 120ms ease,
+          color 120ms ease;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn--accent {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      html[data-theme="dark"] .btn--accent {
+        color: #0d1117;
+      }
+      .btn--accent:hover {
+        background: var(--accent-strong);
+        border-color: var(--accent-strong);
+        color: #fff;
+      }
+      html[data-theme="dark"] .btn--accent:hover {
+        color: #0d1117;
+      }
+      .btn--ghost {
+        background: transparent;
+      }
+      .btn--danger:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      .btn--icon {
+        width: 2.25rem;
+        padding: 0;
+        justify-content: center;
+      }
+      .btn svg {
+        width: 1.125rem;
+        height: 1.125rem;
+        display: block;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 1.5rem;
+        max-width: 96rem;
+        margin: 0 auto;
+        padding: 1.5rem;
+        width: 100%;
+        flex: 1;
+      }
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-width: 0;
+      }
+
+      .preview {
+        position: sticky;
+        top: calc(4rem + 1.5rem);
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        max-height: calc(100vh - 6rem);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      @media (max-width: 900px) {
+        .preview {
+          position: static;
+          max-height: none;
+        }
+      }
+      .preview__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+      }
+      .preview__title {
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .preview__filename {
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        color: var(--text-muted);
+      }
+      .preview__body {
+        margin: 0;
+        padding: 0.75rem 0;
+        overflow: auto;
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        background: var(--code-bg);
+        flex: 1;
+        tab-size: 2;
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        align-items: start;
+        column-gap: 1rem;
+        row-gap: 0;
+      }
+      /* Gutter of line numbers: right-aligned, muted, non-selectable so the
+         numbers never end up in a copy/paste of the source. Stays put when
+         the preview scrolls horizontally: `position: sticky; left: 0` pins
+         it against the preview's left edge, and its own background covers
+         the code that would otherwise slide underneath. */
+      .preview__lineno {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        text-align: right;
+        color: var(--text-faint);
+        padding-inline-start: 1rem;
+        border-right: 1px solid var(--border);
+        padding-inline-end: 0.5rem;
+        user-select: none;
+        -webkit-user-select: none;
+        white-space: pre;
+        background: var(--code-bg);
+      }
+      .preview__code {
+        white-space: pre;
+        padding-inline-end: 1.25rem;
+      }
+
+      /* Syntax colors */
+      .tk-kw { color: var(--accent); font-weight: 500; }
+      .tk-str { color: #0a7c47; }
+      html[data-theme="dark"] .tk-str { color: #7ee787; }
+      .tk-num { color: #b45309; }
+      html[data-theme="dark"] .tk-num { color: #ffab70; }
+      .tk-com { color: var(--text-faint); font-style: italic; }
+      .tk-key { color: #6f42c1; }
+      html[data-theme="dark"] .tk-key { color: #d2a8ff; }
+      .tk-boo { color: #1a7f37; font-weight: 500; }
+      html[data-theme="dark"] .tk-boo { color: #3fb950; }
+
+      /* ---------- Sections ---------- */
+      .section {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        overflow: hidden;
+      }
+      /* The summary is a real <button> now (no native <details>), so it can
+         keep its body child in the DOM regardless of open state — which is
+         what makes the grid-template-rows collapse animation work in both
+         directions. */
+      .section__summary {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.125rem;
+        background: var(--surface-alt);
+        border: 0;
+        border-bottom: 1px solid transparent;
+        width: 100%;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 120ms ease;
+      }
+      .section[data-open="true"] > .section__summary {
+        border-bottom-color: var(--border);
+      }
+      .section__summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+      }
+      .section__title {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .section__hint {
+        margin-left: auto;
+        color: var(--text-faint);
+        font-size: 0.9375rem;
+      }
+      .section__chevron {
+        width: 1rem;
+        height: 1rem;
+        color: var(--text-muted);
+        transition: transform 200ms ease;
+      }
+      .section[data-open="true"] > .section__summary .section__chevron {
+        transform: rotate(90deg);
+      }
+      .section__icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--accent);
+        flex: none;
+      }
+      /* Butter-smooth open/close via grid-template-rows: 0fr ↔ 1fr, driven
+         by data-open on the parent. The body stays in the DOM in both
+         states, so the transition fires in both directions. The
+         `contain` + `will-change` hints let the browser promote the
+         subtree to its own layer to keep frame times steady. */
+      .section__body-outer {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition:
+          grid-template-rows 260ms cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 220ms ease;
+        contain: layout paint style;
+        will-change: grid-template-rows, opacity;
+        opacity: 0;
+      }
+      .section[data-open="true"] > .section__body-outer {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .section__body {
+        min-height: 0; /* required so the grid track can actually collapse */
+        overflow: hidden;
+      }
+      /* Padding lives on an inner element rather than the grid track child.
+         When the grid track is 0fr, the child's min-content — which would
+         otherwise include the padding — must not force a residual height. */
+      .section__body-inner {
+        padding: 1.125rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      /* Reduced-motion users get an instant toggle. */
+      @media (prefers-reduced-motion: reduce) {
+        .section__body-outer {
+          transition: none;
+        }
+      }
+      .section__group-title {
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px dashed var(--border);
+      }
+
+      /* ---------- Field grid ---------- */
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.875rem;
+      }
+      @media (max-width: 600px) {
+        .fields {
+          grid-template-columns: 1fr;
+        }
+      }
+      .fields--single {
+        grid-template-columns: 1fr;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        min-width: 0;
+      }
+      .field__label {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding-inline-start: 3px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .field__default {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        color: var(--text-faint);
+        font-weight: 400;
+      }
+      .field__hint {
+        padding-inline-start: 3px;
+        font-size: 0.9375rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+      }
+      .field__input {
+        display: block;
+        width: 100%;
+        min-height: 2.25rem;
+        padding: 0.375rem 0.625rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-base);
+        font-size: 0.9375rem;
+        transition: border-color 120ms ease;
+      }
+      .field__input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      textarea.field__input {
+        min-height: 5rem;
+        resize: vertical;
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        line-height: 1.5;
+      }
+      .field__row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .field__row .field__input {
+        flex: 1;
+      }
+      .field__color-swatch {
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        background: transparent;
+        overflow: hidden;
+      }
+      .field__color-swatch::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+      .field__color-swatch::-webkit-color-swatch {
+        border: none;
+      }
+      .field__color-swatch::-moz-color-swatch {
+        border: none;
+      }
+
+      .toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        min-height: 2.25rem;
+        padding: 0.375rem 0;
+        cursor: pointer;
+      }
+      .toggle__box {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 2.5rem;
+        height: 1.375rem;
+        border-radius: 999px;
+        background: var(--border);
+        position: relative;
+        transition: background 160ms ease;
+        flex: none;
+      }
+      .toggle__box::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 1.125rem;
+        height: 1.125rem;
+        border-radius: 999px;
+        background: #fff;
+        transition: transform 160ms ease;
+      }
+      .toggle__box:checked {
+        background: var(--accent);
+      }
+      .toggle__box:checked::before {
+        transform: translateX(1.125rem);
+      }
+      .toggle__label {
+        font-size: 0.9375rem;
+        color: var(--text);
+      }
+
+      .palette-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      @media (max-width: 700px) {
+        .palette-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .palette {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0.875rem;
+        background: var(--bg);
+      }
+      .palette__title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
+      .palette__list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .palette__row {
+        display: grid;
+        grid-template-columns: 8rem 2.25rem minmax(0, 1fr);
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .palette__row-label {
+        font-size: 0.9375rem;
+        color: var(--text-muted);
+      }
+      .palette__row .field__input {
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+      }
+
+      .list-item {
+        display: grid;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+      }
+      .list-item__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .list-item__title {
+        font-weight: 600;
+        font-size: 0.9375rem;
+      }
+      .list-item__remove {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+      }
+      .list-item__remove:hover {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .add-btn {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+      .add-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        border-style: solid;
+      }
+
+      /* ---------- Sliders + live previews ---------- */
+      .slider {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem 0.875rem 0.875rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+      }
+      .slider__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+      .slider__label {
+        padding-inline-start: 3px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--text);
+      }
+      .slider__value {
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .slider__input {
+        width: 100%;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+      }
+      .slider__input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 999px;
+        background: var(--accent);
+        cursor: grab;
+        transition: transform 120ms ease;
+        border: 2px solid var(--bg);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      }
+      .slider__input::-moz-range-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 999px;
+        background: var(--accent);
+        cursor: grab;
+        border: 2px solid var(--bg);
+      }
+      .slider__input:active::-webkit-slider-thumb {
+        cursor: grabbing;
+        transform: scale(1.1);
+      }
+      .slider__hint {
+        padding-inline-start: 3px;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+      }
+
+      /* Font-size preview: renders the given phrase at exactly the configured
+         size using the configured font family, so the slider action shows the
+         real typographic effect. */
+      .font-preview {
+        min-height: 2rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        color: var(--text);
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .font-preview--heading { font-family: var(--font-heading); }
+      .font-preview--body { font-family: var(--font-base); }
+      .font-preview--mono { font-family: var(--font-mono); }
+
+      /* Length preview: an accent bar whose width tracks the configured
+         value. Container mirrors the page shell, sidebar preview tracks
+         the sidebar column width; both share the same rendering. */
+      .length-preview {
+        padding: 0.5rem;
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        overflow: hidden;
+      }
+      .length-preview__bar {
+        height: 0.5rem;
+        background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        border-radius: 2px;
+        max-width: 100%;
+        transition: width 160ms ease;
+      }
+
+      /* Motion / duration preview: a dot that traverses the panel to
+         demonstrate the current duration + easing combination. The play
+         button sits OUTSIDE the animation surface so the track never runs
+         behind it. */
+      .motion-widget {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .motion-preview {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        height: 2.75rem;
+        padding: 0 0.75rem;
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+      }
+      .motion-preview__track {
+        position: absolute;
+        left: 0.75rem;
+        right: 0.75rem;
+        top: 50%;
+        height: 2px;
+        background: var(--border);
+        transform: translateY(-50%);
+      }
+      .motion-preview__dot {
+        position: relative;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 999px;
+        background: var(--accent);
+        z-index: 1;
+        transform: translateX(0);
+      }
+      .motion-preview__dot--running {
+        animation-name: motion-dot-move;
+        animation-fill-mode: both;
+      }
+      /* Uses local CSS var --track-length written by JS from the measured
+         preview width, so the dot travels exactly to the right edge minus
+         its own size regardless of the widget's container width. */
+      @keyframes motion-dot-move {
+        from {
+          transform: translateX(0);
+        }
+        50% {
+          transform: translateX(var(--track-length, 0px));
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      .motion-preview__play {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        min-height: 2.25rem;
+        padding: 0 0.875rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .motion-preview__play:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Tint/mix/tone previews: a swatch strip that visualises the resulting
+         color-mix result on the actual surface color under it. */
+      .mix-preview {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.375rem;
+      }
+      .mix-preview__swatch {
+        height: 2.5rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      /* Line-height preview: two lines of text with the exact configured
+         line-height, so the vertical rhythm change is visible. */
+      .lh-preview {
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.9375rem;
+        white-space: pre;
+      }
+
+      /* Select mimics field__input for the easing dropdown. */
+      .field__select {
+        display: block;
+        width: 100%;
+        min-height: 2.25rem;
+        padding: 0.375rem 0.625rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.9375rem;
+      }
+
+      /* ---------- Guide segmented control ---------- */
+      .guide-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg);
+      }
+      .guide-item__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .guide-item__title {
+        font-weight: 600;
+        font-size: 0.9375rem;
+      }
+      .segmented {
+        display: inline-flex;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 2px;
+        background: var(--surface);
+      }
+      .segmented__item {
+        border: 0;
+        background: transparent;
+        color: var(--text-muted);
+        padding: 0.25rem 0.625rem;
+        border-radius: calc(var(--radius-sm) - 2px);
+        font-size: 0.9375rem;
+        font-weight: 500;
+      }
+      .segmented__item[aria-pressed="true"] {
+        background: var(--accent);
+        color: #fff;
+      }
+      html[data-theme="dark"] .segmented__item[aria-pressed="true"] {
+        color: #0d1117;
+      }
+
+      /* ---------- Toast ---------- */
+      .toast {
+        position: fixed;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(120%);
+        padding: 0.625rem 1.25rem;
+        background: var(--text);
+        color: var(--bg);
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: var(--shadow-lift);
+        transition:
+          transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+          opacity 240ms ease;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 40;
+      }
+      .toast--visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      /* ---------- Dialog ---------- */
+      dialog.overlay {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text);
+        padding: 0;
+        max-width: 28rem;
+        box-shadow: var(--shadow-lift);
+      }
+      dialog.overlay::backdrop {
+        background: color-mix(in srgb, #000 40%, transparent);
+        backdrop-filter: blur(4px);
+      }
+      .overlay__body {
+        padding: 1.5rem;
+      }
+      .overlay__title {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .overlay__text {
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+        margin-bottom: 1rem;
+      }
+      .overlay__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+      }
+
+      /* ---------- Intro ---------- */
+      .intro {
+        padding: 1.5rem 1.5rem 0;
+        max-width: 96rem;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .intro__title {
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .intro__lead {
+        color: var(--text-muted);
+        font-size: 1.0625rem;
+        margin: 0.5rem 0 0;
+        max-width: 52rem;
+      }
+      .intro__meta {
+        color: var(--text-faint);
+        font-size: 0.875rem;
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="topbar__brand" href="./" aria-label="periwinkle home">
+          <img src="resources/Logo_Banner/logo.svg" alt="" />
+          <span>periwinkle</span>
+          <span class="topbar__title-suffix">/ config builder</span>
+        </a>
+        <div class="topbar__actions" id="topbar-actions"></div>
+      </header>
+
+      <section class="intro">
+        <h1 class="intro__title">Configuration Builder</h1>
+        <p class="intro__lead">
+          Click your <code>periwinkle.config.ts</code> together, see it update on the right, and copy or save the result. Only fields you change from their defaults land in the output — the file stays as small as possible.
+        </p>
+        <p class="intro__meta">
+          Every option is documented in
+          <a href="https://github.com/phranck/periwinkle/blob/main/CONFIGURATION.md" target="_blank" rel="noopener noreferrer">CONFIGURATION.md</a>. This builder is a static HTML file; nothing is uploaded.
+        </p>
+      </section>
+
+      <main class="layout">
+        <form class="form" id="config-form" autocomplete="off"></form>
+
+        <aside class="preview" aria-label="Generated periwinkle.config.ts">
+          <div class="preview__header">
+            <span class="preview__title">Preview</span>
+            <span class="preview__filename">periwinkle.config.ts</span>
+          </div>
+          <pre class="preview__body" id="preview-body"></pre>
+        </aside>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog class="overlay" id="reset-dialog">
+      <div class="overlay__body">
+        <h2 class="overlay__title">Reset all fields?</h2>
+        <p class="overlay__text">This clears every value and restores the built-in periwinkle defaults. It cannot be undone.</p>
+        <div class="overlay__actions">
+          <button type="button" class="btn" data-close>Cancel</button>
+          <button type="button" class="btn btn--accent" data-confirm>Reset</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      // ---------- Defaults (mirrored from src/config/config.ts) ----------
+
+      const DEFAULT_LIGHT_COLORS = {
+        background: "#ffffff",
+        surface: "#f6f8fa",
+        surfaceAlt: "#eff2f5",
+        text: "#1f2328",
+        textMuted: "#59636e",
+        textFaint: "#818b98",
+        accent: "#6667ab",
+        border: "#d1d9e0",
+        link: "#5253a3",
+        methodGet: "#0969da",
+        methodPost: "#1a7f37",
+        methodPut: "#bc4c00",
+        methodPatch: "#9a6700",
+        methodDelete: "#d1242f",
+        statusSuccess: "#1a7f37",
+        statusError: "#d1242f",
+      };
+
+      const DEFAULT_DARK_COLORS = {
+        background: "#0d1117",
+        surface: "#161b22",
+        surfaceAlt: "#21262d",
+        text: "#e6edf3",
+        textMuted: "#8b949e",
+        textFaint: "#6e7681",
+        accent: "#9a9bd4",
+        border: "#30363d",
+        link: "#a8a9e0",
+        methodGet: "#58a6ff",
+        methodPost: "#3fb950",
+        methodPut: "#db6d28",
+        methodPatch: "#d29922",
+        methodDelete: "#f85149",
+        statusSuccess: "#3fb950",
+        statusError: "#f85149",
+      };
+
+      const COLOR_TOKEN_LABELS = {
+        background: "background",
+        surface: "surface",
+        surfaceAlt: "surface (alt)",
+        text: "text",
+        textMuted: "text (muted)",
+        textFaint: "text (faint)",
+        accent: "accent",
+        border: "border",
+        link: "link",
+        methodGet: "method GET",
+        methodPost: "method POST",
+        methodPut: "method PUT",
+        methodPatch: "method PATCH",
+        methodDelete: "method DELETE",
+        statusSuccess: "status success",
+        statusError: "status error",
+      };
+
+      const DEFAULT_FONTS = {
+        base: '"Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        heading:
+          '"Barlow Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        mono: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace',
+        stylesheets: [
+          "https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap",
+        ],
+      };
+
+      const DEFAULT_RADIUS = "1rem";
+
+      const DEFAULT_NAVIGATION = {
+        logo: "",
+        showHome: true,
+        homeLabel: "API reference",
+        homeHref: "#",
+        // showSearch + showThemeToggle live on state.searchPlacement /
+        // themeTogglePlacement (each control renders in exactly one location
+        // — or nowhere — to avoid duplicate affordances on the page).
+        githubUrl: "",
+        githubLabel: "",
+        // Custom nav pills between the built-in search and github/theme
+        // clusters. Each item: { label, href, target } where target is either
+        // "" (same tab) or "_blank" (new tab).
+        links: [],
+      };
+
+      const DEFAULT_SIDEBAR = {
+        title: "Reference",
+        showMethods: false,
+      };
+
+      // Where a control lives. The rendered config sets
+      // navigation.showX / sidebar.showX accordingly; "off" disables both.
+      const PLACEMENT_OPTIONS = [
+        { key: "navigation", label: "Top navigation" },
+        { key: "sidebar", label: "Sidebar" },
+        { key: "off", label: "Off" },
+      ];
+      const THEME_TOGGLE_DEFAULT = "navigation";
+      const SEARCH_DEFAULT = "navigation";
+
+      const DEFAULT_FEATURES = {
+        openApiContract: true,
+        accessBadge: true,
+        deprecatedBadge: true,
+        copyButton: true,
+      };
+
+      const DEFAULT_SIZING = {
+        fontBody: "1.125rem",
+        fontCode: "1rem",
+        fontLead: "1.5rem",
+        fontCardTitle: "1.375rem",
+        fontSubsection: "1.625rem",
+        fontSection: "2.25rem",
+        fontHero: "3.25rem",
+        sidebarWidth: "20rem",
+        containerMaxWidth: "88rem",
+        pagePadding: "1.5rem",
+      };
+
+      const DEFAULT_MOTION = {
+        duration: "160ms",
+        easing: "ease-in-out",
+        codeLineHeight: "1.5",
+        responseTintLight: "12%",
+        responseTintDark: "16%",
+        cardChromeMixLight: "6%",
+        cardChromeMixDark: "12%",
+        iconToneLight: "60%",
+        iconToneDark: "100%",
+      };
+
+      const GUIDE_SECTIONS = [
+        { key: "intro", label: "Intro" },
+        { key: "auth", label: "Authentication" },
+        { key: "requests", label: "Requests" },
+        { key: "errors", label: "Errors" },
+        { key: "rateLimits", label: "Rate limits" },
+        { key: "versioning", label: "Versioning" },
+      ];
+
+      const CUSTOM_SECTION_POSITIONS = ["before-guide", "after-guide", "after-reference"];
+
+      // ---------- State ----------
+
+      /**
+       * Initial values shown when the builder first loads (and after Reset).
+       * Mirrors the demo config used to build the live GitHub Pages demo, so
+       * users start from a working example instead of an empty form. The
+       * built-in periwinkle defaults still drive the diff logic in
+       * buildConfigObject(); this only seeds the form values.
+       */
+      function createInitialState() {
+        const demoGuide = GUIDE_SECTIONS.reduce((acc, s) => {
+          acc[s.key] = { mode: "default", markdown: "" };
+          return acc;
+        }, {});
+        demoGuide.rateLimits = {
+          mode: "custom",
+          markdown:
+            "This is a demo deployment of a fictional API — there are no real rate limits.",
+        };
+        return {
+          spec: "tests/fixtures/bookstore.openapi.json",
+          site: {
+            basePath: "/periwinkle",
+            serverUrl: "https://api.bookstore.example",
+            title: "",
+            logo: "",
+            favicon: "",
+          },
+          theme: {
+            colors: {
+              light: { ...DEFAULT_LIGHT_COLORS },
+              dark: { ...DEFAULT_DARK_COLORS },
+            },
+            fonts: { ...DEFAULT_FONTS, stylesheets: [...DEFAULT_FONTS.stylesheets] },
+            radius: DEFAULT_RADIUS,
+          },
+          navigation: {
+            ...DEFAULT_NAVIGATION,
+            logo: "resources/Logo_Banner/logo.svg",
+            links: [
+              {
+                label: "Config builder",
+                href: "/periwinkle/config-builder.html",
+                target: "_blank",
+              },
+            ],
+          },
+          sidebar: { ...DEFAULT_SIDEBAR },
+          themeTogglePlacement: THEME_TOGGLE_DEFAULT,
+          searchPlacement: SEARCH_DEFAULT,
+          features: { ...DEFAULT_FEATURES },
+          sizing: { ...DEFAULT_SIZING },
+          motion: { ...DEFAULT_MOTION },
+          guide: demoGuide,
+          customSections: [
+            {
+              id: "about-this-demo",
+              title: "About this demo",
+              markdown:
+                "This site is the living demo of **periwinkle**, a static API documentation generator for OpenAPI 3.x. It is built from a fictional bookstore contract on every push to `main`.\n\nGet the source and usage instructions at [github.com/phranck/periwinkle](https://github.com/phranck/periwinkle).",
+              position: "before-guide",
+            },
+          ],
+          footer: {
+            text: "Built with periwinkle",
+            links: [
+              { label: "GitHub", href: "https://github.com/phranck/periwinkle" },
+              { label: "OpenAPI contract", href: "/periwinkle/openapi.json" },
+            ],
+          },
+        };
+      }
+
+      let state = createInitialState();
+
+      // Persist section open/closed across re-renders AND across reloads:
+      // the Map is seeded from localStorage at boot, and every toggle writes
+      // the updated snapshot back. Keyed by section title.
+      const SECTION_OPEN_STORAGE_KEY = "pw-cb-section-open";
+      const sectionOpenState = new Map(loadSectionOpenState());
+
+      function loadSectionOpenState() {
+        try {
+          const raw = localStorage.getItem(SECTION_OPEN_STORAGE_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return [];
+          return Object.entries(parsed).filter(([, v]) => typeof v === "boolean");
+        } catch {
+          return [];
+        }
+      }
+
+      function persistSectionOpenState() {
+        try {
+          const snapshot = Object.fromEntries(sectionOpenState);
+          localStorage.setItem(SECTION_OPEN_STORAGE_KEY, JSON.stringify(snapshot));
+        } catch {
+          // storage may be full or disabled — silently degrade
+        }
+      }
+
+
+      // ---------- DOM helpers ----------
+
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const SVG_NS = "http://www.w3.org/2000/svg";
+
+      function el(tag, attrs = {}, children = []) {
+        const node = document.createElement(tag);
+        applyAttrs(node, attrs);
+        appendChildren(node, children);
+        return node;
+      }
+
+      function svg(tag, attrs = {}, children = []) {
+        const node = document.createElementNS(SVG_NS, tag);
+        applyAttrs(node, attrs);
+        for (const child of [].concat(children)) {
+          if (child == null || child === false) continue;
+          node.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+        }
+        return node;
+      }
+
+      function applyAttrs(node, attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+          if (k === "class") {
+            // SVGElement.className is a SVGAnimatedString, not a plain
+            // string, so setAttribute is the safer path for SVG nodes.
+            if (node instanceof SVGElement) node.setAttribute("class", v);
+            else node.className = v;
+          } else if (k === "text") node.textContent = v;
+          else if (k.startsWith("on") && typeof v === "function") {
+            node.addEventListener(k.slice(2).toLowerCase(), v);
+          } else if (v === true) node.setAttribute(k, "");
+          else if (v === false || v == null) {
+            /* skip */
+          } else node.setAttribute(k, v);
+        }
+      }
+
+      function appendChildren(node, children) {
+        for (const child of [].concat(children)) {
+          if (child == null || child === false) continue;
+          node.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+        }
+      }
+
+      // ---------- Icons ----------
+
+      const iconAttrs = {
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "1.8",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "aria-hidden": "true",
+      };
+
+      function icon(paths) {
+        const node = svg("svg", iconAttrs);
+        for (const attrs of paths) node.appendChild(svg("path", attrs));
+        return node;
+      }
+      const iconReset = () =>
+        icon([{ d: "M3 12a9 9 0 1 0 3-6.7L3 8" }, { d: "M3 3v5h5" }]);
+      const iconCopy = () => {
+        const node = svg("svg", iconAttrs);
+        node.appendChild(svg("rect", { x: "9", y: "9", width: "12", height: "12", rx: "2" }));
+        node.appendChild(svg("path", { d: "M5 15V5a2 2 0 0 1 2-2h10" }));
+        return node;
+      };
+      const iconSave = () =>
+        icon([
+          { d: "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" },
+          { d: "M17 21v-8H7v8M7 3v5h8" },
+        ]);
+      const iconSun = () =>
+        icon([
+          { d: "M12 4V2m0 20v-2m8-8h2M2 12h2m13.657-5.657l1.414-1.414M4.929 19.071l1.414-1.414M17.657 17.657l1.414 1.414M4.929 4.929l1.414 1.414" },
+          { d: "M12 8a4 4 0 100 8 4 4 0 000-8z" },
+        ]);
+      const iconMoon = () => {
+        const node = svg("svg", { ...iconAttrs, fill: "currentColor" });
+        node.appendChild(svg("path", { d: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" }));
+        return node;
+      };
+      const iconChevron = () => {
+        const node = svg("svg", {
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor",
+          "stroke-width": "2",
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          "aria-hidden": "true",
+          class: "section__chevron",
+        });
+        node.appendChild(svg("polyline", { points: "9 6 15 12 9 18" }));
+        return node;
+      };
+
+      /**
+       * Iconsax Bulk-variant paths for every section header. Extracted from
+       * iconsax-react (the same variant periwinkle itself uses). Each icon
+       * carries the Bulk two-layer pattern: a filled base layer at
+       * opacity 1 plus one or more accent layers at opacity 0.4. Filled
+       * with currentColor, so the CSS `color: var(--accent)` on the parent
+       * is honored by both layers.
+       */
+      const SECTION_ICONS = {
+        // Book1 — spec
+        spec: [
+          { d: "M20.5 7v8H6.35c-1.57 0-2.85 1.28-2.85 2.85V7c0-4 1-5 5-5h7c4 0 5 1 5 5Z", opacity: 0.4 },
+          { d: "M20.5 15v3.5c0 1.93-1.57 3.5-3.5 3.5H7c-1.93 0-3.5-1.57-3.5-3.5v-.65C3.5 16.28 4.78 15 6.35 15H20.5ZM16 7.75H8c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h8c.41 0 .75.34.75.75s-.34.75-.75.75ZM13 11.25H8c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h5c.41 0 .75.34.75.75s-.34.75-.75.75Z" },
+        ],
+        // Browser window with cursor and traffic-light buttons — site
+        site: [
+          { d: "M22.6799 8.99001H2.67993V15.14C3.20993 14.94 3.59993 14.52 3.74993 13.98L4.07993 12.76L4.14993 12.53C4.41993 11.84 5.05993 11.36 5.80993 11.36C6.57993 11.36 7.23993 11.8 7.49993 12.49L7.90993 13.95C8.07993 14.56 8.52993 15.01 9.12993 15.18L10.3799 15.51C11.1498 15.7666 11.7299 16.4604 11.7299 17.29C11.7299 18.065 11.2219 18.7634 10.4799 19L9.14993 19.37C8.67993 19.5 8.30993 19.8 8.07993 20.22H18.5799C20.8399 20.22 22.6699 18.39 22.6699 16.13V9.00001L22.6799 8.99001Z", opacity: 0.4 },
+          { d: "M10.3299 17.31C10.3299 17.4 10.2799 17.6 10.0399 17.68L8.76995 18.03C7.67995 18.33 6.85995 19.15 6.55995 20.24L6.21995 21.48C6.13995 21.76 5.91995 21.79 5.81995 21.79C5.71995 21.79 5.49995 21.76 5.41995 21.48L5.07995 20.23C4.77995 19.15 3.94995 18.33 2.86995 18.03L1.61995 17.69C1.34995 17.61 1.31995 17.38 1.31995 17.29C1.31995 17.19 1.34995 16.96 1.61995 16.88L2.87995 16.55C3.95995 16.24 4.77995 15.42 5.07995 14.34L5.43995 13.03C5.52995 12.81 5.72995 12.78 5.81995 12.78C5.90995 12.78 6.11995 12.81 6.19995 13.01L6.55995 14.33C6.85995 15.41 7.68995 16.23 8.76995 16.54L10.0599 16.89C10.3199 16.99 10.3299 17.22 10.3299 17.3V17.31Z" },
+          { d: "M22.6799 6.30001V7.49001H2.67993V6.30001C2.67993 4.04001 4.50993 2.21001 6.76993 2.21001H18.5899C20.8499 2.21001 22.6799 4.04001 22.6799 6.30001Z", opacity: 0.4 },
+          { d: "M7.42992 5.21001C7.42992 5.62001 7.08992 5.96001 6.67992 5.96001C6.26992 5.96001 5.91992 5.62001 5.91992 5.21001C5.91992 4.80001 6.24992 4.46001 6.66992 4.46001H6.67992C7.08992 4.46001 7.42992 4.79001 7.42992 5.21001Z" },
+          { d: "M9.92992 5.21001C9.92992 5.62001 9.58992 5.96001 9.17992 5.96001C8.76992 5.96001 8.41992 5.62001 8.41992 5.21001C8.41992 4.80001 8.74992 4.46001 9.16992 4.46001H9.17992C9.58992 4.46001 9.92992 4.79001 9.92992 5.21001Z" },
+          { d: "M12.4299 5.21001C12.4299 5.62001 12.0899 5.96001 11.6799 5.96001C11.2699 5.96001 10.9199 5.62001 10.9199 5.21001C10.9199 4.80001 11.2499 4.46001 11.6699 4.46001H11.6799C12.0899 4.46001 12.4299 4.79001 12.4299 5.21001Z" },
+        ],
+        // Hammer/toolkit — theme
+        theme: [
+          { d: "M16.2401 16.2398L14.2801 18.2098C13.8601 18.6198 13.2901 18.8598 12.7001 18.8598C12.1101 18.8598 11.5501 18.6198 11.1301 18.2098L10.2701 17.3498C10.1601 17.2398 10.0201 17.1798 9.86014 17.1798C9.71014 17.1898 9.56014 17.2598 9.46014 17.3698L6.08014 21.2098C5.66014 21.6898 5.05014 21.9798 4.41014 21.9998H4.34014C3.71014 21.9998 3.12014 21.7498 2.68014 21.3198C2.23014 20.8598 1.98014 20.2398 2.00014 19.5898C2.02014 18.9498 2.31014 18.3398 2.79014 17.9198L6.63014 14.5398C6.74014 14.4298 6.81014 14.2898 6.82014 14.1398C6.82014 13.9798 6.76014 13.8398 6.65014 13.7298L5.79014 12.8698C5.38014 12.4498 5.14014 11.8898 5.14014 11.2998C5.14014 10.7098 5.38014 10.1398 5.79014 9.71977L7.76014 7.75977L16.2401 16.2398Z" },
+          { d: "M21.2898 11.19L16.2398 16.24L7.75977 7.76L12.8098 2.71C13.2598 2.26 13.8798 2 14.5198 2C15.1598 2 15.7798 2.26 16.2398 2.71L16.8298 3.31H16.8398L17.8898 4.36L19.6198 6.1H19.6298L20.6798 7.15L21.2898 7.76C22.2398 8.71 22.2398 10.25 21.2898 11.19Z", opacity: 0.4 },
+          { d: "M20.6802 7.1501L18.3302 9.5201C18.1802 9.6701 17.9902 9.7401 17.8002 9.7401C17.6102 9.7401 17.4202 9.6701 17.2702 9.5201C16.9802 9.2301 16.9802 8.7501 17.2702 8.4601L19.6202 6.1001H19.6302L20.6802 7.1501Z" },
+          { d: "M17.8899 4.36006L15.5399 6.72006C15.3899 6.87006 15.1999 6.94006 15.0099 6.94006C14.8199 6.94006 14.6199 6.87006 14.4799 6.72006C14.1799 6.43006 14.1799 5.96006 14.4799 5.66006L16.8299 3.31006H16.8399L17.8899 4.36006Z" },
+        ],
+        // Discover/Explore — navigation (compass motif)
+        navigation: [
+          { d: "M14.62 5.68008C14.62 6.46008 14.86 7.19008 15.28 7.78008H5.51C4.82 7.78008 4.16 7.56008 3.61 7.15008L2.21 6.10008C2.08 6.00008 2 5.85008 2 5.68008C2 5.52008 2.08 5.36008 2.21 5.26008L3.61 4.21008C4.16 3.80008 4.82 3.58008 5.51 3.58008H15.28C14.86 4.17008 14.62 4.90008 14.62 5.68008Z", opacity: 0.4 },
+          { d: "M20.4102 8.69995V17.43C20.4102 18.11 20.1802 18.77 19.7702 19.32L18.7202 20.72C18.6202 20.85 18.4702 20.93 18.3002 20.93C18.1402 20.93 17.9802 20.85 17.8802 20.72L16.8302 19.32C16.4202 18.77 16.2002 18.11 16.2002 17.43V8.69995C16.7902 9.11995 17.5202 9.35995 18.3002 9.35995C19.0802 9.35995 19.8202 9.11995 20.4102 8.69995Z", opacity: 0.4 },
+          { d: "M13.5698 21.6799C7.3598 21.6799 2.2998 16.6299 2.2998 10.4099C2.2998 9.99991 2.6398 9.65991 3.0498 9.65991C3.4598 9.65991 3.7998 9.99991 3.7998 10.4099C3.7998 15.7999 8.1798 20.1799 13.5698 20.1799C13.9798 20.1799 14.3198 20.5199 14.3198 20.9299C14.3198 21.3399 13.9798 21.6799 13.5698 21.6799Z" },
+          { d: "M20.8998 3.82994C20.7098 3.82994 20.5198 3.75994 20.3698 3.60994C20.0798 3.31994 20.0798 2.83994 20.3698 2.54994L21.4498 1.46994C21.7398 1.17994 22.2198 1.17994 22.5098 1.46994C22.7998 1.75994 22.7998 2.23994 22.5098 2.52994L21.4298 3.60994C21.2798 3.75994 21.0898 3.82994 20.8998 3.82994Z" },
+          { d: "M18.3001 2C17.0501 2 15.9401 2.63 15.2801 3.58C14.8601 4.17 14.6201 4.9 14.6201 5.68C14.6201 6.46 14.8601 7.19 15.2801 7.78C15.5301 8.14 15.8401 8.45 16.2001 8.7C16.7901 9.12 17.5201 9.36 18.3001 9.36C19.0801 9.36 19.8201 9.12 20.4101 8.7C21.3601 8.03 21.9801 6.93 21.9801 5.68C21.9801 3.65 20.3301 2 18.3001 2ZM18.8101 6.23C18.6701 6.36 18.4901 6.43 18.3101 6.43C18.1301 6.43 17.9501 6.36 17.8101 6.23C17.6501 6.09 17.5601 5.88 17.5601 5.67C17.5601 5.46 17.6501 5.25 17.8001 5.11C18.0901 4.85 18.5301 4.84 18.8101 5.11C18.9701 5.25 19.0601 5.46 19.0601 5.67C19.0601 5.88 18.9701 6.09 18.8201 6.23H18.8101Z" },
+        ],
+        // SidebarLeft — sidebar
+        sidebar: [
+          { d: "M22 7.81v8.38c0 3.64-2.17 5.81-5.81 5.81H7.81c-.2 0-.4-.01-.59-.02-1.23-.08-2.27-.43-3.09-1.03-.42-.29-.79-.66-1.08-1.08C2.36 18.92 2 17.68 2 16.19V7.81c0-3.44 1.94-5.57 5.22-5.78.19-.02.39-.03.59-.03h8.38c1.49 0 2.73.36 3.68 1.05.42.29.79.66 1.08 1.08.69.95 1.05 2.19 1.05 3.68Z", opacity: 0.4 },
+          { d: "M8.72 2v20h-.91c-.2 0-.4-.01-.59-.02V2.03c.19-.02.39-.03.59-.03h.91ZM14.97 15.309c-.19 0-.38-.07-.53-.22l-2.56-2.56a.754.754 0 0 1 0-1.06l2.56-2.56c.29-.29.77-.29 1.06 0 .29.29.29.77 0 1.06l-2.02 2.03 2.03 2.03c.29.29.29.77 0 1.06-.15.15-.34.22-.54.22Z" },
+        ],
+        // Setting2 — features
+        features: [
+          { d: "M2 12.881v-1.76c0-1.04.85-1.9 1.9-1.9 1.81 0 2.55-1.28 1.64-2.85-.52-.9-.21-2.07.7-2.59l1.73-.99c.79-.47 1.81-.19 2.28.6l.11.19c.9 1.57 2.38 1.57 3.29 0l.11-.19c.47-.79 1.49-1.07 2.28-.6l1.73.99c.91.52 1.22 1.69.7 2.59-.91 1.57-.17 2.85 1.64 2.85 1.04 0 1.9.85 1.9 1.9v1.76c0 1.04-.85 1.9-1.9 1.9-1.81 0-2.55 1.28-1.64 2.85.52.91.21 2.07-.7 2.59l-1.73.99c-.79.47-1.81.19-2.28-.6l-.11-.19c-.9-1.57-2.38-1.57-3.29 0l-.11.19c-.47.79-1.49 1.07-2.28.6l-1.73-.99a1.899 1.899 0 0 1-.7-2.59c.91-1.57.17-2.85-1.64-2.85-1.05 0-1.9-.86-1.9-1.9Z", opacity: 0.4 },
+          { d: "M12 15.25a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z" },
+        ],
+        // Maximize4 — sizing (rounded square with diagonal expand arrows)
+        sizing: [
+          { d: "M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2Z", opacity: 0.4 },
+          { d: "M18.6899 5.71C18.6099 5.53 18.4699 5.38 18.2799 5.3C18.1899 5.27 18.0999 5.25 17.9999 5.25H13.9999C13.5899 5.25 13.2499 5.59 13.2499 6C13.2499 6.41 13.5899 6.75 13.9999 6.75H16.1899L12.4699 10.47C12.1799 10.76 12.1799 11.24 12.4699 11.53C12.6199 11.68 12.8099 11.75 12.9999 11.75C13.1899 11.75 13.3799 11.68 13.5299 11.53L17.2499 7.81V10C17.2499 10.41 17.5899 10.75 17.9999 10.75C18.4099 10.75 18.7499 10.41 18.7499 10V6C18.7499 5.9 18.7299 5.81 18.6899 5.71Z" },
+          { d: "M11.53 12.4695C11.24 12.1795 10.76 12.1795 10.47 12.4695L6.75 16.1895V13.9995C6.75 13.5895 6.41 13.2495 6 13.2495C5.59 13.2495 5.25 13.5895 5.25 13.9995V17.9995C5.25 18.0995 5.27 18.1895 5.31 18.2895C5.39 18.4695 5.53 18.6195 5.72 18.6995C5.8 18.7295 5.9 18.7495 6 18.7495H10C10.41 18.7495 10.75 18.4095 10.75 17.9995C10.75 17.5895 10.41 17.2495 10 17.2495H7.81L11.53 13.5295C11.82 13.2395 11.82 12.7595 11.53 12.4695Z" },
+        ],
+        // Driving — motion
+        motion: [
+          { d: "M12 18.75c-.41 0-.75-.34-.75-.75v-1c0-.41.34-.75.75-.75s.75.34.75.75v1c0 .41-.34.75-.75.75ZM12 22.75c-.41 0-.75-.34-.75-.75v-1c0-.41.34-.75.75-.75s.75.34.75.75v1c0 .41-.34.75-.75.75ZM1.998 22.748c-.06 0-.12-.01-.18-.02-.4-.1-.65-.51-.55-.91l1-4a.75.75 0 1 1 1.46.36l-1 4c-.09.34-.39.57-.73.57ZM21.999 22.749c-.34 0-.64-.23-.73-.57l-1-4c-.1-.4.14-.81.55-.91.4-.1.81.14.91.55l1 4a.748.748 0 0 1-.73.93Z" },
+          { d: "M19.26 9.52c-.11-1.18-.42-2.43-2.71-2.43h-9.1c-2.29 0-2.6 1.26-2.71 2.43l-.4 4.34c-.05.54.13 1.08.5 1.49.38.41.92.65 1.48.65h1.34c1.15 0 1.37-.66 1.52-1.1l.14-.43c.16-.49.2-.61.85-.61h3.65c.64 0 .66.07.85.61l.14.43c.15.44.37 1.1 1.52 1.1h1.34c.56 0 1.1-.24 1.48-.65.37-.4.55-.95.5-1.49l-.39-4.34Z", opacity: 0.4 },
+          { d: "M18.42 4.94h-.72l-.27-1.29c-.26-1.25-.79-2.4-2.92-2.4H9.5c-2.13 0-2.66 1.15-2.92 2.4l-.27 1.29h-.72c-.3 0-.54.24-.54.54 0 .3.24.54.54.54h.51l-.3 1.43c.39-.22.92-.36 1.66-.36h9.1c.74 0 1.28.14 1.66.36l-.3-1.43h.51c.3 0 .54-.24.54-.54a.553.553 0 0 0-.55-.54ZM9.86 11.01H7.72c-.3 0-.54-.24-.54-.54 0-.3.24-.54.54-.54h2.14c.3 0 .54.24.54.54a.55.55 0 0 1-.54.54ZM16.282 11.01h-2.14c-.3 0-.54-.24-.54-.54 0-.3.24-.54.54-.54h2.14c.3 0 .54.24.54.54 0 .3-.24.54-.54.54Z" },
+        ],
+        // Note1 — guide
+        guide: [
+          { d: "M7.37 22h9.25a4.87 4.87 0 0 0 4.87-4.87V8.37a4.87 4.87 0 0 0-4.87-4.87H7.37A4.87 4.87 0 0 0 2.5 8.37v8.75c0 2.7 2.18 4.88 4.87 4.88Z", opacity: 0.4 },
+          { d: "M8.29 6.29c-.42 0-.75-.34-.75-.75V2.75a.749.749 0 1 1 1.5 0v2.78c0 .42-.33.76-.75.76ZM15.71 6.29c-.42 0-.75-.34-.75-.75V2.75a.749.749 0 1 1 1.5 0v2.78c0 .42-.33.76-.75.76ZM14.78 13.71H7.36a.749.749 0 1 1 0-1.5h7.42a.749.749 0 1 1 0 1.5ZM12 17.422H7.36a.749.749 0 1 1 0-1.5H12a.749.749 0 1 1 0 1.5Z" },
+        ],
+        // Solana — custom sections (three parallel bars, the Solana logo)
+        customSections: [
+          { d: "M20 3.5H5.5c-.31 0-.61.15-.8.4l-1.5 2c-.49.66-.02 1.6.8 1.6h14.5c.31 0 .61-.15.8-.4l1.5-2c.49-.66.02-1.6-.8-1.6Z" },
+          { d: "M4 10h14.5c.31 0 .61.15.8.4l1.5 2c.49.66.02 1.6-.8 1.6H5.5c-.31 0-.61-.15-.8-.4l-1.5-2c-.49-.66-.02-1.6.8-1.6Z", opacity: 0.4 },
+          { d: "M20 16.5H5.5c-.31 0-.61.15-.8.4l-1.5 2c-.49.66-.02 1.6.8 1.6h14.5c.31 0 .61-.15.8-.4l1.5-2c.49-.66.02-1.6-.8-1.6Z" },
+        ],
+        // SidebarBottom — footer
+        footer: [
+          { d: "M16.19 2H7.81C4.17 2 2 4.17 2 7.81v8.38c0 .2.01.4.02.59.08 1.23.43 2.27 1.03 3.09.29.42.66.79 1.08 1.08.95.69 2.19 1.05 3.68 1.05h8.38c3.44 0 5.57-1.94 5.78-5.22.02-.19.03-.39.03-.59V7.81c0-1.49-.36-2.73-1.05-3.68-.29-.42-.66-.79-1.08-1.08C18.92 2.36 17.68 2 16.19 2Z", opacity: 0.4 },
+          { d: "M22 15.281H2v.91c0 .2.01.4.02.59h19.95c.02-.19.03-.39.03-.59v-.91ZM8.69 9.028c0 .19.07.38.22.53l2.56 2.56c.29.29.77.29 1.06 0l2.56-2.56c.29-.29.29-.77 0-1.06a.754.754 0 0 0-1.06 0L12 10.518l-2.03-2.02c-.29-.3-.77-.3-1.06 0a.71.71 0 0 0-.22.53Z" },
+        ],
+      };
+
+      function sectionIcon(key) {
+        const paths = SECTION_ICONS[key];
+        if (!paths) return null;
+        const node = svg("svg", {
+          class: "section__icon",
+          viewBox: "0 0 24 24",
+          fill: "currentColor",
+          "aria-hidden": "true",
+        });
+        for (const p of paths) {
+          const attrs = { d: p.d };
+          if (p.opacity !== undefined && p.opacity !== 1) attrs.opacity = String(p.opacity);
+          node.appendChild(svg("path", attrs));
+        }
+        return node;
+      }
+
+      // ---------- Field builders ----------
+
+      function textField({ label, hint, defaultLabel, value, placeholder = "", onInput }) {
+        const input = el("input", {
+          class: "field__input",
+          type: "text",
+          value,
+          placeholder,
+          onInput: (e) => onInput(e.target.value),
+        });
+        return el("div", { class: "field" }, [
+          el("label", { class: "field__label" }, [
+            label,
+            defaultLabel ? el("span", { class: "field__default" }, `default: ${defaultLabel}`) : null,
+          ]),
+          input,
+          hint ? el("div", { class: "field__hint" }, hint) : null,
+        ]);
+      }
+
+      function textareaField({ label, hint, defaultLabel, value, rows = 3, placeholder = "", onInput }) {
+        const input = el("textarea", {
+          class: "field__input",
+          rows,
+          placeholder,
+          onInput: (e) => onInput(e.target.value),
+        });
+        input.value = value;
+        return el("div", { class: "field" }, [
+          el("label", { class: "field__label" }, [
+            label,
+            defaultLabel ? el("span", { class: "field__default" }, `default: ${defaultLabel}`) : null,
+          ]),
+          input,
+          hint ? el("div", { class: "field__hint" }, hint) : null,
+        ]);
+      }
+
+      function toggleField({ label, hint, checked, onChange }) {
+        const box = el("input", {
+          type: "checkbox",
+          class: "toggle__box",
+          onChange: (e) => onChange(e.target.checked),
+        });
+        box.checked = checked;
+        return el("label", { class: "field" }, [
+          el("div", { class: "toggle" }, [box, el("span", { class: "toggle__label" }, label)]),
+          hint ? el("div", { class: "field__hint" }, hint) : null,
+        ]);
+      }
+
+      function colorField({ token, value, defaultValue, onChange }) {
+        const swatch = el("input", {
+          type: "color",
+          class: "field__color-swatch",
+          value,
+          onInput: (e) => {
+            const v = e.target.value;
+            text.value = v;
+            onChange(v);
+          },
+        });
+        const text = el("input", {
+          type: "text",
+          class: "field__input",
+          value,
+          spellcheck: "false",
+          onInput: (e) => {
+            const v = e.target.value;
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) swatch.value = v;
+            onChange(v);
+          },
+        });
+        return el("div", { class: "palette__row", title: `default: ${defaultValue}` }, [
+          el("span", { class: "palette__row-label" }, COLOR_TOKEN_LABELS[token] ?? token),
+          swatch,
+          text,
+        ]);
+      }
+
+      // ---------- Section builder ----------
+
+      let sectionBodyIdCounter = 0;
+
+      function section(title, hint, body, { open = false, icon } = {}) {
+        const initialOpen = sectionOpenState.has(title) ? sectionOpenState.get(title) : open;
+        const bodyId = `section-body-${++sectionBodyIdCounter}`;
+        const summary = el(
+          "button",
+          {
+            type: "button",
+            class: "section__summary",
+            "aria-expanded": String(initialOpen),
+            "aria-controls": bodyId,
+          },
+          [
+            iconChevron(),
+            icon ? sectionIcon(icon) : null,
+            el("span", { class: "section__title" }, title),
+            hint ? el("span", { class: "section__hint" }, hint) : null,
+          ],
+        );
+        const container = el(
+          "div",
+          { class: "section", "data-open": String(initialOpen) },
+          [
+            summary,
+            // Wrapper carries the animatable grid track; the inner element
+            // gets overflow: hidden so nothing pokes out during collapse.
+            // The innermost wrapper carries the padding — putting padding
+            // on the grid-track child would leave a padded gap even at
+            // grid-template-rows: 0fr.
+            el("div", { class: "section__body-outer", id: bodyId }, [
+              el("div", { class: "section__body" }, [
+                el("div", { class: "section__body-inner" }, body),
+              ]),
+            ]),
+          ],
+        );
+        summary.addEventListener("click", () => {
+          const nextOpen = container.dataset.open !== "true";
+          container.dataset.open = String(nextOpen);
+          summary.setAttribute("aria-expanded", String(nextOpen));
+          sectionOpenState.set(title, nextOpen);
+          persistSectionOpenState();
+        });
+        return container;
+      }
+
+      // ---------- Sections ----------
+
+      function renderSpec() {
+        return section("Spec", "OpenAPI 3.x document (JSON or YAML)", [
+          textField({
+            label: "Spec path",
+            hint: "Path relative to the config file. The CLI flag --spec overrides it.",
+            value: state.spec,
+            placeholder: "openapi.json",
+            onInput: (v) => {
+              state.spec = v;
+              updatePreview();
+            },
+          }),
+        ], { icon: "spec" });
+      }
+
+      function renderSite() {
+        const s = state.site;
+        const bind = (k) => (v) => { s[k] = v; updatePreview(); };
+        return section("Site", "Page identity, base path, favicon", [
+          el("div", { class: "fields" }, [
+            textField({
+              label: "Base path",
+              defaultLabel: '"/"',
+              hint: "Path prefix the site is served under. Must start with /.",
+              value: s.basePath,
+              placeholder: "/",
+              onInput: bind("basePath"),
+            }),
+            textField({
+              label: "Server URL",
+              defaultLabel: "first spec server",
+              hint: "Base URL printed in generated curl examples.",
+              value: s.serverUrl,
+              placeholder: "https://api.example.com",
+              onInput: bind("serverUrl"),
+            }),
+            textField({
+              label: "Title",
+              defaultLabel: "spec info.title",
+              hint: "Document title and hero heading.",
+              value: s.title,
+              placeholder: "Example API",
+              onInput: bind("title"),
+            }),
+            textField({
+              label: "Favicon",
+              hint: "Local path (bundled) or absolute URL.",
+              value: s.favicon,
+              placeholder: "assets/favicon.png",
+              onInput: bind("favicon"),
+            }),
+            textField({
+              label: "Site logo",
+              hint: "Small logo next to the sidebar title. Local path or URL.",
+              value: s.logo,
+              placeholder: "assets/logo.svg",
+              onInput: bind("logo"),
+            }),
+          ]),
+        ], { icon: "site" });
+      }
+
+      function renderTheme() {
+        const t = state.theme;
+        const paletteBlock = (mode) => {
+          const rows = Object.entries(mode === "light" ? DEFAULT_LIGHT_COLORS : DEFAULT_DARK_COLORS).map(
+            ([token, def]) =>
+              colorField({
+                token,
+                value: t.colors[mode][token],
+                defaultValue: def,
+                onChange: (v) => {
+                  t.colors[mode][token] = v;
+                  updatePreview();
+                },
+              }),
+          );
+          return el("div", { class: "palette" }, [
+            el("div", { class: "palette__title" }, `${mode === "light" ? "Light" : "Dark"} palette`),
+            el("div", { class: "palette__list" }, rows),
+          ]);
+        };
+
+        return section("Theme", "Colors, fonts, corner radius", [
+          el("h3", { class: "section__group-title" }, "Palettes"),
+          el("div", { class: "palette-grid" }, [paletteBlock("light"), paletteBlock("dark")]),
+          el("h3", { class: "section__group-title" }, "Fonts"),
+          el("div", { class: "fields fields--single" }, [
+            textField({
+              label: "Base (body) stack",
+              defaultLabel: "Barlow + system",
+              value: t.fonts.base,
+              onInput: (v) => { t.fonts.base = v; updatePreview(); },
+            }),
+            textField({
+              label: "Heading stack",
+              defaultLabel: "Barlow Condensed + system",
+              value: t.fonts.heading,
+              onInput: (v) => { t.fonts.heading = v; updatePreview(); },
+            }),
+            textField({
+              label: "Mono (code) stack",
+              defaultLabel: "system monospace",
+              value: t.fonts.mono,
+              onInput: (v) => { t.fonts.mono = v; updatePreview(); },
+            }),
+            textareaField({
+              label: "External font stylesheets",
+              hint: "One URL per line. Linked in the document head so custom @font-face sources load before use.",
+              defaultLabel: "Barlow Google Fonts",
+              value: t.fonts.stylesheets.join("\n"),
+              onInput: (v) => {
+                t.fonts.stylesheets = v
+                  .split(/\n+/)
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                updatePreview();
+              },
+            }),
+          ]),
+          el("h3", { class: "section__group-title" }, "Geometry"),
+          el("div", { class: "fields" }, [
+            textField({
+              label: "Corner radius",
+              defaultLabel: `"${DEFAULT_RADIUS}"`,
+              hint: "Cards render at this radius, nested panels and compact controls at derived fractions.",
+              value: t.radius,
+              onInput: (v) => { t.radius = v; updatePreview(); },
+            }),
+          ]),
+        ], { icon: "theme" });
+      }
+
+      function renderNavigation() {
+        const n = state.navigation;
+        const bind = (k) => (v) => { n[k] = v; updatePreview(); };
+        return section("Navigation (top bar)", "Sticky top bar affordances", [
+          el("div", { class: "fields" }, [
+            textField({
+              label: "Brand logo",
+              hint: "Brand mark on the far left, links to homeHref. Local path or URL.",
+              value: n.logo,
+              placeholder: "assets/logo.svg",
+              onInput: bind("logo"),
+            }),
+            textField({
+              label: "Home label",
+              defaultLabel: `"${DEFAULT_NAVIGATION.homeLabel}"`,
+              value: n.homeLabel,
+              onInput: bind("homeLabel"),
+            }),
+            textField({
+              label: "Home href",
+              defaultLabel: `"${DEFAULT_NAVIGATION.homeHref}"`,
+              value: n.homeHref,
+              onInput: bind("homeHref"),
+            }),
+            textField({
+              label: "GitHub URL",
+              hint: "Renders a GitHub pill when set.",
+              value: n.githubUrl,
+              placeholder: "https://github.com/acme/api",
+              onInput: bind("githubUrl"),
+            }),
+            textField({
+              label: "GitHub label",
+              defaultLabel: '"GitHub"',
+              value: n.githubLabel,
+              onInput: bind("githubLabel"),
+            }),
+          ]),
+          el("div", { class: "fields" }, [
+            toggleField({
+              label: "Show home link",
+              hint: "Leading nav pill with icon + text.",
+              checked: n.showHome,
+              onChange: bind("showHome"),
+            }),
+          ]),
+          el(
+            "h3",
+            { class: "section__group-title" },
+            "Shared controls (choose one location each)",
+          ),
+          el("div", { class: "fields" }, [
+            placementField({
+              label: "Theme toggle",
+              hint: "Where the light/dark toggle renders. Pick one location so the control never appears twice.",
+              currentKey: state.themeTogglePlacement,
+              defaultKey: THEME_TOGGLE_DEFAULT,
+              onSelect: (key) => {
+                state.themeTogglePlacement = key;
+                render();
+              },
+            }),
+            placementField({
+              label: "Search",
+              hint: "Where the document search trigger renders. ⌘K works either way.",
+              currentKey: state.searchPlacement,
+              defaultKey: SEARCH_DEFAULT,
+              onSelect: (key) => {
+                state.searchPlacement = key;
+                render();
+              },
+            }),
+          ]),
+          el("h3", { class: "section__group-title" }, "Custom nav links"),
+          ...renderNavigationLinks(),
+        ], { icon: "navigation" });
+      }
+
+      function renderNavigationLinks() {
+        const links = state.navigation.links;
+        const items = links.map((link, i) => {
+          const targetToggle = el("input", {
+            type: "checkbox",
+            class: "toggle__box",
+            onChange: (e) => {
+              link.target = e.target.checked ? "_blank" : "";
+              updatePreview();
+            },
+          });
+          if (link.target === "_blank") targetToggle.checked = true;
+          return el("div", { class: "list-item" }, [
+            el("div", { class: "list-item__header" }, [
+              el("span", { class: "list-item__title" }, link.label || `Link ${i + 1}`),
+              el(
+                "button",
+                {
+                  type: "button",
+                  class: "list-item__remove",
+                  onClick: () => {
+                    links.splice(i, 1);
+                    render();
+                  },
+                },
+                "Remove",
+              ),
+            ]),
+            el("div", { class: "fields" }, [
+              textField({
+                label: "Label",
+                value: link.label,
+                placeholder: "Config builder",
+                onInput: (v) => { link.label = v; updatePreview(); },
+              }),
+              textField({
+                label: "Href",
+                value: link.href,
+                placeholder: "/path or https://…",
+                onInput: (v) => { link.href = v; updatePreview(); },
+              }),
+            ]),
+            el("label", { class: "field" }, [
+              el("div", { class: "toggle" }, [
+                targetToggle,
+                el("span", { class: "toggle__label" }, "Open in new tab"),
+              ]),
+              el(
+                "div",
+                { class: "field__hint" },
+                "Sets target=\"_blank\" and adds rel=\"noopener noreferrer\".",
+              ),
+            ]),
+          ]);
+        });
+        return [
+          ...items,
+          el(
+            "button",
+            {
+              type: "button",
+              class: "add-btn",
+              onClick: () => {
+                links.push({ label: "", href: "", target: "" });
+                render();
+              },
+            },
+            "+ Add nav link",
+          ),
+        ];
+      }
+
+      /**
+       * Generic tri-state placement radio (navigation / sidebar / off). Used
+       * for the theme toggle and the search trigger — both controls live in
+       * exactly one location or nowhere, so a single widget captures both
+       * decisions consistently.
+       */
+      function placementField({ label, hint, currentKey, defaultKey, onSelect }) {
+        const seg = el(
+          "div",
+          { class: "segmented", role: "radiogroup", "aria-label": `${label} placement` },
+          PLACEMENT_OPTIONS.map((m) =>
+            el(
+              "button",
+              {
+                type: "button",
+                class: "segmented__item",
+                role: "radio",
+                "aria-checked": String(currentKey === m.key),
+                "aria-pressed": String(currentKey === m.key),
+                onClick: () => onSelect(m.key),
+              },
+              m.label,
+            ),
+          ),
+        );
+        return el("div", { class: "field" }, [
+          el("label", { class: "field__label" }, [
+            label,
+            el(
+              "span",
+              { class: "field__default" },
+              `default: ${defaultKey === "off" ? "off" : `"${defaultKey}"`}`,
+            ),
+          ]),
+          seg,
+          hint ? el("div", { class: "field__hint" }, hint) : null,
+        ]);
+      }
+
+      function renderSidebar() {
+        const s = state.sidebar;
+        const bind = (k) => (v) => { s[k] = v; updatePreview(); };
+        return section("Sidebar", "Left navigation rail", [
+          el("div", { class: "fields" }, [
+            textField({
+              label: "Sidebar title",
+              defaultLabel: `"${DEFAULT_SIDEBAR.title}"`,
+              value: s.title,
+              onInput: bind("title"),
+            }),
+            toggleField({
+              label: "Show HTTP methods",
+              hint: "Right-aligned method label in each endpoint item.",
+              checked: s.showMethods,
+              onChange: bind("showMethods"),
+            }),
+          ]),
+        ], { icon: "sidebar" });
+      }
+
+      function renderFeatures() {
+        const f = state.features;
+        const bind = (k) => (v) => { f[k] = v; updatePreview(); };
+        return section("Features", "Global on/off switches", [
+          el("div", { class: "fields" }, [
+            toggleField({
+              label: "OpenAPI contract",
+              hint: "'View OpenAPI contract' panel + dialog with the raw spec.",
+              checked: f.openApiContract,
+              onChange: bind("openApiContract"),
+            }),
+            toggleField({
+              label: "Access badge",
+              hint: "'Authentication required' / 'Public endpoint' pill.",
+              checked: f.accessBadge,
+              onChange: bind("accessBadge"),
+            }),
+            toggleField({
+              label: "Deprecated badge",
+              hint: "'Deprecated' pill next to the request line.",
+              checked: f.deprecatedBadge,
+              onChange: bind("deprecatedBadge"),
+            }),
+            toggleField({
+              label: "Copy button",
+              hint: "Copy-to-clipboard control in every code block.",
+              checked: f.copyButton,
+              onChange: bind("copyButton"),
+            }),
+          ]),
+        ], { icon: "features" });
+      }
+
+      // ---------- Sizing (visual controls) ----------
+
+      /**
+       * Parse a length value like "1.125rem" / "20px" into { number, unit }
+       * so a range input can drive the numeric part while the config keeps
+       * the string form. Unknown formats fall back to rem.
+       */
+      function parseLength(value, fallbackUnit = "rem") {
+        const match = String(value).trim().match(/^(-?\d+(?:\.\d+)?)\s*([a-z%]+)?$/i);
+        if (!match) return { number: 0, unit: fallbackUnit };
+        return { number: Number(match[1]), unit: match[2] ?? fallbackUnit };
+      }
+
+      function formatLength(number, unit, decimals = 3) {
+        const rounded = Number(number.toFixed(decimals));
+        return `${rounded}${unit}`;
+      }
+
+      /** Build a slider widget with a value readout above the range input. */
+      function slider({ label, hint, min, max, step, value, format, onChange, previewNode }) {
+        const valueEl = el("span", { class: "slider__value" }, format(value));
+        const input = el("input", {
+          type: "range",
+          class: "slider__input",
+          min,
+          max,
+          step,
+          value,
+          onInput: (e) => {
+            const v = Number(e.target.value);
+            valueEl.textContent = format(v);
+            onChange(v);
+          },
+        });
+        return el("div", { class: "slider" }, [
+          el("div", { class: "slider__head" }, [
+            el("span", { class: "slider__label" }, label),
+            valueEl,
+          ]),
+          input,
+          previewNode ?? null,
+          hint ? el("div", { class: "slider__hint" }, hint) : null,
+        ]);
+      }
+
+      /** Font-size slider: range in rem, live sample rendered at that size. */
+      function fontSlider({ key, label, sample, family = "body" }) {
+        const parsed = parseLength(state.sizing[key], "rem");
+        const preview = el(
+          "div",
+          { class: `font-preview font-preview--${family}`, style: `font-size: ${state.sizing[key]}` },
+          sample,
+        );
+        return slider({
+          label,
+          hint: "Sample above renders at exactly the chosen size.",
+          min: 0.5,
+          max: 5,
+          step: 0.0625,
+          value: parsed.number,
+          format: (n) => `${n.toFixed(3).replace(/\.?0+$/, "")}rem`,
+          previewNode: preview,
+          onChange: (n) => {
+            const next = formatLength(n, parsed.unit || "rem");
+            state.sizing[key] = next;
+            preview.style.fontSize = next;
+            updatePreview();
+          },
+        });
+      }
+
+      /**
+       * Length slider for layout dimensions (sidebar width, container max,
+       * page padding). The bar under the slider grows/shrinks in step so the
+       * relative size stays intuitive.
+       */
+      function lengthSlider({ key, label, min, max, step = 0.25, hint }) {
+        const parsed = parseLength(state.sizing[key], "rem");
+        const bar = el("div", { class: "length-preview__bar" });
+        const setBarWidth = (n) => {
+          const pct = Math.min(100, Math.max(0, ((n - min) / (max - min)) * 100));
+          bar.style.width = `${pct}%`;
+        };
+        setBarWidth(parsed.number);
+        const container = el("div", { class: "length-preview" }, bar);
+        return slider({
+          label,
+          hint,
+          min,
+          max,
+          step,
+          value: parsed.number,
+          format: (n) => `${n.toFixed(2).replace(/\.?0+$/, "")}${parsed.unit || "rem"}`,
+          previewNode: container,
+          onChange: (n) => {
+            state.sizing[key] = formatLength(n, parsed.unit || "rem", 3);
+            setBarWidth(n);
+            updatePreview();
+          },
+        });
+      }
+
+      function renderSizing() {
+        return section(
+          "Sizing",
+          "Typography scale and layout dimensions",
+          [
+            el("h3", { class: "section__group-title" }, "Typography (rem)"),
+            el("div", { class: "fields" }, [
+              fontSlider({ key: "fontBody", label: "Body font size", sample: "Body copy, nav items, table cells", family: "body" }),
+              fontSlider({ key: "fontCode", label: "Code font size", sample: "const answer = 42;", family: "mono" }),
+              fontSlider({ key: "fontLead", label: "Lead paragraph", sample: "Lead paragraph & status codes", family: "body" }),
+              fontSlider({ key: "fontCardTitle", label: "Card title", sample: "Card & schema titles", family: "heading" }),
+              fontSlider({ key: "fontSubsection", label: "Subsection (H3)", sample: "Endpoint entry title", family: "heading" }),
+              fontSlider({ key: "fontSection", label: "Section (H2)", sample: "Chapter header", family: "heading" }),
+              fontSlider({ key: "fontHero", label: "Hero title (H1)", sample: "Page title", family: "heading" }),
+            ]),
+            el("h3", { class: "section__group-title" }, "Layout (rem)"),
+            el("div", { class: "fields" }, [
+              lengthSlider({
+                key: "sidebarWidth",
+                label: "Sidebar width",
+                min: 12,
+                max: 32,
+                hint: "Column width of the left navigation rail.",
+              }),
+              lengthSlider({
+                key: "containerMaxWidth",
+                label: "Container max width",
+                min: 48,
+                max: 120,
+                step: 1,
+                hint: "Maximum content column width; the top bar recenters on the same measure.",
+              }),
+              lengthSlider({
+                key: "pagePadding",
+                label: "Page padding",
+                min: 0.5,
+                max: 4,
+                step: 0.125,
+                hint: "Outer page gutter; feeds top-bar inline padding and dialog width margins.",
+              }),
+            ]),
+          ],
+          { open: false, icon: "sizing" },
+        );
+      }
+
+      // ---------- Motion (visual controls) ----------
+
+      const EASING_PRESETS = [
+        "linear",
+        "ease",
+        "ease-in",
+        "ease-out",
+        "ease-in-out",
+        "cubic-bezier(0.16, 1, 0.3, 1)",
+        "cubic-bezier(0.4, 0, 0.2, 1)",
+      ];
+
+      function durationSlider() {
+        const parsed = parseLength(state.motion.duration, "ms");
+        const dot = el("div", { class: "motion-preview__dot" });
+        const track = el("div", { class: "motion-preview__track" });
+        const preview = el("div", { class: "motion-preview" }, [track, dot]);
+        const play = el(
+          "button",
+          {
+            type: "button",
+            class: "motion-preview__play",
+            onClick: () => {
+              // Measure the current track length so the dot travels to the
+              // right edge regardless of how wide the widget currently is.
+              const inner = preview.clientWidth - 24 - dot.offsetWidth;
+              preview.style.setProperty("--track-length", `${Math.max(0, inner)}px`);
+              dot.classList.remove("motion-preview__dot--running");
+              // force reflow so the animation restarts every click
+              void dot.offsetWidth;
+              dot.style.animationDuration = state.motion.duration;
+              dot.style.animationTimingFunction = state.motion.easing;
+              dot.classList.add("motion-preview__dot--running");
+            },
+          },
+          "▶ Play",
+        );
+        const widget = el("div", { class: "motion-widget" }, [preview, play]);
+        return slider({
+          label: "Base duration",
+          hint: "Sidebar expand/collapse, dialog fade, chevron rotation. Click ▶ Play to see the effect.",
+          min: 0,
+          max: 800,
+          step: 10,
+          value: parsed.number,
+          format: (n) => `${Math.round(n)}ms`,
+          previewNode: widget,
+          onChange: (n) => {
+            state.motion.duration = `${Math.round(n)}ms`;
+            updatePreview();
+          },
+        });
+      }
+
+      function easingField() {
+        const preset = EASING_PRESETS.includes(state.motion.easing)
+          ? state.motion.easing
+          : "custom";
+        const customInput = el("input", {
+          type: "text",
+          class: "field__input",
+          value: preset === "custom" ? state.motion.easing : "",
+          placeholder: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          onInput: (e) => {
+            if (select.value === "custom") {
+              state.motion.easing = e.target.value;
+              updatePreview();
+            }
+          },
+        });
+        const select = el(
+          "select",
+          {
+            class: "field__select",
+            onChange: (e) => {
+              if (e.target.value === "custom") {
+                state.motion.easing = customInput.value || "cubic-bezier(0.2, 0.8, 0.2, 1)";
+              } else {
+                state.motion.easing = e.target.value;
+              }
+              render();
+            },
+          },
+          [
+            ...EASING_PRESETS.map((v) =>
+              el("option", { value: v, ...(preset === v ? { selected: true } : {}) }, v),
+            ),
+            el("option", { value: "custom", ...(preset === "custom" ? { selected: true } : {}) }, "custom…"),
+          ],
+        );
+        select.value = preset;
+        return el("div", { class: "slider" }, [
+          el("div", { class: "slider__head" }, [
+            el("span", { class: "slider__label" }, "Easing function"),
+            el("span", { class: "slider__value" }, state.motion.easing),
+          ]),
+          select,
+          preset === "custom" ? customInput : null,
+          el(
+            "div",
+            { class: "slider__hint" },
+            "Timing function paired with the base duration above.",
+          ),
+        ]);
+      }
+
+      function lineHeightSlider() {
+        const value = Number.parseFloat(state.motion.codeLineHeight) || 1.5;
+        const preview = el(
+          "div",
+          { class: "lh-preview", style: `line-height: ${value}` },
+          // biome-ignore lint/suspicious/noTemplateCurlyInString: the ${name} inside the sample code is intended as literal source code, not a template interpolation.
+          "function greet(name) {\n  return `Hello, ${name}!`;\n}",
+        );
+        return slider({
+          label: "Code line-height",
+          hint: "Vertical rhythm inside code blocks. Impacts the 20-line scroll cap.",
+          min: 1,
+          max: 2.5,
+          step: 0.05,
+          value,
+          format: (n) => n.toFixed(2),
+          previewNode: preview,
+          onChange: (n) => {
+            state.motion.codeLineHeight = n.toFixed(2);
+            preview.style.lineHeight = String(n);
+            updatePreview();
+          },
+        });
+      }
+
+      /**
+       * Percent slider for color-mix intensities. The live swatches show the
+       * mix result on the actual surface for both modes.
+       */
+      function percentSlider({ key, label, hint, toneVarLight, toneVarDark }) {
+        const initial = parseLength(state.motion[key], "%").number;
+        const swatchLight = el(
+          "div",
+          { class: "mix-preview__swatch", style: `color: ${DEFAULT_LIGHT_COLORS.text}` },
+          "light",
+        );
+        const swatchDark = el(
+          "div",
+          { class: "mix-preview__swatch", style: `color: ${DEFAULT_DARK_COLORS.text}` },
+          "dark",
+        );
+        const apply = (n) => {
+          swatchLight.style.background = `color-mix(in srgb, ${toneVarLight} ${n}%, ${DEFAULT_LIGHT_COLORS.surface})`;
+          swatchDark.style.background = `color-mix(in srgb, ${toneVarDark} ${n}%, ${DEFAULT_DARK_COLORS.surface})`;
+        };
+        apply(initial);
+        const preview = el("div", { class: "mix-preview" }, [swatchLight, swatchDark]);
+        return slider({
+          label,
+          hint,
+          min: 0,
+          max: 40,
+          step: 1,
+          value: initial,
+          format: (n) => `${Math.round(n)}%`,
+          previewNode: preview,
+          onChange: (n) => {
+            state.motion[key] = `${Math.round(n)}%`;
+            apply(n);
+            updatePreview();
+          },
+        });
+      }
+
+      function iconToneSlider(key, label) {
+        const initial = parseLength(state.motion[key], "%").number;
+        const mode = key.endsWith("Light") ? "light" : "dark";
+        const surface = mode === "light" ? DEFAULT_LIGHT_COLORS.background : DEFAULT_DARK_COLORS.background;
+        const iconColor = mode === "light" ? "#0a7c47" : "#7ee787";
+        const iconEl = svg("svg", {
+          viewBox: "0 0 24 24",
+          width: "28",
+          height: "28",
+          fill: "none",
+          stroke: "currentColor",
+          "stroke-width": "2",
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+        });
+        iconEl.appendChild(svg("circle", { cx: "12", cy: "12", r: "9" }));
+        iconEl.appendChild(svg("path", { d: "M8 12l3 3 5-6" }));
+        const swatch = el(
+          "div",
+          {
+            class: "mix-preview__swatch",
+            style: `background: ${surface}; color: ${iconColor};`,
+          },
+          [iconEl],
+        );
+        const apply = (n) => {
+          iconEl.style.color = `color-mix(in srgb, ${iconColor} ${n}%, ${surface})`;
+        };
+        apply(initial);
+        return slider({
+          label,
+          hint: `Icon opacity mix on the ${mode} surface. Higher = stronger currentColor.`,
+          min: 0,
+          max: 100,
+          step: 5,
+          value: initial,
+          format: (n) => `${Math.round(n)}%`,
+          previewNode: el("div", { class: "mix-preview" }, [swatch]),
+          onChange: (n) => {
+            state.motion[key] = `${Math.round(n)}%`;
+            apply(n);
+            updatePreview();
+          },
+        });
+      }
+
+      function renderMotion() {
+        return section(
+          "Motion",
+          "Animation timing and visual color-mix intensities",
+          [
+            el("h3", { class: "section__group-title" }, "Timing"),
+            el("div", { class: "fields" }, [durationSlider(), easingField()]),
+            el("h3", { class: "section__group-title" }, "Code line-height"),
+            el("div", { class: "fields fields--single" }, [lineHeightSlider()]),
+            el("h3", { class: "section__group-title" }, "Response card tint"),
+            el("div", { class: "fields" }, [
+              percentSlider({
+                key: "responseTintLight",
+                label: "Response tint (light)",
+                hint: "Status color mixed into the response-card surface (light mode).",
+                toneVarLight: DEFAULT_LIGHT_COLORS.methodPost,
+                toneVarDark: DEFAULT_DARK_COLORS.methodPost,
+              }),
+              percentSlider({
+                key: "responseTintDark",
+                label: "Response tint (dark)",
+                hint: "Same in dark mode.",
+                toneVarLight: DEFAULT_LIGHT_COLORS.methodPost,
+                toneVarDark: DEFAULT_DARK_COLORS.methodPost,
+              }),
+            ]),
+            el("h3", { class: "section__group-title" }, "Card header chrome"),
+            el("div", { class: "fields" }, [
+              percentSlider({
+                key: "cardChromeMixLight",
+                label: "Card chrome mix (light)",
+                hint: "How much text color mixes into card/panel header chrome.",
+                toneVarLight: DEFAULT_LIGHT_COLORS.text,
+                toneVarDark: DEFAULT_DARK_COLORS.text,
+              }),
+              percentSlider({
+                key: "cardChromeMixDark",
+                label: "Card chrome mix (dark)",
+                hint: "Same in dark mode.",
+                toneVarLight: DEFAULT_LIGHT_COLORS.text,
+                toneVarDark: DEFAULT_DARK_COLORS.text,
+              }),
+            ]),
+            el("h3", { class: "section__group-title" }, "Icon tone"),
+            el("div", { class: "fields" }, [
+              iconToneSlider("iconToneLight", "Icon tone (light)"),
+              iconToneSlider("iconToneDark", "Icon tone (dark)"),
+            ]),
+          ],
+          { open: false, icon: "motion" },
+        );
+      }
+
+      function renderGuide() {
+        const items = GUIDE_SECTIONS.map((sec) => {
+          const g = state.guide[sec.key];
+          const modes = [
+            { key: "default", label: "Auto" },
+            { key: "custom", label: "Custom" },
+            { key: "off", label: "Off" },
+          ];
+          const seg = el(
+            "div",
+            { class: "segmented", role: "group", "aria-label": `${sec.label} mode` },
+            modes.map((m) =>
+              el(
+                "button",
+                {
+                  type: "button",
+                  class: "segmented__item",
+                  "aria-pressed": String(g.mode === m.key),
+                  onClick: () => {
+                    g.mode = m.key;
+                    render();
+                  },
+                },
+                m.label,
+              ),
+            ),
+          );
+          const ta = el("textarea", {
+            class: "field__input",
+            rows: 3,
+            placeholder: "Markdown content…",
+            onInput: (e) => {
+              g.markdown = e.target.value;
+              updatePreview();
+            },
+          });
+          ta.value = g.markdown;
+          return el("div", { class: "guide-item" }, [
+            el("div", { class: "guide-item__head" }, [
+              el("span", { class: "guide-item__title" }, sec.label),
+              seg,
+            ]),
+            g.mode === "custom" ? ta : null,
+          ]);
+        });
+        return section(
+          "Integration guide",
+          "Auto = derive from spec · Custom = your Markdown · Off = hide panel",
+          items,
+          { open: false, icon: "guide" },
+        );
+      }
+
+      function renderCustomSections() {
+        const list = state.customSections.map((s, i) => {
+          const posSelect = el(
+            "select",
+            {
+              class: "field__input",
+              onChange: (e) => {
+                s.position = e.target.value;
+                updatePreview();
+              },
+            },
+            [
+              el("option", { value: "" }, "after-guide (default)"),
+              ...CUSTOM_SECTION_POSITIONS.map((p) =>
+                el("option", { value: p, ...(s.position === p ? { selected: true } : {}) }, p),
+              ),
+            ],
+          );
+          if (s.position) posSelect.value = s.position;
+
+          const markdownTa = el("textarea", {
+            class: "field__input",
+            rows: 4,
+            placeholder: "Markdown…",
+            onInput: (e) => {
+              s.markdown = e.target.value;
+              updatePreview();
+            },
+          });
+          markdownTa.value = s.markdown;
+
+          return el("div", { class: "list-item" }, [
+            el("div", { class: "list-item__header" }, [
+              el("span", { class: "list-item__title" }, s.title || `Section ${i + 1}`),
+              el(
+                "button",
+                {
+                  type: "button",
+                  class: "list-item__remove",
+                  onClick: () => {
+                    state.customSections.splice(i, 1);
+                    render();
+                  },
+                },
+                "Remove",
+              ),
+            ]),
+            el("div", { class: "fields" }, [
+              textField({
+                label: "ID (anchor)",
+                value: s.id,
+                placeholder: "sdks",
+                onInput: (v) => { s.id = v; updatePreview(); },
+              }),
+              textField({
+                label: "Title",
+                value: s.title,
+                placeholder: "SDK Downloads",
+                onInput: (v) => { s.title = v; updatePreview(); },
+              }),
+              el("div", { class: "field" }, [
+                el("label", { class: "field__label" }, "Position"),
+                posSelect,
+              ]),
+            ]),
+            el("div", { class: "field" }, [
+              el("label", { class: "field__label" }, "Markdown body"),
+              markdownTa,
+            ]),
+          ]);
+        });
+
+        const addBtn = el(
+          "button",
+          {
+            type: "button",
+            class: "add-btn",
+            onClick: () => {
+              state.customSections.push({ id: "", title: "", markdown: "", position: "" });
+              render();
+            },
+          },
+          "+ Add section",
+        );
+
+        return section(
+          "Custom sections",
+          "Your own Markdown chapters",
+          [...list, addBtn],
+          { open: false, icon: "customSections" },
+        );
+      }
+
+      function renderFooter() {
+        const f = state.footer;
+        const linkItems = f.links.map((link, i) =>
+          el("div", { class: "list-item" }, [
+            el("div", { class: "list-item__header" }, [
+              el("span", { class: "list-item__title" }, link.label || `Link ${i + 1}`),
+              el(
+                "button",
+                {
+                  type: "button",
+                  class: "list-item__remove",
+                  onClick: () => {
+                    f.links.splice(i, 1);
+                    render();
+                  },
+                },
+                "Remove",
+              ),
+            ]),
+            el("div", { class: "fields" }, [
+              textField({
+                label: "Label",
+                value: link.label,
+                onInput: (v) => { link.label = v; updatePreview(); },
+              }),
+              textField({
+                label: "Href",
+                value: link.href,
+                placeholder: "https://…",
+                onInput: (v) => { link.href = v; updatePreview(); },
+              }),
+            ]),
+          ]),
+        );
+
+        return section(
+          "Footer",
+          "Links and closing text",
+          [
+            textField({
+              label: "Text",
+              hint: "Free-form closing text, e.g. a copyright line.",
+              value: f.text,
+              onInput: (v) => { f.text = v; updatePreview(); },
+            }),
+            el("h3", { class: "section__group-title" }, "Links"),
+            ...linkItems,
+            el(
+              "button",
+              {
+                type: "button",
+                class: "add-btn",
+                onClick: () => {
+                  f.links.push({ label: "", href: "" });
+                  render();
+                },
+              },
+              "+ Add link",
+            ),
+          ],
+          { open: false, icon: "footer" },
+        );
+      }
+
+      // ---------- Serialization ----------
+
+      function serialize(value, indent = 0) {
+        const pad = "  ".repeat(indent);
+        const padIn = "  ".repeat(indent + 1);
+        if (value === null || value === undefined) return "undefined";
+        if (typeof value === "boolean" || typeof value === "number") return String(value);
+        if (typeof value === "string") return JSON.stringify(value);
+        if (Array.isArray(value)) {
+          if (value.length === 0) return "[]";
+          const items = value.map((v) => padIn + serialize(v, indent + 1)).join(",\n");
+          return `[\n${items},\n${pad}]`;
+        }
+        if (typeof value === "object") {
+          const entries = Object.entries(value);
+          if (entries.length === 0) return "{}";
+          const lines = entries.map(
+            ([k, v]) => `${padIn}${formatKey(k)}: ${serialize(v, indent + 1)}`,
+          );
+          return `{\n${lines.join(",\n")},\n${pad}}`;
+        }
+        return String(value);
+      }
+
+      const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+      function formatKey(k) {
+        return IDENT_RE.test(k) ? k : JSON.stringify(k);
+      }
+
+      function buildConfigObject() {
+        const config = {};
+        if (state.spec) config.spec = state.spec;
+
+        const site = {};
+        if (state.site.basePath && state.site.basePath !== "/") site.basePath = state.site.basePath;
+        if (state.site.serverUrl) site.serverUrl = state.site.serverUrl;
+        if (state.site.title) site.title = state.site.title;
+        if (state.site.logo) site.logo = state.site.logo;
+        if (state.site.favicon) site.favicon = state.site.favicon;
+        if (Object.keys(site).length) config.site = site;
+
+        const theme = {};
+        const light = diffObj(state.theme.colors.light, DEFAULT_LIGHT_COLORS);
+        const dark = diffObj(state.theme.colors.dark, DEFAULT_DARK_COLORS);
+        const colors = {};
+        if (Object.keys(light).length) colors.light = light;
+        if (Object.keys(dark).length) colors.dark = dark;
+        if (Object.keys(colors).length) theme.colors = colors;
+
+        const fonts = {};
+        if (state.theme.fonts.base !== DEFAULT_FONTS.base) fonts.base = state.theme.fonts.base;
+        if (state.theme.fonts.heading !== DEFAULT_FONTS.heading) fonts.heading = state.theme.fonts.heading;
+        if (state.theme.fonts.mono !== DEFAULT_FONTS.mono) fonts.mono = state.theme.fonts.mono;
+        if (!arraysEqual(state.theme.fonts.stylesheets, DEFAULT_FONTS.stylesheets)) {
+          fonts.stylesheets = state.theme.fonts.stylesheets;
+        }
+        if (Object.keys(fonts).length) theme.fonts = fonts;
+
+        if (state.theme.radius !== DEFAULT_RADIUS) theme.radius = state.theme.radius;
+        if (Object.keys(theme).length) config.theme = theme;
+
+        const navigation = {};
+        if (state.navigation.logo) navigation.logo = state.navigation.logo;
+        if (state.navigation.showHome !== DEFAULT_NAVIGATION.showHome) navigation.showHome = state.navigation.showHome;
+        if (state.navigation.homeLabel !== DEFAULT_NAVIGATION.homeLabel) navigation.homeLabel = state.navigation.homeLabel;
+        if (state.navigation.homeHref !== DEFAULT_NAVIGATION.homeHref) navigation.homeHref = state.navigation.homeHref;
+        // Placements (search + theme toggle): each control renders in
+        // exactly one location. When the UI keeps the built-in "navigation"
+        // choice, no flag is emitted (the default is already correct).
+        // Otherwise navigation.showX is set to false, and — for the sidebar
+        // choice — the corresponding sidebar.showX is enabled below.
+        if (state.searchPlacement !== "navigation") navigation.showSearch = false;
+        if (state.themeTogglePlacement !== "navigation") navigation.showThemeToggle = false;
+        if (state.navigation.githubUrl) {
+          navigation.github = { url: state.navigation.githubUrl };
+          if (state.navigation.githubLabel) navigation.github.label = state.navigation.githubLabel;
+        }
+        const validNavLinks = state.navigation.links
+          .filter((l) => l.label && l.href)
+          .map((l) => {
+            const out = { label: l.label, href: l.href };
+            if (l.target) out.target = l.target;
+            return out;
+          });
+        if (validNavLinks.length) navigation.links = validNavLinks;
+        if (Object.keys(navigation).length) config.navigation = navigation;
+
+        const sidebar = diffObj(state.sidebar, DEFAULT_SIDEBAR);
+        if (state.searchPlacement === "sidebar") sidebar.showSearch = true;
+        if (state.themeTogglePlacement === "sidebar") sidebar.showThemeToggle = true;
+        if (Object.keys(sidebar).length) config.sidebar = sidebar;
+
+        const features = diffObj(state.features, DEFAULT_FEATURES);
+        if (Object.keys(features).length) config.features = features;
+
+        const sizing = diffObj(state.sizing, DEFAULT_SIZING);
+        if (Object.keys(sizing).length) config.sizing = sizing;
+
+        const motion = diffObj(state.motion, DEFAULT_MOTION);
+        if (Object.keys(motion).length) config.motion = motion;
+
+        const guide = {};
+        for (const sec of GUIDE_SECTIONS) {
+          const g = state.guide[sec.key];
+          if (g.mode === "off") guide[sec.key] = false;
+          else if (g.mode === "custom" && g.markdown) guide[sec.key] = g.markdown;
+        }
+        if (Object.keys(guide).length) config.guide = guide;
+
+        const validSections = state.customSections
+          .filter((s) => s.id && s.title)
+          .map((s) => {
+            const out = { id: s.id, title: s.title, markdown: s.markdown };
+            if (s.position) out.position = s.position;
+            return out;
+          });
+        if (validSections.length) config.customSections = validSections;
+
+        const footer = {};
+        const links = state.footer.links.filter((l) => l.label && l.href);
+        if (links.length) footer.links = links;
+        if (state.footer.text) footer.text = state.footer.text;
+        if (Object.keys(footer).length) config.footer = footer;
+
+        return config;
+      }
+
+      function diffObj(actual, defaults) {
+        const out = {};
+        for (const [k, v] of Object.entries(actual)) {
+          if (JSON.stringify(v) !== JSON.stringify(defaults[k])) out[k] = v;
+        }
+        return out;
+      }
+
+      function arraysEqual(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+        return true;
+      }
+
+      function generateSource() {
+        const config = buildConfigObject();
+        const body = serialize(config, 0);
+        return `import { defineConfig } from "periwinkle";\n\nexport default defineConfig(${body});\n`;
+      }
+
+      // ---------- Syntax highlight ----------
+
+      const KEYWORDS = new Set(["import", "from", "export", "default", "const", "let", "var", "return"]);
+      const BOOLS = new Set(["true", "false", "null", "undefined"]);
+
+      /**
+       * Tokenize a source string into { type, text } records. Rendering
+       * builds real DOM nodes (spans with a CSS class), so no HTML is ever
+       * assembled as a string — text can never escape into markup.
+       */
+      function tokenize(source) {
+        const tokens = [];
+        const lines = source.split("\n");
+        lines.forEach((line, idx) => {
+          let i = 0;
+          while (i < line.length) {
+            const rest = line.slice(i);
+            const cmt = rest.match(/^\/\/.*$/);
+            if (cmt) {
+              tokens.push({ type: "com", text: cmt[0] });
+              break;
+            }
+            const strMatch = rest.match(/^"(?:[^"\\]|\\.)*"|^'(?:[^'\\]|\\.)*'/);
+            if (strMatch) {
+              tokens.push({ type: "str", text: strMatch[0] });
+              i += strMatch[0].length;
+              continue;
+            }
+            const prev = line[i - 1] ?? "";
+            const numMatch = rest.match(/^-?\d+(\.\d+)?/);
+            if (numMatch && !/[A-Za-z_$]/.test(prev)) {
+              tokens.push({ type: "num", text: numMatch[0] });
+              i += numMatch[0].length;
+              continue;
+            }
+            const idMatch = rest.match(/^[A-Za-z_$][A-Za-z0-9_$]*/);
+            if (idMatch) {
+              const word = idMatch[0];
+              const next = line[i + word.length];
+              let type = "txt";
+              if (KEYWORDS.has(word)) type = "kw";
+              else if (BOOLS.has(word)) type = "boo";
+              else if (next === ":") type = "key";
+              tokens.push({ type, text: word });
+              i += word.length;
+              continue;
+            }
+            tokens.push({ type: "txt", text: line[i] });
+            i++;
+          }
+          if (idx < lines.length - 1) tokens.push({ type: "nl", text: "\n" });
+        });
+        return tokens;
+      }
+
+      function renderPreview(source) {
+        const target = $("#preview-body");
+        const lines = source.split("\n");
+        const nodes = [];
+        lines.forEach((line, idx) => {
+          // Gutter: line number, right-aligned, non-selectable.
+          const num = document.createElement("span");
+          num.className = "preview__lineno";
+          num.textContent = String(idx + 1);
+          nodes.push(num);
+          // Content cell: syntax-highlighted spans for this line only.
+          const code = document.createElement("span");
+          code.className = "preview__code";
+          const tokens = tokenize(line);
+          tokens.forEach((tk) => {
+            if (tk.type === "nl") return;
+            if (tk.type === "txt") {
+              code.appendChild(document.createTextNode(tk.text));
+            } else {
+              const span = document.createElement("span");
+              span.className = `tk-${tk.type}`;
+              span.textContent = tk.text;
+              code.appendChild(span);
+            }
+          });
+          // Ensure empty lines still occupy a row height.
+          if (!code.hasChildNodes()) code.appendChild(document.createTextNode(" "));
+          nodes.push(code);
+        });
+        target.replaceChildren(...nodes);
+      }
+
+      // ---------- Topbar buttons (built via DOM so no innerHTML) ----------
+
+      function renderTopbarActions() {
+        const host = $("#topbar-actions");
+        host.replaceChildren(
+          el(
+            "button",
+            {
+              type: "button",
+              class: "btn btn--ghost btn--icon",
+              "data-action": "theme-toggle",
+              "aria-label": "Toggle color scheme",
+              title: "Toggle color scheme",
+              id: "btn-theme",
+            },
+            [themeIconNode()],
+          ),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "btn btn--danger",
+              "data-action": "reset",
+              title: "Reset all fields to their defaults",
+            },
+            [iconReset(), " Reset defaults"],
+          ),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "btn",
+              "data-action": "copy",
+              title: "Copy the generated periwinkle.config.ts to the clipboard",
+            },
+            [iconCopy(), " Copy"],
+          ),
+          el(
+            "button",
+            {
+              type: "button",
+              class: "btn btn--accent",
+              "data-action": "save",
+              title: "Save periwinkle.config.ts (browser will prompt where to save)",
+            },
+            [iconSave(), " Save file"],
+          ),
+        );
+      }
+
+      function themeIconNode() {
+        return document.documentElement.dataset.theme === "dark" ? iconSun() : iconMoon();
+      }
+
+      // ---------- Render loop ----------
+
+      function render() {
+        const form = $("#config-form");
+        form.replaceChildren(
+          renderSpec(),
+          renderSite(),
+          renderTheme(),
+          renderNavigation(),
+          renderSidebar(),
+          renderFeatures(),
+          renderSizing(),
+          renderMotion(),
+          renderGuide(),
+          renderCustomSections(),
+          renderFooter(),
+        );
+        renderPreview(generateSource());
+      }
+
+      /**
+       * Cheap update path used by every text / toggle / color input: mutates
+       * state and refreshes only the preview. Doing a full render() on each
+       * keystroke would tear down and rebuild the form, dropping focus and
+       * cursor position — a full re-render is reserved for structural
+       * changes (add/remove list items, mode switches, reset).
+       */
+      function updatePreview() {
+        renderPreview(generateSource());
+      }
+
+      // ---------- Actions ----------
+
+      function showToast(text) {
+        const toast = $("#toast");
+        toast.textContent = text;
+        toast.classList.add("toast--visible");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove("toast--visible"), 1800);
+      }
+
+      async function copySource() {
+        try {
+          await navigator.clipboard.writeText(generateSource());
+          showToast("Copied to clipboard");
+        } catch (err) {
+          console.error(err);
+          showToast("Copy failed — check console");
+        }
+      }
+
+      async function saveSource() {
+        const source = generateSource();
+        const suggestedName = "periwinkle.config.ts";
+
+        // Progressive enhancement: File System Access API (Chrome/Edge only).
+        if (typeof window.showSaveFilePicker === "function") {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName,
+              types: [
+                {
+                  description: "TypeScript file",
+                  accept: { "application/typescript": [".ts"] },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(source);
+            await writable.close();
+            showToast("Saved");
+            return;
+          } catch (err) {
+            if (err && err.name === "AbortError") return;
+            console.error(err);
+            // fall through to blob download
+          }
+        }
+
+        // Fallback: blob download; the browser prompts for the destination
+        // when "Ask before downloading" is enabled (default in Safari).
+        const blob = new Blob([source], { type: "application/typescript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = suggestedName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("Download started");
+      }
+
+      function openResetDialog() {
+        $("#reset-dialog").showModal();
+      }
+
+      function applyReset() {
+        state = createInitialState();
+        render();
+        showToast("Defaults restored");
+      }
+
+      function toggleTheme() {
+        const root = document.documentElement;
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        localStorage.setItem("pw-cb-theme", next);
+        // Swap the icon inside the theme button.
+        const btn = $("#btn-theme");
+        if (btn) btn.replaceChildren(themeIconNode());
+      }
+
+      // Restore preferred scheme
+      const savedTheme = localStorage.getItem("pw-cb-theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.dataset.theme = savedTheme;
+      } else if (window.matchMedia && !window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.dataset.theme = "light";
+      }
+
+      // Wire up
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        const action = btn.dataset.action;
+        if (action === "copy") copySource();
+        else if (action === "save") saveSource();
+        else if (action === "reset") openResetDialog();
+        else if (action === "theme-toggle") toggleTheme();
+      });
+
+      const dialog = $("#reset-dialog");
+      dialog.addEventListener("click", (e) => {
+        if (e.target.matches("[data-close]")) dialog.close();
+        else if (e.target.matches("[data-confirm]")) {
+          dialog.close();
+          applyReset();
+        }
+      });
+
+      renderTopbarActions();
+      render();
+    </script>
+  </body>
+</html>
