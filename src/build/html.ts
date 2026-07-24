@@ -82,3 +82,54 @@ ${themeCss}    </style>
 </html>
 `;
 }
+
+/**
+ * Assembles the standalone `config-builder.html` document. Shares the
+ * same document chrome as the docs page — favicon, font stylesheets,
+ * compiled theme variables, early theme script, main stylesheet — so
+ * both routes look the same. Only the body markup and the loaded
+ * client bundle differ.
+ *
+ * @param data Prepared docs data (title, theme, font stylesheets).
+ * @param bodyHtml Statically rendered configuration-builder markup.
+ * @param assets Site-relative file names of the emitted assets, plus
+ *   the builder-specific client bundle name.
+ * @returns The full HTML document text.
+ */
+export function renderBuilderDocument(
+  data: DocsData,
+  bodyHtml: string,
+  assets: { stylesheet: string; builderScript: string; favicon?: string },
+): string {
+  const { basePath } = data.config.site;
+  const themeCss = compileThemeCss(data.config);
+  const fontLinks = data.config.theme.fonts.stylesheets
+    .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
+    .join("\n    ");
+  const faviconLink = assets.favicon
+    ? `<link rel="icon" href="${escapeHtml(assets.favicon)}">`
+    : "";
+  const pageTitle = `${data.title} — configuration builder`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(pageTitle)}</title>
+    <meta name="description" content="${escapeHtml(`Interactive periwinkle.config.ts builder for ${data.title}.`)}">
+    <meta name="generator" content="periwinkle">
+    ${faviconLink}
+    ${fontLinks}
+    <script>${EARLY_THEME_SCRIPT}</script>
+    <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
+    <style>
+${themeCss}    </style>
+  </head>
+  <body>
+    ${bodyHtml}
+    <script defer src="${escapeHtml(withBase(basePath, assets.builderScript))}"></script>
+  </body>
+</html>
+`;
+}

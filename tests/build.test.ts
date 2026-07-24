@@ -12,11 +12,18 @@ import { startPreviewServer } from "../src/preview/serve.js";
 const specPath = fileURLToPath(new URL("./fixtures/bookstore.openapi.json", import.meta.url));
 const stylesCss = fileURLToPath(new URL("../src/styles/styles.css", import.meta.url));
 
-function testAssetPaths(dir: string): { stylesCss: string; clientJs: string } {
-  // The real client.js only exists after a package build; tests inject a stub.
+function testAssetPaths(dir: string): {
+  stylesCss: string;
+  clientJs: string;
+  configBuilderJs: string;
+} {
+  // The real client bundles only exist after a package build; tests inject
+  // lightweight stubs so buildSite() can copy them without a full tsup run.
   const clientJs = join(dir, "client-stub.js");
   writeFileSync(clientJs, "/* stub */");
-  return { stylesCss, clientJs };
+  const configBuilderJs = join(dir, "config-builder-stub.js");
+  writeFileSync(configBuilderJs, "/* stub */");
+  return { stylesCss, clientJs, configBuilderJs };
 }
 
 describe("buildSite", () => {
@@ -32,7 +39,14 @@ describe("buildSite", () => {
       config: resolveConfig({ site: { basePath: "/docs" } }),
       assetPaths: testAssetPaths(workDir),
     });
-    expect(result.files.sort()).toEqual(["client.js", "index.html", "openapi.json", "styles.css"]);
+    expect(result.files.sort()).toEqual([
+      "client.js",
+      "config-builder.html",
+      "config-builder.js",
+      "index.html",
+      "openapi.json",
+      "styles.css",
+    ]);
     html = readFileSync(join(outDir, "index.html"), "utf8");
   });
 
@@ -58,6 +72,15 @@ describe("buildSite", () => {
     const head = html.slice(html.indexOf("<head>"), html.indexOf("</head>"));
     const normalized = head.replace(/<style>[\s\S]*?<\/style>/, "<style>…</style>");
     expect(normalized).toMatchSnapshot();
+  });
+
+  it("emits the config-builder page alongside the docs page", () => {
+    const builderHtml = readFileSync(join(outDir, "config-builder.html"), "utf8");
+    expect(builderHtml).toContain("<!doctype html>");
+    expect(builderHtml).toContain("Bookstore API — configuration builder");
+    expect(builderHtml).toContain('<link rel="stylesheet" href="/docs/styles.css">');
+    expect(builderHtml).toContain('<script defer src="/docs/config-builder.js"></script>');
+    expect(builderHtml).toContain("data-pw-cb-root");
   });
 });
 

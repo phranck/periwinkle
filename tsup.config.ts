@@ -26,4 +26,14 @@ export default defineConfig([
     minify: true,
     outExtension: () => ({ js: ".js" }),
   },
+  {
+    // Standalone browser bundle for the generated config-builder.html page.
+    // Same IIFE + defer-load contract as the docs client bundle.
+    entry: { "config-builder": "src/client/config-builder-entry.ts" },
+    format: ["iife"],
+    platform: "browser",
+    target: "es2020",
+    minify: true,
+    outExtension: () => ({ js: ".js" }),
+  },
 ]);

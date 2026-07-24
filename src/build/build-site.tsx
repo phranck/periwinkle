@@ -15,10 +15,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { parse as parseYaml } from "yaml";
 
 import { ApiDocs } from "../components/ApiDocs.jsx";
+import { ConfigBuilder } from "../components/ConfigBuilder.jsx";
 import type { ResolvedConfig } from "../config/config.js";
 import { highlightCode } from "../render/highlight.js";
 import { prepareDocsData } from "../render/prepare.js";
-import { renderHtmlDocument, withBase } from "./html.js";
+import { renderBuilderDocument, renderHtmlDocument, withBase } from "./html.js";
 
 /**
  * Options for one site build.
@@ -40,6 +41,12 @@ export interface BuildSiteOptions {
   assetPaths?: {
     stylesCss: string;
     clientJs: string;
+    /**
+     * Path to the pre-built config-builder client bundle. Optional so
+     * tests can inject a lightweight stub; the packaged build resolves
+     * it next to the compiled entry.
+     */
+    configBuilderJs?: string;
   };
 }
 
@@ -54,10 +61,15 @@ export interface BuildSiteResult {
   files: string[];
 }
 
-function packagedAssetPaths(): { stylesCss: string; clientJs: string } {
+function packagedAssetPaths(): {
+  stylesCss: string;
+  clientJs: string;
+  configBuilderJs: string;
+} {
   return {
     stylesCss: fileURLToPath(new URL("./styles.css", import.meta.url)),
     clientJs: fileURLToPath(new URL("./client.js", import.meta.url)),
+    configBuilderJs: fileURLToPath(new URL("./config-builder.js", import.meta.url)),
   };
 }
 
@@ -107,6 +119,15 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
     if (!existsSync(path)) {
       throw new Error(`periwinkle ${label} missing at ${path}. Is the package built?`);
     }
+  }
+  // The config-builder client bundle is optional at test time: tests may
+  // omit the path to skip building the second page. In production it is
+  // always resolved from the packaged assets (packagedAssetPaths).
+  const configBuilderJs = assets.configBuilderJs;
+  if (configBuilderJs && !existsSync(configBuilderJs)) {
+    throw new Error(
+      `periwinkle config-builder bundle missing at ${configBuilderJs}. Is the package built?`,
+    );
   }
 
   const outDir = resolve(cwd, options.outDir);
@@ -159,6 +180,23 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   files.push("client.js");
   writeFileSync(resolve(outDir, "openapi.json"), `${JSON.stringify(document, null, 2)}\n`);
   files.push("openapi.json");
+
+  // Second page: the configuration builder. Shares the same document
+  // chrome (top bar, theme, fonts) so both routes feel like one site.
+  // Only emitted when the client bundle path is available — tests can
+  // opt out by omitting `assetPaths.configBuilderJs`.
+  if (configBuilderJs) {
+    const builderBody = renderToStaticMarkup(<ConfigBuilder navigation={siteConfig.navigation} />);
+    const builderHtml = renderBuilderDocument(data, builderBody, {
+      stylesheet: "styles.css",
+      builderScript: "config-builder.js",
+      ...(siteConfig.site.favicon ? { favicon: siteConfig.site.favicon } : {}),
+    });
+    writeFileSync(resolve(outDir, "config-builder.html"), builderHtml);
+    files.push("config-builder.html");
+    copyFileSync(configBuilderJs, resolve(outDir, "config-builder.js"));
+    files.push("config-builder.js");
+  }
 
   return { outDir, files };
 }
