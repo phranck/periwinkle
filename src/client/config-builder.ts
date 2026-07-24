@@ -372,6 +372,35 @@ function toggleSection(container: HTMLElement, button: HTMLElement, key: string)
 
 let state: BuilderState = createInitialState();
 
+/**
+ * Safe accessor for guide items. `state.guide` is indexed by an
+ * arbitrary string, so under `noUncheckedIndexedAccess` a raw lookup
+ * would widen to `undefined`. Any missing key is transparently seeded
+ * with the built-in "default" mode so callers always see a real item.
+ */
+function getGuideItem(key: string): GuideItemState {
+  const existing = state.guide[key];
+  if (existing) return existing;
+  const created: GuideItemState = { mode: "default", markdown: "" };
+  state.guide[key] = created;
+  return created;
+}
+
+/**
+ * Safe accessor for sizing/motion values. Both maps are typed as
+ * `Record<string, string>` which — under `noUncheckedIndexedAccess` —
+ * widens indexed reads to `string | undefined`. These helpers fall back
+ * to the built-in default (or an empty string) so callers can treat
+ * the returned value as a plain string.
+ */
+function motionValue(key: string): string {
+  return state.motion[key] ?? DEFAULT_MOTION[key] ?? "";
+}
+
+function sizingValue(key: string): string {
+  return state.sizing[key] ?? DEFAULT_SIZING[key] ?? "";
+}
+
 // ---------- DOM helpers ----------
 
 type ChildNodeLike = Node | string | null | undefined | false | ChildNodeLike[];
@@ -612,12 +641,13 @@ interface FontSliderOptions {
 }
 
 function fontSlider(opts: FontSliderOptions): HTMLElement {
-  const parsed = parseLength(state.sizing[opts.key], "rem");
+  const current = sizingValue(opts.key);
+  const parsed = parseLength(current, "rem");
   const preview = el(
     "div",
     {
       class: `font-preview font-preview--${opts.family}`,
-      style: `font-size: ${state.sizing[opts.key]}`,
+      style: `font-size: ${current}`,
     },
     opts.sample,
   );
@@ -649,7 +679,7 @@ interface LengthSliderOptions {
 }
 
 function lengthSlider(opts: LengthSliderOptions): HTMLElement {
-  const parsed = parseLength(state.sizing[opts.key], "rem");
+  const parsed = parseLength(sizingValue(opts.key), "rem");
   const bar = el("div", { class: "length-preview__bar" });
   const setBarWidth = (n: number) => {
     const pct = Math.min(100, Math.max(0, ((n - opts.min) / (opts.max - opts.min)) * 100));
@@ -686,7 +716,7 @@ const EASING_PRESETS: readonly string[] = [
 ];
 
 function durationSlider(): HTMLElement {
-  const parsed = parseLength(state.motion.duration, "ms");
+  const parsed = parseLength(motionValue("duration"), "ms");
   const dot = el("div", { class: "motion-preview__dot" });
   const track = el("div", { class: "motion-preview__track" });
   const preview = el("div", { class: "motion-preview" }, [track, dot]);
@@ -700,8 +730,8 @@ function durationSlider(): HTMLElement {
         preview.style.setProperty("--track-length", `${Math.max(0, inner)}px`);
         dot.classList.remove("motion-preview__dot--running");
         void dot.offsetWidth;
-        dot.style.animationDuration = state.motion.duration;
-        dot.style.animationTimingFunction = state.motion.easing;
+        dot.style.animationDuration = motionValue("duration");
+        dot.style.animationTimingFunction = motionValue("easing");
         dot.classList.add("motion-preview__dot--running");
       },
     },
@@ -725,11 +755,12 @@ function durationSlider(): HTMLElement {
 }
 
 function easingField(): HTMLElement {
-  const preset = EASING_PRESETS.includes(state.motion.easing) ? state.motion.easing : "custom";
+  const currentEasing = motionValue("easing");
+  const preset = EASING_PRESETS.includes(currentEasing) ? currentEasing : "custom";
   const customInput = el("input", {
     type: "text",
     class: "field__input",
-    value: preset === "custom" ? state.motion.easing : "",
+    value: preset === "custom" ? currentEasing : "",
     placeholder: "cubic-bezier(0.2, 0.8, 0.2, 1)",
     onInput: (e: Event) => {
       if (select.value === "custom") {
@@ -767,7 +798,7 @@ function easingField(): HTMLElement {
   return el("div", { class: "slider" }, [
     el("div", { class: "slider__head" }, [
       el("span", { class: "slider__label" }, "Easing function"),
-      el("span", { class: "slider__value" }, state.motion.easing),
+      el("span", { class: "slider__value" }, currentEasing),
     ]),
     select,
     preset === "custom" ? customInput : null,
@@ -776,7 +807,7 @@ function easingField(): HTMLElement {
 }
 
 function lineHeightSlider(): HTMLElement {
-  const value = Number.parseFloat(state.motion.codeLineHeight) || 1.5;
+  const value = Number.parseFloat(motionValue("codeLineHeight")) || 1.5;
   const preview = el(
     "div",
     { class: "lh-preview", style: `line-height: ${value}` },
@@ -809,7 +840,7 @@ interface PercentSliderOptions {
 }
 
 function percentSlider(opts: PercentSliderOptions): HTMLElement {
-  const initial = parseLength(state.motion[opts.key], "%").number;
+  const initial = parseLength(motionValue(opts.key) || "0%", "%").number;
   const swatchLight = el(
     "div",
     { class: "mix-preview__swatch", style: `color: ${DEFAULT_LIGHT_COLORS.text}` },
@@ -844,7 +875,7 @@ function percentSlider(opts: PercentSliderOptions): HTMLElement {
 }
 
 function iconToneSlider(key: string, label: string): HTMLElement {
-  const initial = parseLength(state.motion[key], "%").number;
+  const initial = parseLength(motionValue(key) || "0%", "%").number;
   const mode = key.endsWith("Light") ? "light" : "dark";
   const surface =
     mode === "light" ? DEFAULT_LIGHT_COLORS.background : DEFAULT_DARK_COLORS.background;
@@ -1445,7 +1476,7 @@ function renderGuide(): HTMLElement[] {
     { key: "off", label: "Off" },
   ];
   const items = GUIDE_SECTIONS.map((sec) => {
-    const g = state.guide[sec.key];
+    const g = getGuideItem(sec.key);
     const seg = el(
       "div",
       { class: "segmented", role: "group", "aria-label": `${sec.label} mode` },
@@ -1720,7 +1751,7 @@ export function updatePreview(): void {
  * whose JSON representation differs. Used to keep the emitted config
  * as small as possible: fields the user never touched stay omitted.
  */
-function diffObj<T extends Record<string, unknown>>(actual: T, defaults: T): Partial<T> {
+function diffObj<T extends object>(actual: T, defaults: T): Partial<T> {
   const out: Partial<T> = {};
   for (const key of Object.keys(actual) as Array<keyof T>) {
     if (JSON.stringify(actual[key]) !== JSON.stringify(defaults[key])) {
@@ -1823,7 +1854,7 @@ function buildConfigObject(): ConfigOutput {
 
   const guide: Record<string, string | false> = {};
   for (const sec of GUIDE_SECTIONS) {
-    const g = state.guide[sec.key];
+    const g = getGuideItem(sec.key);
     if (g.mode === "off") guide[sec.key] = false;
     else if (g.mode === "custom" && g.markdown) guide[sec.key] = g.markdown;
   }
