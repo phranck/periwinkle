@@ -155,6 +155,12 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   const bundledNavigationLogo = bundleLocalAsset(config.navigation.logo, "navigation.logo");
   if (bundledNavigationLogo) siteConfig.navigation.logo = bundledNavigationLogo;
 
+  // When the builder page is going to be generated, weave its top-nav
+  // link into the docs' navigation config so both surfaces cross-link.
+  if (configBuilderJs) {
+    addBuilderNavLink(siteConfig.navigation, siteConfig.site.basePath);
+  }
+
   const data = await prepareDocsData(document, siteConfig);
   // Pre-highlight the full OpenAPI contract for the "View OpenAPI contract"
   // dialog. The rendered Shiki markup is JSON-encoded and placed inside a
@@ -199,4 +205,22 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   }
 
   return { outDir, files };
+}
+
+/**
+ * When the config-builder page is generated, prepend an auto
+ * "Config builder" nav-link to the docs' top bar so users can discover
+ * the builder from any doc page. Skipped when the consumer already
+ * added an entry that points at `config-builder.html` (no duplicates).
+ */
+function addBuilderNavLink(navigation: ResolvedConfig["navigation"], basePath: string): void {
+  const alreadyHasBuilderLink = navigation.links.some((link) =>
+    /config-builder\.html(?:$|[?#])/.test(link.href),
+  );
+  if (alreadyHasBuilderLink) return;
+  const builderHref = withBase(basePath, "config-builder.html");
+  navigation.links = [
+    { label: "Config builder", href: builderHref, target: "_blank" },
+    ...navigation.links,
+  ];
 }

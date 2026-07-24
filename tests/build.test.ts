@@ -82,6 +82,57 @@ describe("buildSite", () => {
     expect(builderHtml).toContain('<script defer src="/docs/config-builder.js"></script>');
     expect(builderHtml).toContain("data-pw-cb-root");
   });
+
+  it("adds an automatic 'Config builder' link to the docs top nav", () => {
+    expect(html).toContain('href="/docs/config-builder.html"');
+    expect(html).toContain("Config builder");
+  });
+});
+
+describe("buildSite auto builder nav-link", () => {
+  it("does not duplicate the auto link when the consumer already added one", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
+    const outDir = join(workDir, "dist");
+    await buildSite({
+      specPath,
+      outDir,
+      config: resolveConfig({
+        site: { basePath: "/docs" },
+        navigation: {
+          links: [
+            {
+              label: "My builder link",
+              href: "/docs/config-builder.html?custom=1",
+              target: "_blank",
+            },
+          ],
+        },
+      }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+    // The consumer's link is preserved; no second "Config builder" pill
+    // appears (the auto helper detects the builder href and skips).
+    expect(html).toContain("My builder link");
+    expect(html).not.toContain(">Config builder<");
+  });
+
+  it("skips the auto link when the builder page is not generated", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
+    const outDir = join(workDir, "dist");
+    const clientJs = join(workDir, "client-stub.js");
+    writeFileSync(clientJs, "/* stub */");
+    // Omit configBuilderJs so buildSite skips the second page — the
+    // auto link should be skipped too, since it would 404.
+    await buildSite({
+      specPath,
+      outDir,
+      config: resolveConfig({ site: { basePath: "/docs" } }),
+      assetPaths: { stylesCss, clientJs },
+    });
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+    expect(html).not.toContain("config-builder.html");
+  });
 });
 
 describe("buildSite failures", () => {
