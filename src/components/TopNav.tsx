@@ -60,6 +60,36 @@ function GithubMark({ className }: { className?: string }) {
 }
 
 /**
+ * Iconsax Bulk-variant "code slash" mark used for the auto-generated
+ * "Config builder" nav link, matching the docs' Bulk icon style.
+ */
+function ConfigBuilderMark({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        opacity="0.4"
+        d="M16.74 4.63003V8.84003C16.74 10 15.79 10.95 14.63 10.95H6.21C6.03 10.95 5.86 10.94 5.69 10.92C3.61 10.66 2 8.88003 2 6.74003C2 5.58003 2.47 4.52003 3.24 3.76003C4 3.00003 5.05 2.53003 6.21 2.53003H14.63C15.79 2.53003 16.74 3.47003 16.74 4.63003Z"
+      />
+      <path d="M16.6699 4.11011H18.8399C19.4199 4.11011 19.8899 4.58011 19.8899 5.16011V7.27011C19.8899 7.85011 19.4199 8.32011 18.8399 8.32011H16.7299" />
+      <path d="M21.9996 6.95996H19.8896C19.4796 6.95996 19.1396 6.61996 19.1396 6.20996C19.1396 5.79996 19.4796 5.45996 19.8896 5.45996H21.9996C22.4096 5.45996 22.7496 5.79996 22.7496 6.20996C22.7496 6.61996 22.4096 6.95996 21.9996 6.95996Z" />
+      <path d="M8.94973 7.48999H6.21973C5.80973 7.48999 5.46973 7.14999 5.46973 6.73999C5.46973 6.32999 5.80973 5.98999 6.21973 5.98999H8.94973C9.35973 5.98999 9.69973 6.32999 9.69973 6.73999C9.69973 7.14999 9.35973 7.48999 8.94973 7.48999Z" />
+      <path d="M14.6296 10.95V12.45C14.6296 13.36 13.8896 14.11 12.9696 14.11H9.88965L10.9496 10.95H14.6296Z" />
+      <path d="M10.9501 10.9499L9.89008 14.1099L8.84008 17.2599H3.58008L5.69008 10.9199C5.86008 10.9399 6.03008 10.9499 6.21008 10.9499H10.9501Z" />
+      <path d="M10.42 18.32V20.42C10.42 21 9.95 21.47 9.37 21.47H3.05C2.47 21.47 2 21 2 20.42V18.32C2 17.73 2.47 17.26 3.05 17.26H9.37C9.95 17.26 10.42 17.73 10.42 18.32Z" />
+    </svg>
+  );
+}
+
+/** Matches the auto-generated config-builder link so it can carry an icon. */
+const CONFIG_BUILDER_HREF_RE = /config-builder\.html(?:$|[?#])/;
+
+/**
  * Renders the top navigation bar, or `null` when every affordance is off.
  *
  * @param props.navigation The resolved navigation config.
@@ -120,6 +150,7 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
             ) : null}
             {navigation.links.map((link) => {
               const opensInNewTab = link.target === "_blank";
+              const isConfigBuilder = CONFIG_BUILDER_HREF_RE.test(link.href);
               return (
                 <a
                   key={`${link.label}-${link.href}`}
@@ -129,6 +160,9 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
                   {...(link.target ? { target: link.target } : {})}
                   {...(opensInNewTab ? { rel: "noopener noreferrer" } : {})}
                 >
+                  {isConfigBuilder ? (
+                    <ConfigBuilderMark className="public-navigation__item-icon" />
+                  ) : null}
                   <span className="public-navigation__label">{link.label}</span>
                 </a>
               );

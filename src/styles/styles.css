@@ -329,6 +329,12 @@ code {
   padding: 0 var(--pw-space-3);
   color: var(--pw-text-muted);
   background: transparent;
+  /* The nav mixes <a> and <button> items (Search and the theme toggle are
+     buttons). Without `appearance: none`, Safari paints the buttons with a
+     native chrome (subtle border + background) so they no longer match the
+     flat anchors. Force both element types to the same flat surface. */
+  appearance: none;
+  -webkit-appearance: none;
   font-family: var(--pw-font-base);
   font-size: var(--pw-text-body);
   font-weight: 500;
