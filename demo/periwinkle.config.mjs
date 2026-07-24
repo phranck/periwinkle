@@ -14,13 +14,8 @@ export default {
   },
   navigation: {
     logo: "resources/Logo_Banner/logo.svg",
-    links: [
-      {
-        label: "Config builder",
-        href: "/periwinkle/config-builder.html",
-        target: "_blank",
-      },
-    ],
+    // The "Config builder" nav link is added automatically by periwinkle
+    // when the builder page is generated — no need to configure it here.
   },
   guide: {
     rateLimits: "This is a demo deployment of a fictional API — there are no real rate limits.",
