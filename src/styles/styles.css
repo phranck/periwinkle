@@ -3035,3 +3035,388 @@ mark[data-api-search-highlight] {
     transition: none;
   }
 }
+
+/* ---------- Config builder (standalone builder.html) ---------- */
+
+/* Root wrapper for the builder page. Reuses the shared `.pw-app` (which
+   publishes --pw-topnav-height when the top nav renders) and adds
+   builder-specific layout on top. */
+.pw-cb-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pw-cb__intro {
+  padding: var(--pw-space-8) var(--pw-page-padding) 0;
+  max-width: var(--pw-container-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pw-cb__title {
+  font-size: var(--pw-text-hero);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 0 0 var(--pw-space-3);
+}
+
+.pw-cb__lead {
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-lead);
+  margin: 0;
+  max-width: 60rem;
+}
+
+.pw-cb__meta {
+  color: var(--pw-text-faint);
+  font-size: var(--pw-text-body);
+  margin-top: var(--pw-space-3);
+}
+
+.pw-cb__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--pw-space-6);
+  max-width: var(--pw-container-max-width);
+  margin: 0 auto;
+  padding: var(--pw-space-6) var(--pw-page-padding) var(--pw-space-page-bottom);
+  width: 100%;
+  flex: 1;
+}
+@media (max-width: 56rem) {
+  .pw-cb__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pw-cb__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-space-4);
+  min-width: 0;
+}
+
+/* Sticky preview column: pinned below the top nav (with a small gap) so
+   the generated config stays visible while the user scrolls the form. */
+.pw-cb__preview {
+  position: sticky;
+  top: calc(var(--pw-topnav-height, 0px) + var(--pw-space-4));
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-8));
+  border: 1px solid var(--pw-border);
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+  overflow: hidden;
+}
+@media (max-width: 56rem) {
+  .pw-cb__preview {
+    position: static;
+    max-height: none;
+  }
+}
+
+.pw-cb__preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-3) var(--pw-space-4);
+  background: var(--pw-surface-alt);
+  border-bottom: 1px solid var(--pw-border);
+  flex-wrap: wrap;
+}
+
+.pw-cb__preview-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  flex-wrap: wrap;
+}
+
+.pw-cb__preview-filename {
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
+  color: var(--pw-text-muted);
+}
+
+/* Preview body: two-column grid (line-number gutter + code cell). The
+   gutter is `position: sticky; left: 0` so horizontal scrolling never
+   hides the line numbers. */
+.pw-cb__preview-body {
+  margin: 0;
+  padding: var(--pw-space-3) 0;
+  overflow: auto;
+  font-family: var(--pw-font-mono);
+  font-size: var(--pw-text-code);
+  line-height: 1.6;
+  background: var(--pw-background);
+  flex: 1;
+  tab-size: 2;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--pw-space-4);
+  row-gap: 0;
+}
+
+.pw-cb__lineno {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: right;
+  color: var(--pw-text-faint);
+  padding-inline-start: var(--pw-space-4);
+  border-right: 1px solid var(--pw-border);
+  padding-inline-end: var(--pw-space-2);
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: pre;
+  background: var(--pw-background);
+}
+
+.pw-cb__code {
+  white-space: pre;
+  padding-inline-end: var(--pw-space-4);
+}
+
+/* Syntax colors: reuse the palette accents so the preview matches the
+   docs' code blocks visually. */
+.pw-cb__tk-kw {
+  color: var(--pw-accent);
+  font-weight: 500;
+}
+.pw-cb__tk-str {
+  color: var(--pw-method-post);
+}
+.pw-cb__tk-num {
+  color: var(--pw-method-put);
+}
+.pw-cb__tk-com {
+  color: var(--pw-text-faint);
+  font-style: italic;
+}
+.pw-cb__tk-key {
+  color: var(--pw-link);
+}
+.pw-cb__tk-boo {
+  color: var(--pw-status-success);
+  font-weight: 500;
+}
+
+/* Top-bar action buttons */
+.pw-cb__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pw-space-2);
+  min-height: var(--pw-size-control-compact);
+  padding: 0 var(--pw-space-3);
+  border: 1px solid var(--pw-border);
+  border-radius: calc(var(--pw-radius) / 2);
+  background: var(--pw-surface);
+  color: var(--pw-text);
+  font-family: inherit;
+  font-size: var(--pw-text-code);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
+    border-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.pw-cb__action:hover {
+  color: var(--pw-accent);
+  border-color: var(--pw-accent);
+}
+
+.pw-cb__action--accent {
+  background: var(--pw-accent);
+  border-color: var(--pw-accent);
+  color: #fff;
+}
+
+.pw-cb__action--accent:hover {
+  background: color-mix(in srgb, var(--pw-accent) 84%, var(--pw-text));
+  border-color: color-mix(in srgb, var(--pw-accent) 84%, var(--pw-text));
+  color: #fff;
+}
+
+.pw-cb__action--danger:hover {
+  color: var(--pw-status-error);
+  border-color: var(--pw-status-error);
+}
+
+.pw-cb__action svg {
+  width: var(--pw-size-icon-sm);
+  height: var(--pw-size-icon-sm);
+}
+
+/* Sections (the collapsible field blocks). Structure mirrors the sidebar
+   details/summary pattern, but as a plain button + wrapper so the body
+   animates open AND closed via the grid-template-rows trick. */
+.pw-cb__form .section {
+  border: 1px solid var(--pw-border);
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+  overflow: hidden;
+}
+
+.pw-cb__form .section__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-3) var(--pw-space-4);
+  background: var(--pw-docs-card-chrome);
+  border: 0;
+  border-bottom: 1px solid transparent;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing);
+}
+
+.pw-cb__form .section[data-open="true"] > .section__summary {
+  border-bottom-color: var(--pw-border);
+}
+
+.pw-cb__form .section__summary:focus-visible {
+  outline: 2px solid var(--pw-accent);
+  outline-offset: -2px;
+}
+
+.pw-cb__form .section__title {
+  font-family: var(--pw-font-heading);
+  font-size: var(--pw-text-card-title);
+  font-weight: 600;
+  color: var(--pw-text);
+}
+
+.pw-cb__form .section__hint {
+  margin-left: auto;
+  color: var(--pw-text-faint);
+  font-size: var(--pw-text-body);
+}
+
+.pw-cb__form .section__chevron {
+  width: 1rem;
+  height: 1rem;
+  color: var(--pw-text-muted);
+  transition: transform var(--pw-nav-transition-duration) var(--pw-nav-transition-easing);
+  flex: none;
+}
+
+.pw-cb__form .section[data-open="true"] > .section__summary .section__chevron {
+  transform: rotate(90deg);
+}
+
+.pw-cb__form .section__icon {
+  width: var(--pw-size-icon-md);
+  height: var(--pw-size-icon-md);
+  color: var(--pw-accent);
+  flex: none;
+}
+
+/* Body wrapper: grid-template-rows 0fr ↔ 1fr transition animates the
+   height in both directions. Padding lives on the innermost wrapper so
+   the grid track really collapses to 0. */
+.pw-cb__form .section__body-outer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows var(--pw-motion-duration-slow) cubic-bezier(0.4, 0, 0.2, 1),
+    opacity var(--pw-nav-transition-duration) ease;
+  contain: layout paint style;
+  will-change: grid-template-rows, opacity;
+  opacity: 0;
+}
+
+.pw-cb__form .section[data-open="true"] > .section__body-outer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.pw-cb__form .section__body {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pw-cb__form .section__body-inner {
+  padding: var(--pw-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pw-cb__form .section__body-outer {
+    transition: none;
+  }
+}
+
+/* Reset confirmation dialog */
+.pw-cb__dialog {
+  border: 1px solid var(--pw-border);
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+  color: var(--pw-text);
+  padding: 0;
+  max-width: 28rem;
+}
+
+.pw-cb__dialog::backdrop {
+  background: color-mix(in srgb, var(--pw-sky-top) 60%, transparent);
+  backdrop-filter: blur(var(--pw-space-2));
+}
+
+.pw-cb__dialog-body {
+  padding: var(--pw-space-5);
+}
+
+.pw-cb__dialog-title {
+  font-family: var(--pw-font-heading);
+  font-size: var(--pw-text-card-title);
+  font-weight: 600;
+  margin: 0 0 var(--pw-space-2);
+}
+
+.pw-cb__dialog-text {
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-body);
+  margin: 0 0 var(--pw-space-4);
+}
+
+.pw-cb__dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--pw-space-2);
+}
+
+/* Toast notification (used by copy/save actions in step 4) */
+.pw-cb__toast {
+  position: fixed;
+  bottom: var(--pw-space-6);
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  padding: var(--pw-space-2) var(--pw-space-5);
+  background: var(--pw-text);
+  color: var(--pw-background);
+  border-radius: 999px;
+  font-size: var(--pw-text-code);
+  font-weight: 500;
+  transition:
+    transform var(--pw-nav-transition-duration) cubic-bezier(0.16, 1, 0.3, 1),
+    opacity var(--pw-nav-transition-duration) ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+.pw-cb__toast--visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
