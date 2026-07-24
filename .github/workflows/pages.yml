@@ -26,6 +26,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: node dist/cli.js build --config demo/periwinkle.config.mjs --out site
+      # Ship the config builder alongside the demo. It links to logo assets
+      # via `resources/Logo_Banner/logo.svg`, so those are copied too.
+      - name: Bundle config builder and its assets
+        run: |
+          cp config-builder.html site/
+          mkdir -p site/resources/Logo_Banner
+          cp resources/Logo_Banner/logo.svg site/resources/Logo_Banner/
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
