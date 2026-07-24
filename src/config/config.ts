@@ -136,6 +136,23 @@ export interface NavigationGithubLink {
 }
 
 /**
+ * A custom pill in the top navigation. Rendered between the built-in
+ * affordances (home / search) and the trailing controls (GitHub / theme
+ * toggle) so consumer-defined destinations line up with the rest of the
+ * navigation strip.
+ *
+ * @property label Visible text of the pill; also drives the accessible name.
+ * @property href Where the pill points to.
+ * @property target Optional link target. Use `"_blank"` to open the link in
+ *   a new tab/window; `rel="noopener noreferrer"` is applied automatically.
+ */
+export interface NavigationLink {
+  label: string;
+  href: string;
+  target?: string;
+}
+
+/**
  * Top navigation bar rendered above the reference shell. Sticky at the top
  * with a frosted glass backdrop once the page scrolls behind it. Every
  * affordance is toggleable; when everything is disabled the bar is not
@@ -155,6 +172,9 @@ export interface NavigationGithubLink {
  *   `true`.
  * @property github Optional GitHub link. Renders a GitHub mark left of the
  *   theme toggle when set.
+ * @property links Custom nav pills rendered between the built-in home/search
+ *   affordances and the GitHub/theme cluster. Each entry accepts `label`,
+ *   `href`, and an optional `target` (use `"_blank"` for a new tab).
  */
 export interface NavigationConfig {
   logo?: string;
@@ -164,6 +184,7 @@ export interface NavigationConfig {
   showSearch?: boolean;
   showThemeToggle?: boolean;
   github?: NavigationGithubLink;
+  links?: NavigationLink[];
 }
 
 /**
@@ -310,9 +331,10 @@ export interface ResolvedConfig {
     fonts: ThemeFonts;
     radius: string;
   };
-  navigation: Required<Omit<NavigationConfig, "github" | "logo">> & {
+  navigation: Required<Omit<NavigationConfig, "github" | "logo" | "links">> & {
     logo: string | undefined;
     github: NavigationGithubLink | undefined;
+    links: NavigationLink[];
   };
   sidebar: Required<SidebarConfig>;
   features: Required<FeatureFlags>;
@@ -398,10 +420,11 @@ export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
   showSearch: false,
 };
 
-/** Default top navigation bar: home + search + theme toggle, no logo, no GitHub link. */
-export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "logo">> & {
+/** Default top navigation bar: home + search + theme toggle, no logo, no GitHub link, no custom links. */
+export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "logo" | "links">> & {
   logo: string | undefined;
   github: NavigationGithubLink | undefined;
+  links: NavigationLink[];
 } = {
   logo: undefined,
   showHome: true,
@@ -410,6 +433,7 @@ export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "log
   showSearch: true,
   showThemeToggle: true,
   github: undefined,
+  links: [],
 };
 
 /** Default feature flags: every affordance shipped by periwinkle is on. */
@@ -538,7 +562,16 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
   if (!isRecord(value)) fail("navigation must be an object.");
   assertKnownKeys(
     value,
-    ["logo", "showHome", "homeLabel", "homeHref", "showSearch", "showThemeToggle", "github"],
+    [
+      "logo",
+      "showHome",
+      "homeLabel",
+      "homeHref",
+      "showSearch",
+      "showThemeToggle",
+      "github",
+      "links",
+    ],
     "navigation",
   );
   assertOptionalString(value.logo, "navigation.logo");
@@ -569,7 +602,29 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
     showThemeToggle:
       (value.showThemeToggle as boolean | undefined) ?? DEFAULT_NAVIGATION.showThemeToggle,
     github,
+    links: validateNavigationLinks(value.links),
   };
+}
+
+function validateNavigationLinks(value: unknown): NavigationLink[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) fail("navigation.links must be an array.");
+  return value.map((link, index) => {
+    if (!isRecord(link)) fail(`navigation.links[${index}] must be an object.`);
+    assertKnownKeys(link, ["label", "href", "target"], `navigation.links[${index}]`);
+    if (typeof link.label !== "string" || link.label.length === 0) {
+      fail(`navigation.links[${index}].label must be a non-empty string.`);
+    }
+    if (typeof link.href !== "string" || link.href.length === 0) {
+      fail(`navigation.links[${index}].href must be a non-empty string.`);
+    }
+    assertOptionalString(link.target, `navigation.links[${index}].target`);
+    return {
+      label: link.label,
+      href: link.href,
+      ...(link.target !== undefined ? { target: link.target as string } : {}),
+    };
+  });
 }
 
 function validateSidebar(value: unknown): Required<SidebarConfig> {

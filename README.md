@@ -34,72 +34,28 @@ The spec may be JSON or YAML. Broken specs fail the build loudly — periwinkle 
 
 ## Configuration
 
-Create a `periwinkle.config.ts` (or `.js`/`.mjs`) next to your project; it is discovered automatically, or passed explicitly with `--config`.
+Create a `periwinkle.config.ts` (or `.mts`/`.js`/`.mjs`) next to your project; it is discovered automatically, or passed explicitly with `--config`. Every field is optional — an empty config produces a fully working site.
 
 ```ts
 import { defineConfig } from "periwinkle";
 
 export default defineConfig({
   spec: "openapi.json",
-  site: {
-    basePath: "/docs",
-    serverUrl: "https://api.example.com",
-    title: "Example API",
-    logo: "assets/logo.svg",
-    favicon: "assets/favicon.png",
-  },
+  site: { basePath: "/docs", title: "Example API" },
   theme: {
     colors: {
       light: { accent: "#6667ab" },
       dark: { accent: "#9a9bd4" },
     },
-    fonts: {
-      heading: '"Barlow Condensed", sans-serif',
-      stylesheets: ["/fonts/fonts.css"],
-    },
-    radius: "1rem",
   },
-  guide: {
-    auth: "Send the `X-API-Key` header with every request.",
-    rateLimits: "100 requests per minute per key.",
-    versioning: false,
-  },
-  customSections: [
-    {
-      id: "sdks",
-      title: "SDK Downloads",
-      markdown: "Grab the SDKs from …",
-      position: "after-reference",
-    },
-  ],
-  footer: {
-    links: [{ label: "Imprint", href: "https://example.com/imprint" }],
-    text: "© Example Corp",
-  },
+  navigation: { logo: "assets/logo.svg", github: { url: "https://github.com/acme/api" } },
 });
 ```
 
-### Reference
+The config covers site identity, the full color palette per mode, fonts, corner radius, the top navigation bar, sidebar affordances, feature switches, typography/layout sizing, animation timing, the integration guide content, custom Markdown chapters, and the footer.
 
-| Key | Purpose | Default |
-| --- | --- | --- |
-| `spec` | Path to the OpenAPI 3.x document (JSON or YAML) | — (or `--spec`) |
-| `site.basePath` | Path the site is served under | `/` |
-| `site.serverUrl` | Base URL in curl examples | first spec `servers` entry |
-| `site.title` | Page title override | spec `info.title` |
-| `site.logo` / `site.favicon` | Local file (bundled) or URL | — |
-| `theme.colors.light` / `.dark` | Partial palette overrides | periwinkle palette |
-| `theme.fonts` | Font stacks + external font stylesheets | system fonts |
-| `theme.radius` | Corner radius token (cards full, compact controls half) | `1rem` |
-| `navigation.*` | Top bar: `logo` (local file or URL, links to `homeHref`), `showHome`, `homeLabel`, `homeHref`, `showSearch`, `showThemeToggle`, `github` | home + search + theme toggle, no logo/GitHub |
-| `sidebar.*` | `title`, `showMethods`, `showThemeToggle`, `showSearch` | `"Reference"`, all toggles `false` |
-| `features.*` | `openApiContract`, `accessBadge`, `deprecatedBadge`, `copyButton` | all `true` |
-| `sizing.*` / `motion.*` | Typography and layout dimensions / animation timing (CSS length and duration strings) | reference values |
-| `guide.*` | Markdown per section (`intro`, `auth`, `requests`, `errors`, `rateLimits`, `versioning`), `false` disables | derived from the spec |
-| `customSections` | Free Markdown sections with `position` (`before-guide`, `after-guide`, `after-reference`) | `[]` |
-| `footer` | Links and text | — |
-
-Guide sections without authored content fall back to copy derived from the spec (declared security schemes, server URL, version). Every rendered string is either derived from the spec or configurable.
+- **Full reference:** every option, its type, default, and where it appears on the page is documented in [CONFIGURATION.md](CONFIGURATION.md).
+- **Interactive builder:** click your config together at [phranck.github.io/periwinkle/config-builder.html](https://phranck.github.io/periwinkle/config-builder.html) — live preview, copy to clipboard, save file. The demo site links to it from its own top-nav ("Config builder"). Locally the same page ships as [`config-builder.html`](config-builder.html) at the project root.
 
 ## Deploying
 

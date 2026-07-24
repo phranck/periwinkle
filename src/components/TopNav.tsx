@@ -16,6 +16,8 @@
  *           <span class=public-navigation__label>API reference</span>
  *         a.public-navigation__link data-public-search-command (search)
  *           <Icon /> <span>Search</span> <KeyCap shortcut="⌘K" />
+ *         a.public-navigation__link (custom nav links, if any)
+ *           <span>Label</span>
  *         a.public-navigation__link (github)
  *           <GithubMark /> <span>GitHub</span>
  *         button.public-navigation__link (theme toggle, periwinkle addition)
@@ -68,7 +70,10 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
   const hasSearch = navigation.showSearch;
   const hasGithub = Boolean(navigation.github);
   const hasThemeToggle = navigation.showThemeToggle;
-  if (!hasLogo && !hasHome && !hasSearch && !hasGithub && !hasThemeToggle) return null;
+  const hasCustomLinks = navigation.links.length > 0;
+  if (!hasLogo && !hasHome && !hasSearch && !hasGithub && !hasThemeToggle && !hasCustomLinks) {
+    return null;
+  }
 
   return (
     <div className="public-header" data-pw-top-nav>
@@ -113,6 +118,21 @@ export function TopNav({ navigation }: { navigation: ResolvedConfig["navigation"
                 <KeyCap shortcut="⌘K" />
               </button>
             ) : null}
+            {navigation.links.map((link) => {
+              const opensInNewTab = link.target === "_blank";
+              return (
+                <a
+                  key={`${link.label}-${link.href}`}
+                  className="public-navigation__link"
+                  href={link.href}
+                  title={link.label}
+                  {...(link.target ? { target: link.target } : {})}
+                  {...(opensInNewTab ? { rel: "noopener noreferrer" } : {})}
+                >
+                  <span className="public-navigation__label">{link.label}</span>
+                </a>
+              );
+            })}
             {navigation.github ? (
               <a
                 className="public-navigation__link"
