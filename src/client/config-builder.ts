@@ -1681,12 +1681,259 @@ export function render(): void {
 
 /**
  * Cheap update path used by every text / toggle / color input: mutates
- * state and refreshes only the preview. Step 5 wires the actual
- * serializer + tokenizer + highlighter; step 4 leaves the preview
- * empty so field wiring can be tested in isolation.
+ * state and refreshes the preview only. The preview body is rebuilt
+ * line by line so the sticky line-number gutter always shows correct
+ * numbers regardless of insertions/removals.
  */
 export function updatePreview(): void {
-  // Step 5 fills this with the config-source generator.
+  const target = document.getElementById("pw-cb-preview");
+  if (!target) return;
+  const source = generateSource();
+  const lines = source.split("\n");
+  const nodes: Node[] = [];
+  for (let idx = 0; idx < lines.length; idx++) {
+    const num = document.createElement("span");
+    num.className = "pw-cb__lineno";
+    num.textContent = String(idx + 1);
+    nodes.push(num);
+    const code = document.createElement("span");
+    code.className = "pw-cb__code";
+    for (const tk of tokenize(lines[idx] ?? "")) {
+      if (tk.type === "txt") code.appendChild(document.createTextNode(tk.text));
+      else {
+        const span = document.createElement("span");
+        span.className = `pw-cb__tk-${tk.type}`;
+        span.textContent = tk.text;
+        code.appendChild(span);
+      }
+    }
+    if (!code.hasChildNodes()) code.appendChild(document.createTextNode(" "));
+    nodes.push(code);
+  }
+  target.replaceChildren(...nodes);
+}
+
+// ---------- TypeScript config serializer ----------
+
+/**
+ * Diff a plain object against a default object and return only entries
+ * whose JSON representation differs. Used to keep the emitted config
+ * as small as possible: fields the user never touched stay omitted.
+ */
+function diffObj<T extends Record<string, unknown>>(actual: T, defaults: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const key of Object.keys(actual) as Array<keyof T>) {
+    if (JSON.stringify(actual[key]) !== JSON.stringify(defaults[key])) {
+      out[key] = actual[key];
+    }
+  }
+  return out;
+}
+
+function arraysEqual(a: unknown[], b: unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+/** Minimal object shape carrying only the fields the user changed. */
+type ConfigOutput = Record<string, unknown>;
+
+/**
+ * Walk the mutable state and produce a plain-object copy that omits
+ * anything still at its built-in default. This is what
+ * `serialize()` renders into the preview.
+ */
+function buildConfigObject(): ConfigOutput {
+  const config: ConfigOutput = {};
+  if (state.spec) config.spec = state.spec;
+
+  const site: Record<string, string> = {};
+  if (state.site.basePath && state.site.basePath !== "/") site.basePath = state.site.basePath;
+  if (state.site.serverUrl) site.serverUrl = state.site.serverUrl;
+  if (state.site.title) site.title = state.site.title;
+  if (state.site.logo) site.logo = state.site.logo;
+  if (state.site.favicon) site.favicon = state.site.favicon;
+  if (Object.keys(site).length > 0) config.site = site;
+
+  const theme: Record<string, unknown> = {};
+  const light = diffObj(state.theme.colors.light, DEFAULT_LIGHT_COLORS);
+  const dark = diffObj(state.theme.colors.dark, DEFAULT_DARK_COLORS);
+  const colors: Record<string, unknown> = {};
+  if (Object.keys(light).length > 0) colors.light = light;
+  if (Object.keys(dark).length > 0) colors.dark = dark;
+  if (Object.keys(colors).length > 0) theme.colors = colors;
+
+  const fonts: Record<string, unknown> = {};
+  if (state.theme.fonts.base !== DEFAULT_FONTS.base) fonts.base = state.theme.fonts.base;
+  if (state.theme.fonts.heading !== DEFAULT_FONTS.heading)
+    fonts.heading = state.theme.fonts.heading;
+  if (state.theme.fonts.mono !== DEFAULT_FONTS.mono) fonts.mono = state.theme.fonts.mono;
+  if (!arraysEqual(state.theme.fonts.stylesheets, DEFAULT_FONTS.stylesheets)) {
+    fonts.stylesheets = state.theme.fonts.stylesheets;
+  }
+  if (Object.keys(fonts).length > 0) theme.fonts = fonts;
+
+  if (state.theme.radius !== DEFAULT_RADIUS) theme.radius = state.theme.radius;
+  if (Object.keys(theme).length > 0) config.theme = theme;
+
+  const navigation: Record<string, unknown> = {};
+  if (state.navigation.logo) navigation.logo = state.navigation.logo;
+  if (state.navigation.showHome !== DEFAULT_NAVIGATION.showHome) {
+    navigation.showHome = state.navigation.showHome;
+  }
+  if (state.navigation.homeLabel !== DEFAULT_NAVIGATION.homeLabel) {
+    navigation.homeLabel = state.navigation.homeLabel;
+  }
+  if (state.navigation.homeHref !== DEFAULT_NAVIGATION.homeHref) {
+    navigation.homeHref = state.navigation.homeHref;
+  }
+  // Placements: each control renders in exactly one location. Only emit
+  // the flag when the UI moved off the built-in "navigation" default.
+  if (state.searchPlacement !== "navigation") navigation.showSearch = false;
+  if (state.themeTogglePlacement !== "navigation") navigation.showThemeToggle = false;
+  if (state.navigation.githubUrl) {
+    const github: Record<string, string> = { url: state.navigation.githubUrl };
+    if (state.navigation.githubLabel) github.label = state.navigation.githubLabel;
+    navigation.github = github;
+  }
+  const validNavLinks = state.navigation.links
+    .filter((l) => l.label && l.href)
+    .map((l) => {
+      const out: Record<string, string> = { label: l.label, href: l.href };
+      if (l.target) out.target = l.target;
+      return out;
+    });
+  if (validNavLinks.length > 0) navigation.links = validNavLinks;
+  if (Object.keys(navigation).length > 0) config.navigation = navigation;
+
+  const sidebar: Record<string, unknown> = diffObj(state.sidebar, DEFAULT_SIDEBAR);
+  if (state.searchPlacement === "sidebar") sidebar.showSearch = true;
+  if (state.themeTogglePlacement === "sidebar") sidebar.showThemeToggle = true;
+  if (Object.keys(sidebar).length > 0) config.sidebar = sidebar;
+
+  const features = diffObj(state.features, DEFAULT_FEATURES);
+  if (Object.keys(features).length > 0) config.features = features;
+
+  const sizing = diffObj(state.sizing, DEFAULT_SIZING);
+  if (Object.keys(sizing).length > 0) config.sizing = sizing;
+
+  const motion = diffObj(state.motion, DEFAULT_MOTION);
+  if (Object.keys(motion).length > 0) config.motion = motion;
+
+  const guide: Record<string, string | false> = {};
+  for (const sec of GUIDE_SECTIONS) {
+    const g = state.guide[sec.key];
+    if (g.mode === "off") guide[sec.key] = false;
+    else if (g.mode === "custom" && g.markdown) guide[sec.key] = g.markdown;
+  }
+  if (Object.keys(guide).length > 0) config.guide = guide;
+
+  const validSections = state.customSections
+    .filter((s) => s.id && s.title)
+    .map((s) => {
+      const out: Record<string, string> = {
+        id: s.id,
+        title: s.title,
+        markdown: s.markdown,
+      };
+      if (s.position) out.position = s.position;
+      return out;
+    });
+  if (validSections.length > 0) config.customSections = validSections;
+
+  const footer: Record<string, unknown> = {};
+  const footerLinks = state.footer.links.filter((l) => l.label && l.href);
+  if (footerLinks.length > 0) footer.links = footerLinks;
+  if (state.footer.text) footer.text = state.footer.text;
+  if (Object.keys(footer).length > 0) config.footer = footer;
+
+  return config;
+}
+
+const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+function formatKey(key: string): string {
+  return IDENT_RE.test(key) ? key : JSON.stringify(key);
+}
+
+/**
+ * Turn a plain JS value into a TypeScript object-literal string with
+ * two-space indentation, matching what a developer would hand-author.
+ */
+function serialize(value: unknown, indent = 0): string {
+  const pad = "  ".repeat(indent);
+  const padIn = "  ".repeat(indent + 1);
+  if (value === null || value === undefined) return "undefined";
+  if (typeof value === "boolean" || typeof value === "number") return String(value);
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "[]";
+    const items = value.map((v) => `${padIn}${serialize(v, indent + 1)}`).join(",\n");
+    return `[\n${items},\n${pad}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length === 0) return "{}";
+    const lines = entries.map(([k, v]) => `${padIn}${formatKey(k)}: ${serialize(v, indent + 1)}`);
+    return `{\n${lines.join(",\n")},\n${pad}}`;
+  }
+  return String(value);
+}
+
+// ---------- Syntax highlighter (line-by-line) ----------
+
+const KEYWORDS = new Set(["import", "from", "export", "default", "const", "let", "var", "return"]);
+const BOOLS = new Set(["true", "false", "null", "undefined"]);
+
+interface Token {
+  type: "kw" | "str" | "num" | "key" | "boo" | "com" | "txt";
+  text: string;
+}
+
+/**
+ * Tokenize a single source line into typed spans. Only line comments
+ * are recognised — block comments are not emitted by the serializer.
+ */
+function tokenize(line: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  while (i < line.length) {
+    const rest = line.slice(i);
+    const cmt = rest.match(/^\/\/.*$/);
+    if (cmt) {
+      tokens.push({ type: "com", text: cmt[0] });
+      break;
+    }
+    const strMatch = rest.match(/^"(?:[^"\\]|\\.)*"|^'(?:[^'\\]|\\.)*'/);
+    if (strMatch) {
+      tokens.push({ type: "str", text: strMatch[0] });
+      i += strMatch[0].length;
+      continue;
+    }
+    const prev = line[i - 1] ?? "";
+    const numMatch = rest.match(/^-?\d+(\.\d+)?/);
+    if (numMatch && !/[A-Za-z_$]/.test(prev)) {
+      tokens.push({ type: "num", text: numMatch[0] });
+      i += numMatch[0].length;
+      continue;
+    }
+    const idMatch = rest.match(/^[A-Za-z_$][A-Za-z0-9_$]*/);
+    if (idMatch) {
+      const word = idMatch[0];
+      const next = line[i + word.length];
+      let type: Token["type"] = "txt";
+      if (KEYWORDS.has(word)) type = "kw";
+      else if (BOOLS.has(word)) type = "boo";
+      else if (next === ":") type = "key";
+      tokens.push({ type, text: word });
+      i += word.length;
+      continue;
+    }
+    tokens.push({ type: "txt", text: line[i] ?? "" });
+    i += 1;
+  }
+  return tokens;
 }
 
 // ---------- Actions (Reset / Copy / Save) ----------
@@ -1716,11 +1963,14 @@ function showToast(text: string): void {
 }
 
 /**
- * Placeholder source generator. Step 5 replaces this with the real
- * TypeScript serializer that emits only non-default fields.
+ * Assemble the full `periwinkle.config.ts` source, wrapping the diff'd
+ * config object in the `defineConfig` call every consumer needs. Only
+ * fields the user actually changed land in the output.
  */
 function generateSource(): string {
-  return `// periwinkle.config.ts — full serializer arrives in the next step.\n`;
+  const config = buildConfigObject();
+  const body = serialize(config, 0);
+  return `import { defineConfig } from "periwinkle";\n\nexport default defineConfig(${body});\n`;
 }
 
 async function copySource(): Promise<void> {
