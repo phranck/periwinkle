@@ -368,9 +368,41 @@ function toggleSection(container: HTMLElement, button: HTMLElement, key: string)
   persistSectionOpenState();
 }
 
+// ---------- Field values (persisted in localStorage) ----------
+
+const STATE_STORAGE_KEY = "pw-cb:state";
+
+/**
+ * Restores the previously entered field values so a reload picks up where the
+ * user left off. The snapshot is merged over a fresh initial state, so any
+ * fields added since it was written fall back to their defaults instead of
+ * being undefined. Returns null when nothing is stored or the value is
+ * unreadable, in which case the caller starts from the defaults.
+ */
+function loadPersistedState(): BuilderState | null {
+  try {
+    const raw = localStorage.getItem(STATE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return null;
+    return { ...createInitialState(), ...(parsed as Partial<BuilderState>) } as BuilderState;
+  } catch {
+    return null;
+  }
+}
+
+/** Writes the current field values to localStorage; degrades silently. */
+function persistState(): void {
+  try {
+    localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // storage may be full or disabled; the builder still works without it.
+  }
+}
+
 // ---------- Root state ----------
 
-let state: BuilderState = createInitialState();
+let state: BuilderState = loadPersistedState() ?? createInitialState();
 
 /**
  * Safe accessor for guide items. `state.guide` is indexed by an
@@ -1719,6 +1751,9 @@ export function render(): void {
 export function updatePreview(): void {
   const target = document.getElementById("pw-cb-preview");
   if (!target) return;
+  // Every field edit funnels through here, so this is where the entered values
+  // get persisted for the next visit.
+  persistState();
   const source = generateSource();
   const lines = source.split("\n");
   const nodes: Node[] = [];
