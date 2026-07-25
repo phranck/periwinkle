@@ -104,7 +104,8 @@
     font-size: 14px; color: var(--muted); font-weight: 600;
     /* Separates either way: darker than the card in light mode, lighter in
        dark. The light value is mixed a little further down for contrast. */
-    background: var(--header-bg); padding-top: 12px; padding-bottom: 12px;
+    /* No vertical override: the header keeps the same inset as every cell. */
+    background: var(--header-bg);
   }
   thead th:first-child {
     border-top-left-radius: var(--row-radius); border-bottom-left-radius: var(--row-radius);
@@ -272,7 +273,7 @@
   .grid button:hover span { color: var(--text); }
   .grid button svg { width: 40px; height: 40px; color: var(--accent); }
   .grid button span {
-    font-size: 12px; color: var(--muted); text-align: center;
+    font-size: 13px; color: var(--muted); text-align: center;
     word-break: break-word; line-height: 1.2;
   }
   .grid button.active {
