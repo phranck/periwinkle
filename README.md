@@ -12,16 +12,16 @@
 
 # periwinkle
 
-Static API documentation generator for [OpenAPI](https://openapis.org) 3.x — turn a spec plus a small config into a polished, themable, self-contained docs site. Named after the violet-blooming periwinkle flower (Vinca).
+periwinkle is a static API documentation generator for [OpenAPI](https://openapis.org) 3.x. It turns a specification and a small configuration file into a polished, themable, self-contained documentation site. Its name comes from the violet-blooming periwinkle flower (Vinca).
 
-**Live demo:** [phranck.github.io/periwinkle](https://phranck.github.io/periwinkle/) — built from a fictional bookstore contract on every push.
+**Live demo:** [phranck.github.io/periwinkle](https://phranck.github.io/periwinkle/). The demo is rebuilt from a fictional bookstore contract on every push.
 
-- Static output: `index.html`, one stylesheet, one small vanilla-JS bundle, and a copy of the spec as `openapi.json`. No runtime framework, deployable to any host.
-- Sticky top navigation with a frosted-glass backdrop: optional brand logo, home link, search, GitHub link, and theme toggle — every affordance toggleable via config.
-- Sidebar navigation with endpoint groups, integration guide, endpoint blocks with generated curl examples, schema cards with field tables and raw JSON view.
-- Light/dark theming via CSS custom properties, fully configurable (colors, fonts, logo, radius). Pick which palette first-time visitors see, or follow their operating system.
-- Document search dialog (`⌘K`) and persisted collapsible sections — all progressive enhancement over working plain HTML.
-- Embeddable React components for host apps (e.g. Astro via `@astrojs/react`).
+- The output is entirely static and consists of `index.html`, one stylesheet, one small vanilla-JS bundle, and a copy of the specification as `openapi.json`. No runtime framework is involved, so the site deploys to any host.
+- A sticky top navigation bar with a frosted-glass backdrop carries an optional brand logo, a home link, search, a GitHub link, and a theme toggle. Every one of these affordances can be switched off in the configuration.
+- The sidebar lists endpoint groups and the integration guide, whilst the main column holds endpoint blocks with generated curl examples and schema cards with field tables and a raw JSON view.
+- Light and dark themes are compiled into CSS custom properties and remain fully configurable, covering the palette, fonts, logo, and corner radius. You may choose which palette first-time visitors see, or defer to their operating system.
+- A document search dialog (`⌘K`) and collapsible sections that remember their state add progressive enhancement to markup which already works as plain HTML.
+- React components are exported for embedding in host applications, for instance in Astro by way of `@astrojs/react`.
 
 ## Contents
 
@@ -42,11 +42,11 @@ npx periwinkle build --spec openapi.json --out dist
 npx periwinkle preview --dir dist
 ```
 
-The spec may be JSON or YAML. Broken specs fail the build loudly — periwinkle never produces a silently wrong site.
+The specification may be written in JSON or YAML. A broken specification fails the build loudly, because periwinkle never produces a silently incorrect site.
 
 ## Configuration
 
-Create a `periwinkle.config.ts` (or `.mts`/`.js`/`.mjs`) next to your project; it is discovered automatically, or passed explicitly with `--config`. Every field is optional — an empty config produces a fully working site.
+Create a `periwinkle.config.ts` (or `.mts`/`.js`/`.mjs`) next to your project. It is discovered automatically, or you may pass it explicitly with `--config`. Every field is optional, and an empty configuration still produces a fully working site.
 
 ```ts
 import { defineConfig } from "periwinkle";
@@ -67,7 +67,7 @@ export default defineConfig({
 The config covers site identity, the full color palette per mode, fonts, corner radius, the top navigation bar, sidebar affordances, feature switches, typography/layout sizing, animation timing, the integration guide content, custom Markdown chapters, and the footer.
 
 - **Full reference:** every option, its type, default, and where it appears on the page is documented in [CONFIGURATION.md](CONFIGURATION.md).
-- **Interactive builder:** click your config together at [phranck.github.io/periwinkle/config-builder/](https://phranck.github.io/periwinkle/config-builder/) — live preview, import an existing config, copy to clipboard, save file.
+- **Interactive builder:** assemble your configuration at [phranck.github.io/periwinkle/config-builder/](https://phranck.github.io/periwinkle/config-builder/), which offers a live preview, imports an existing configuration, and either copies the result to the clipboard or saves it to a file.
 
   The builder is a second page periwinkle can generate, and it is **off by default**: a published API reference should not ship the tool that authors its own config. Turn it on where it belongs, as the demo does:
 
@@ -100,9 +100,9 @@ node tools/build-icon-picker.mjs
 
 The output directory is plain static files. Recipes:
 
-**Any static host (nginx, GitHub Pages, …)** — upload `dist/`. With a sub-path (e.g. Pages project sites), set `site.basePath` accordingly.
+**Any static host, such as nginx or GitHub Pages.** Upload `dist/` as it stands. Where the site is served from a sub-path, as GitHub Pages project sites are, set `site.basePath` accordingly.
 
-**GitHub Actions → Pages** — see [`.github/workflows/pages.yml`](.github/workflows/pages.yml) in this repo; it builds the live demo.
+**GitHub Actions deploying to Pages.** See [`.github/workflows/pages.yml`](.github/workflows/pages.yml) in this repository, which builds the live demo.
 
 **Hono / Node backend under `/docs`:**
 
@@ -112,7 +112,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 app.use("/docs/*", serveStatic({ root: "./docs-dist", rewriteRequestPath: (p) => p.replace(/^\/docs/, "") }));
 ```
 
-Build with `site.basePath: "/docs"` and serve the directory — no server-side rendering involved.
+Build with `site.basePath: "/docs"` and serve the directory. No server-side rendering is involved.
 
 ## Embedding in an existing app
 
