@@ -53,11 +53,21 @@ export function initTheme(root: Document): void {
  * @param root The document containing the toggles.
  */
 export function bindThemeToggle(root: Document): void {
+  const view = root.defaultView ?? window;
   for (const button of root.querySelectorAll<HTMLButtonElement>("[data-pw-theme-toggle]")) {
     button.addEventListener("click", () => {
+      // Suppress transitions for one frame so color-carrying properties (e.g.
+      // the top-nav separator box-shadow) swap palettes instantly instead of
+      // animating between them, which reads as a flash.
+      root.documentElement.dataset.pwThemeSwitching = "true";
       const next = root.documentElement.dataset.theme === "dark" ? "light" : "dark";
       root.documentElement.dataset.theme = next;
       storageSet(THEME_STORAGE_KEY, next);
+      view.requestAnimationFrame(() => {
+        view.requestAnimationFrame(() => {
+          delete root.documentElement.dataset.pwThemeSwitching;
+        });
+      });
     });
   }
 }

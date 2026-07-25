@@ -273,6 +273,15 @@ code {
     0 var(--pw-space-1) var(--pw-space-3) color-mix(in srgb, var(--pw-text) 6%, transparent);
 }
 
+/* While the theme toggle swaps palettes, kill every transition for one frame
+   so color-carrying properties (the top-nav separator, sidebar rows, etc.)
+   switch instantly instead of animating between palettes (bindThemeToggle). */
+[data-pw-theme-switching] * {
+  /* biome-ignore lint/complexity/noImportantStyles: must override every
+     element's own transition regardless of specificity for the one-frame swap. */
+  transition: none !important;
+}
+
 /* The inner row recenters on the shared shell measure via `.developer-shell`
    (see Layout). `space-between` matches the reference: the optional brand
    logo sits left, the actions cluster right. */
