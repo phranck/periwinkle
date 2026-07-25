@@ -196,6 +196,11 @@
        so there is never a second scrollbar next to the grid's. */
     overflow: hidden;
   }
+  /* The picker holds one height whatever the search leaves in the grid. With
+     only a maximum the box would follow its content, collapsing to a single
+     row of results and snapping back when the field is cleared. A stored
+     resize overrides this inline. */
+  #dlg { height: 84vh; }
   dialog::backdrop { background: rgb(0 0 0 / 0.5); }
   /* Fade and lift on open, reverse on close. The allow-discrete keyword keeps
      the element around long enough for the closing frames to play. */
@@ -213,6 +218,10 @@
   /* Column layout: the header keeps its height and the grid takes the rest,
      so no manual height arithmetic can cut off the last row. */
   dialog[open] { opacity: 1; translate: 0 0; display: flex; flex-direction: column; }
+  /* Retakes the closed values while the element is still open, so the exit
+     plays inside the top layer. Without it the dialog would sit still for the
+     whole duration and then be dropped by close(). */
+  dialog[open][data-closing] { opacity: 0; translate: 0 -60px; }
   @starting-style {
     dialog[open] { opacity: 0; translate: 0 -60px; }
   }
@@ -226,6 +235,11 @@
     opacity: 1;
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
+  }
+  dialog[open][data-closing]::backdrop {
+    opacity: 0;
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
   }
   @starting-style {
     dialog[open]::backdrop {
@@ -421,7 +435,7 @@
   </div>
 </dialog>
 
-<dialog id="dlg">
+<dialog id="dlg" tabindex="-1">
   <div class="dlg-head">
     <strong id="dlg-title">Pick an icon</strong>
     <label class="variant-label" for="variant">Style</label>
@@ -655,10 +669,30 @@ document.addEventListener("click", (event) => {
     if (pickTarget === "__default__") STATE.default = ref;
     else STATE.icons[pickTarget] = ref;
     persist();
-    dlg.close();
+    closeDialog(dlg);
     renderRows();
   }
 });
+
+/** Duration of the dialog open/close animation, mirrored from the stylesheet. */
+const DIALOG_MOTION_MS = 280;
+
+/**
+ * Closes a dialog after its exit animation. Calling close() straight away
+ * would snap it shut in browsers that do not animate discrete properties.
+ */
+function closeDialog(target) {
+  if (!target.open || target.dataset.closing) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    target.close();
+    return;
+  }
+  target.dataset.closing = "true";
+  setTimeout(() => {
+    delete target.dataset.closing;
+    target.close();
+  }, DIALOG_MOTION_MS);
+}
 
 const confirmDialog = document.getElementById("confirm");
 let confirmResolve = null;
@@ -680,7 +714,7 @@ function askConfirm(title, text, okLabel) {
 }
 
 function settleConfirm(answer) {
-  confirmDialog.close();
+  closeDialog(confirmDialog);
   confirmResolve?.(answer);
   confirmResolve = null;
 }
@@ -722,7 +756,24 @@ document.getElementById("reset").addEventListener("click", async () => {
   renderRows();
 });
 
-document.getElementById("dlg-close").addEventListener("click", () => dlg.close());
+document.getElementById("dlg-close").addEventListener("click", () => closeDialog(dlg));
+
+/* Escape in two steps, and handled here because Safari swallows it inside a
+   search field so the dialog never sees the native cancel. The first press
+   clears a filled search and drops focus; the next one closes the dialog. */
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !dlg.open) return;
+  event.preventDefault();
+  if (document.activeElement === iconSearch && iconSearch.value !== "") {
+    iconSearch.value = "";
+    renderGrid();
+    // Focus moves to the dialog itself, so the next Escape reaches this
+    // handler no matter where the browser would have parked it.
+    dlg.focus();
+    return;
+  }
+  closeDialog(dlg);
+});
 iconSearch.addEventListener("input", renderGrid);
 variantSelect.addEventListener("change", renderGrid);
 filter.addEventListener("input", renderRows);
