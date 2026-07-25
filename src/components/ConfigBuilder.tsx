@@ -427,9 +427,18 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
       <section className="pw-cb__intro">
         <h1 className="pw-cb__title">Configuration Builder</h1>
         <p className="pw-cb__lead">
-          Click your <code>periwinkle.config.ts</code> together, see it update on the right, and
-          copy or save the result. Only fields you change from their defaults land in the output —
-          the file stays as small as possible.
+          Configure the look and behavior of your API documentation with this builder. Instead of
+          editing <code>periwinkle.config.ts</code> by hand, you assemble it visually from settings
+          that speak for themselves.
+        </p>
+        <p className="pw-cb__lead">
+          Only the settings you change from their defaults are written to the config file.
+          periwinkle then reads that file when it builds your API documentation, and your changes
+          take effect in the generated reference.
+        </p>
+        <p className="pw-cb__lead">
+          Once everything looks the way you want, copy the whole config file to your clipboard, or
+          save it straight into your API reference project.
         </p>
         <p className="pw-cb__meta">
           Every option is documented in{" "}
