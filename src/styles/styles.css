@@ -3427,6 +3427,18 @@ mark[data-api-search-highlight] {
   line-height: 1.5;
 }
 
+/* Per-section reset button, aligned to the end of the section body. */
+.pw-cb__form .section__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--pw-space-4) var(--pw-space-4);
+}
+
+.pw-cb__form .section__reset:hover {
+  color: var(--pw-status-error);
+  border-color: var(--pw-status-error);
+}
+
 .pw-cb__form .section__hint {
   margin-left: auto;
   color: var(--pw-text-faint);

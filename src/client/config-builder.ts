@@ -2103,6 +2103,55 @@ function applyReset(): void {
   showToast("Defaults restored");
 }
 
+/**
+ * Resets just one section's values back to the initial state, leaving every
+ * other section untouched. Keyed by the section key from SECTIONS.
+ */
+function resetSection(key: string): void {
+  const fresh = createInitialState();
+  switch (key) {
+    case "spec":
+      state.spec = fresh.spec;
+      break;
+    case "site":
+      state.site = fresh.site;
+      break;
+    case "theme":
+      state.theme = fresh.theme;
+      break;
+    case "navigation":
+      state.navigation = fresh.navigation;
+      state.themeTogglePlacement = fresh.themeTogglePlacement;
+      state.searchPlacement = fresh.searchPlacement;
+      break;
+    case "sidebar":
+      state.sidebar = fresh.sidebar;
+      break;
+    case "features":
+      state.features = fresh.features;
+      break;
+    case "sizing":
+      state.sizing = fresh.sizing;
+      break;
+    case "motion":
+      state.motion = fresh.motion;
+      break;
+    case "guide":
+      state.guide = fresh.guide;
+      break;
+    case "customSections":
+      state.customSections = fresh.customSections;
+      break;
+    case "footer":
+      state.footer = fresh.footer;
+      break;
+    default:
+      return;
+  }
+  render();
+  showToast(`${key} reset`);
+}
+
 // ---------- Import an existing periwinkle.config ----------
 
 /** Narrowing helpers for reading an untrusted, parsed config object. */
@@ -2434,6 +2483,12 @@ export function setupConfigBuilder(doc: Document): void {
     // Clear the value so choosing the same file again still fires a change.
     importInput.value = "";
   });
+
+  // Per-section reset: each section body carries its own reset button.
+  for (const btn of doc.querySelectorAll<HTMLElement>("[data-pw-cb-reset-section]")) {
+    const key = btn.dataset.pwCbResetSection;
+    if (key) btn.addEventListener("click", () => resetSection(key));
+  }
 
   // Reset dialog handlers
   const dialog = doc.getElementById("pw-cb-reset-dialog") as HTMLDialogElement | null;

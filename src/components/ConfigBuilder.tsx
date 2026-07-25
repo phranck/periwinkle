@@ -307,6 +307,16 @@ function Section({ meta }: { meta: SectionMeta }) {
         <div className="section__body">
           <p className="section__description">{meta.description}</p>
           <div className="section__body-inner" data-pw-cb-body={meta.key} />
+          <div className="section__actions">
+            <button
+              type="button"
+              className="pw-cb__action section__reset"
+              data-pw-cb-reset-section={meta.key}
+              title={`Reset the ${meta.title} section to its defaults`}
+            >
+              <IconReset /> Reset section
+            </button>
+          </div>
         </div>
       </div>
     </div>
