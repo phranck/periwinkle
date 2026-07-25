@@ -105,6 +105,17 @@ periwinkle preview [--dir <dir>] [--port <number>]
 periwinkle --version | --help
 ```
 
+## Projects using periwinkle
+
+| Project | API reference |
+| --- | --- |
+| [lmaa.space](https://github.com/phranck/lmaa.space), a curated directory of independent online shops in Europe | [api.lmaa.space/docs](https://api.lmaa.space/docs/) |
+
+Built your docs with periwinkle? Add yourself to this list. Open a pull request
+with one more row, or open an issue with your link and it gets added for you.
+Seeing where periwinkle actually ends up is the most useful feedback this
+project can get, and it helps the next person decide whether it fits their API.
+
 ## License
 
 This repository has been published under the [MIT](https://layered.mit-license.org) license.
