@@ -1,6 +1,6 @@
 {
   "name": "periwinkle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Static API documentation generator for OpenAPI 3.x — themable, self-contained, no runtime framework",
   "type": "module",
   "license": "MIT",
