@@ -82,14 +82,18 @@
   .table-card {
     --card-radius: 20px;
     --card-inset: 10px;
+    --row-gap: 4px;
     --row-radius: calc(var(--card-radius) - var(--card-inset));
     --cell-inset: 4px;
     --control-radius: calc(var(--row-radius) - var(--cell-inset));
     background: var(--surface);
     border-radius: var(--card-radius);
-    padding: var(--card-inset);
+    /* Rows are spaced apart, and that spacing already sits outside the first
+       and last row. The vertical inset is reduced by the same amount so the
+       hover block keeps an equal distance to the card edge all round. */
+    padding: calc(var(--card-inset) - var(--row-gap)) var(--card-inset);
   }
-  table { width: 100%; border-collapse: collapse; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0 var(--row-gap); }
   /* Next link in the chain: the cell inset sets how much smaller the badge
      corners are than the hover block around them. */
   th, td { text-align: left; padding: var(--cell-inset) 10px; }
@@ -232,7 +236,6 @@
   .dlg-head {
     position: sticky; top: 0; display: flex; gap: 12px; align-items: center;
     padding: 14px 16px; background: var(--surface);
-    border-bottom: 1px solid var(--border);
   }
   .dlg-head strong { margin-right: auto; }
   /* One flat height for every control in the dialog header. */
@@ -378,7 +381,7 @@
   <table>
     <thead>
       <tr>
-        <th style="width:34%">Section title</th>
+        <th style="width:24%">Section title</th>
         <th>Bulk</th>
         <th>TwoTone</th>
         <th style="width:1%">
