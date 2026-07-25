@@ -97,14 +97,20 @@ const html = `<!doctype html>
   /* Sticky composer: adding a title stays reachable at any scroll position. */
   .composer {
     position: sticky; bottom: 0; z-index: 8; margin: 24px auto 0;
-    padding: 12px 20px 18px; background: var(--bg);
+    padding: 12px 20px 18px; background: transparent;
     max-width: 1100px; width: 100%;
+    /* Clicks pass through the transparent area to the rows underneath. */
+    pointer-events: none;
   }
+  .composer > * { pointer-events: auto; }
   .composer__inner {
     display: flex; gap: 10px; align-items: center;
     padding: 10px 12px; border: 1px solid var(--border); border-radius: 999px;
-    background: var(--surface); box-shadow: 0 6px 20px rgb(0 0 0 / 0.08);
+    background: var(--surface);
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.16), 0 2px 6px rgb(0 0 0 / 0.08);
+    transition: border-color 120ms ease;
   }
+  .composer__inner:focus-within { border-color: var(--accent); }
   .composer__field { display: flex; align-items: center; gap: 8px; flex: 1; }
   .composer__field input { flex: 1; border: 0; background: transparent; min-width: 0; }
   .composer__field input:focus { outline: none; }
@@ -460,6 +466,15 @@ document.getElementById("new-title").addEventListener("keydown", (event) => {
 });
 
 document.getElementById("new-title").addEventListener("input", clearNotice);
+
+/* ESC hands focus back to the page from either text field. */
+for (const field of [filter, document.getElementById("new-title")]) {
+  field.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    field.blur();
+  });
+}
 
 /** Serializes the mapping with sorted keys, ready to save over the JSON file. */
 function serialize() {
