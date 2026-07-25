@@ -84,7 +84,7 @@
     --card-inset: 10px;
     --row-gap: 4px;
     --row-radius: calc(var(--card-radius) - var(--card-inset));
-    --cell-inset: 4px;
+    --cell-inset: 7px;
     --control-radius: calc(var(--row-radius) - var(--cell-inset));
     background: var(--surface);
     border-radius: var(--card-radius);
@@ -94,9 +94,10 @@
     padding: calc(var(--card-inset) - var(--row-gap)) var(--card-inset);
   }
   table { width: 100%; border-collapse: separate; border-spacing: 0 var(--row-gap); }
-  /* Next link in the chain: the cell inset sets how much smaller the badge
-     corners are than the hover block around them. */
-  th, td { text-align: left; padding: var(--cell-inset) 10px; }
+  /* One inset on every side: the distance from a button to the hover block's
+     edge is the same top, bottom, left and right. It is also the next link in
+     the radius chain, setting how much smaller the badge corners are. */
+  th, td { text-align: left; padding: var(--cell-inset); }
   th {
     font-size: 14px; color: var(--muted); font-weight: 600;
     /* surface-alt is darker than the card in light mode and lighter in dark,
