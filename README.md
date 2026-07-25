@@ -23,6 +23,17 @@ Static API documentation generator for OpenAPI 3.x — turn a spec plus a small 
 - Document search dialog (`⌘K`) and persisted collapsible sections — all progressive enhancement over working plain HTML.
 - Embeddable React components for host apps (e.g. Astro via `@astrojs/react`).
 
+## Contents
+
+- [Quickstart](#quickstart)
+- [Configuration](#configuration)
+- [Sidebar icons](#sidebar-icons)
+- [Deploying](#deploying)
+- [Embedding in an existing app](#embedding-in-an-existing-app)
+- [CLI](#cli)
+- [Projects using periwinkle](#projects-using-periwinkle)
+- [License](#license)
+
 ## Quickstart
 
 ```bash
