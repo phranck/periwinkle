@@ -30,6 +30,10 @@
     letter-spacing: 0;
   }
   button { font-weight: 400; }
+  select {
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text); font: inherit;
+  }
   header {
     position: sticky; top: 0; z-index: 10; display: flex; gap: 12px;
     align-items: center; flex-wrap: wrap;
@@ -168,15 +172,15 @@
   .composer__field input { flex: 1; border: 0; background: transparent; min-width: 0; }
   .composer__field input:focus { outline: none; }
   .composer__inner button { border-radius: 999px; }
-  .search-field { display: inline-flex; align-items: center; position: relative; }
-  .search-field input { padding-right: 62px; }
-  .search-field .keycaps { position: absolute; right: 8px; pointer-events: none; }
   .keycaps { display: inline-flex; gap: 4px; }
   .keycaps kbd {
     font: inherit; font-size: 12px; line-height: 1; color: var(--muted);
     border: 1px solid var(--border); border-radius: 5px; padding: 3px 5px;
     background: var(--bg);
   }
+  .search-field { display: inline-flex; align-items: center; position: relative; }
+  .search-field input { padding-right: 62px; }
+  .search-field .keycaps { position: absolute; right: 8px; pointer-events: none; }
   .default-hint { display: flex; align-items: center; gap: 10px; }
   .notice {
     margin: 10px 0 0; padding: 10px 14px; border-radius: 8px; font-size: 15px;
@@ -278,6 +282,11 @@
     padding: 14px 6px; border-color: transparent; background: var(--surface-alt);
     border-radius: var(--tile-radius);
   }
+  .grid button svg { width: 40px; height: 40px; color: var(--accent); }
+  .grid button span {
+    font-size: 13px; color: var(--muted); text-align: center;
+    word-break: break-word; line-height: 1.2;
+  }
   /* Quiet hover: the tile lifts off the panel without competing with the
      active marking. Instant, like the table rows. */
   .grid button:hover {
@@ -285,11 +294,6 @@
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   }
   .grid button:hover span { color: var(--text); }
-  .grid button svg { width: 40px; height: 40px; color: var(--accent); }
-  .grid button span {
-    font-size: 13px; color: var(--muted); text-align: center;
-    word-break: break-word; line-height: 1.2;
-  }
   .grid button.active {
     border-color: var(--accent); background: var(--surface);
     box-shadow: inset 0 0 0 1px var(--accent);
@@ -315,10 +319,6 @@
   .icon-button svg { width: 20px; height: 20px; color: var(--muted); }
   .icon-button:hover svg { color: var(--accent); }
   .variant-label { font-size: 14px; color: var(--muted); }
-  select {
-    padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
-    background: var(--bg); color: var(--text); font: inherit;
-  }
   .pick .variant { font-size: 12px; color: var(--accent); }
   /* Resize affordances: the dialog grows symmetrically around its centre, so
      every edge and corner drags the same box outwards from the middle. */
@@ -497,7 +497,7 @@ function parseRef(ref) {
 
 /** Builds the stored reference; Bulk is the default and stays implicit. */
 function makeRef(name, variant) {
-  return variant === "TwoTone" ? name + ":TwoTone" : name;
+  return variant === "TwoTone" ? `${name}:TwoTone` : name;
 }
 const SVG_NS = "http://www.w3.org/2000/svg";
 const parser = new DOMParser();
@@ -518,7 +518,7 @@ function svgFor(name, variant) {
   const inner = variant === "TwoTone" ? (entry?.twoTone ?? entry?.bulk) : entry?.bulk;
   if (!inner) return document.createElementNS(SVG_NS, "svg");
   const doc = parser.parseFromString(
-    '<svg xmlns="' + SVG_NS + '" viewBox="0 0 24 24" fill="none">' + inner + "</svg>",
+    `<svg xmlns="${SVG_NS}" viewBox="0 0 24 24" fill="none">${inner}</svg>`,
     "image/svg+xml",
   );
   const node = document.importNode(doc.documentElement, true);
@@ -573,7 +573,7 @@ function renderRows() {
 
     rows.append(row);
   }
-  count.textContent = Object.keys(STATE.icons).length + " titles";
+  count.textContent = `${Object.keys(STATE.icons).length} titles`;
   renderDefault();
 }
 
@@ -592,7 +592,7 @@ function renderDefault() {
 function openPicker(title, style) {
   pickTarget = title;
   dlgTitle.textContent =
-    title === "__default__" ? "Default icon for unmatched titles" : 'Icon for "' + title + '"';
+    title === "__default__" ? "Default icon for unmatched titles" : `Icon for "${title}"`;
   const currentRef = title === "__default__" ? STATE.default : STATE.icons[title];
   variantSelect.value = style ?? parseRef(currentRef).variant;
   iconSearch.value = "";
@@ -731,7 +731,7 @@ document.getElementById("delete-all").addEventListener("click", async () => {
   if (count === 0) return;
   const ok = await askConfirm(
     "Delete all titles?",
-    "This removes all " + count + " entries from your list. You can bring the shipped defaults back with \"Reset defaults\".",
+    `This removes all ${count} entries from your list. You can bring the shipped defaults back with "Reset defaults".`,
     "Delete all",
   );
   if (!ok) return;
@@ -797,7 +797,7 @@ document.getElementById("add").addEventListener("click", () => {
   if (!title) return;
   if (STATE.icons[title]) {
     // Already mapped: point at the existing row instead of overwriting it.
-    showNotice('"' + title + '" is already in the list, currently ' + parseRef(STATE.icons[title]).name + ".", "warn");
+    showNotice(`"${title}" is already in the list, currently ${parseRef(STATE.icons[title]).name}.`, "warn");
     filter.value = title;
     renderRows();
     return;
@@ -831,7 +831,7 @@ function serialize() {
   const sorted = {};
   for (const key of Object.keys(STATE.icons).sort()) sorted[key] = STATE.icons[key];
   const payload = { comment: STATE.comment, default: STATE.default, icons: sorted };
-  return JSON.stringify(payload, null, 2) + "\n";
+  return `${JSON.stringify(payload, null, 2)}\n`;
 }
 
 document.getElementById("copy").addEventListener("click", async () => {
@@ -859,9 +859,9 @@ const MIN_H = 320;
 function applySize(size) {
   if (!size) return;
   // Only the dialog is sized; the grid fills what is left via flex.
-  dlg.style.width = size.w + "px";
+  dlg.style.width = `${size.w}px`;
   dlg.style.maxWidth = "none";
-  dlg.style.height = size.h + "px";
+  dlg.style.height = `${size.h}px`;
   dlg.style.maxHeight = "none";
 }
 
