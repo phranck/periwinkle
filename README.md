@@ -1,11 +1,12 @@
 <div align="center">
 
-[![CI](https://github.com/phranck/periwinkle/actions/workflows/ci.yml/badge.svg)](https://github.com/phranck/periwinkle/actions/workflows/ci.yml)
-[![Deploy demo to GitHub Pages](https://github.com/phranck/periwinkle/actions/workflows/pages.yml/badge.svg)](https://phranck.github.io/periwinkle/)
-[![License](https://img.shields.io/github/license/phranck/periwinkle)](https://layered.mit-license.org)
-[![Last commit](https://img.shields.io/github/last-commit/phranck/periwinkle)](https://github.com/phranck/periwinkle/commits/main)
+[![CI](https://img.shields.io/github/actions/workflow/status/phranck/periwinkle/ci.yml?branch=main&label=CI&labelColor=4b4c82&color=4b4c82)](https://github.com/phranck/periwinkle/actions/workflows/ci.yml)
+[![GitHub Pages](https://img.shields.io/github/actions/workflow/status/phranck/periwinkle/pages.yml?branch=main&label=GitHub%20Pages&labelColor=6a6bb0&color=6a6bb0)](https://phranck.github.io/periwinkle/)
+[![npm](https://img.shields.io/npm/v/periwinkle?label=npm&labelColor=8a8bce&color=8a8bce)](https://www.npmjs.com/package/periwinkle)
+[![License](https://img.shields.io/github/license/phranck/periwinkle?labelColor=6a6bb0&color=6a6bb0)](https://layered.mit-license.org)
+[![Last commit](https://img.shields.io/github/last-commit/phranck/periwinkle?labelColor=4b4c82&color=4b4c82)](https://github.com/phranck/periwinkle/commits/main)
 
-![periwinkle banner](assets/Logo_Banner/banner.jpg)
+![periwinkle banner](assets/Logo_Banner/banner.png)
 
 </div>
 
