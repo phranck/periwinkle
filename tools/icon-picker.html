@@ -54,8 +54,9 @@
   button:hover { border-color: var(--accent); color: var(--accent); }
   /* Tinted rather than solid, matching the destructive action's treatment. */
   button.primary {
-    color: var(--accent); border-color: var(--border);
-    background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg));
   }
   button.primary:hover {
     color: var(--accent); border-color: var(--accent);
@@ -76,26 +77,49 @@
     background: var(--surface-alt); color: var(--text);
   }
   /* Borderless card holding the whole table. */
+  /* Even inset on every side. Inner corners use the concentric rule:
+     inner radius = outer radius - inset, so 20 - 10 = 10. */
   .table-card {
-    background: var(--surface); border-radius: 20px; padding: 4px 10px 6px;
+    --card-radius: 20px;
+    --card-inset: 10px;
+    --row-radius: calc(var(--card-radius) - var(--card-inset));
+    --cell-inset: 4px;
+    --control-radius: calc(var(--row-radius) - var(--cell-inset));
+    background: var(--surface);
+    border-radius: var(--card-radius);
+    padding: var(--card-inset);
   }
   table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 8px 10px; }
+  /* Next link in the chain: the cell inset sets how much smaller the badge
+     corners are than the hover block around them. */
+  th, td { text-align: left; padding: var(--cell-inset) 10px; }
   th {
     font-size: 14px; color: var(--muted); font-weight: 600;
-    /* Lifts the header off the page so the columns are easy to place. */
-    background: transparent; padding-top: 12px; padding-bottom: 12px;
+    /* surface-alt is darker than the card in light mode and lighter in dark,
+       so the header separates either way. */
+    background: var(--surface-alt); padding-top: 12px; padding-bottom: 12px;
+  }
+  thead th:first-child {
+    border-top-left-radius: var(--row-radius); border-bottom-left-radius: var(--row-radius);
+  }
+  thead th:last-child {
+    border-top-right-radius: var(--row-radius); border-bottom-right-radius: var(--row-radius);
   }
   td.title { font-weight: 500; }
   td.actions { text-align: right; white-space: nowrap; }
   /* No transition: hover feedback has to be instant to feel responsive. */
   tbody tr:hover td { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
-  tbody tr:hover td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-  tbody tr:hover td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+  tbody tr:hover td:first-child {
+    border-top-left-radius: var(--row-radius); border-bottom-left-radius: var(--row-radius);
+  }
+  tbody tr:hover td:last-child {
+    border-top-right-radius: var(--row-radius); border-bottom-right-radius: var(--row-radius);
+  }
   tbody tr[data-row-title] { cursor: pointer; }
   .pick {
     display: inline-flex; align-items: center; gap: 10px;
-    height: 34px; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px;
+    height: 34px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: var(--control-radius, 8px);
     background: var(--bg); cursor: pointer; color: inherit;
     font-family: "Barlow", system-ui, sans-serif; font-size: inherit;
   }
@@ -105,7 +129,7 @@
   .pick .name { font-size: 15px; color: var(--muted); }
   .del {
     display: inline-flex; align-items: center; gap: 6px;
-    height: 34px; padding: 0 12px; border-radius: 8px;
+    height: 34px; padding: 0 12px; border-radius: var(--control-radius, 8px);
     color: var(--danger); border-color: var(--border);
     /* Faint danger tint, stronger on hover, so the action reads before it is used. */
     background: color-mix(in srgb, var(--danger) 7%, var(--bg));
@@ -153,8 +177,12 @@
   .notice[hidden] { display: none; }
   .notice--warn { border-color: var(--danger); color: var(--danger); }
   dialog {
+    --dialog-radius: 20px;
+    --grid-inset: 8px;
+    /* Chain continues: tiles are inset from the dialog by the grid padding. */
+    --tile-radius: calc(var(--dialog-radius) - var(--grid-inset));
     width: min(860px, 92vw); max-height: 84vh; padding: 0;
-    border: 1px solid var(--border); border-radius: var(--radius);
+    border: 1px solid var(--border); border-radius: var(--dialog-radius);
     background: var(--bg); color: var(--text);
   }
   dialog::backdrop { background: rgb(0 0 0 / 0.5); }
@@ -202,9 +230,18 @@
     border-bottom: 1px solid var(--border);
   }
   .dlg-head strong { margin-right: auto; }
+  /* One flat height for every control in the dialog header. */
+  .dlg-head button, .dlg-head input, .dlg-head select {
+    height: 32px; box-sizing: border-box;
+  }
   .grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-    gap: 8px; padding: 16px; overflow: auto; max-height: 64vh;
+    /* Same value for both, so the tiles sit in an even field. The tile corners
+       follow the chain: dialog radius minus this inset. */
+    gap: var(--grid-inset); padding: var(--grid-inset);
+    overflow: auto; max-height: 64vh;
+    border-bottom-left-radius: calc(var(--dialog-radius) - 1px);
+    border-bottom-right-radius: calc(var(--dialog-radius) - 1px);
     /* Keep rows at their natural height: with a fixed grid height the rows
        would otherwise stretch, turning a single result row into full-height
        columns. */
@@ -213,10 +250,14 @@
   .grid button {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
     padding: 14px 6px; border-color: transparent; background: var(--surface-alt);
+    border-radius: var(--tile-radius);
   }
   /* Quiet hover: the tile lifts off the panel without competing with the
      active marking. Instant, like the table rows. */
-  .grid button:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  .grid button:hover {
+    background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
   .grid button:hover span { color: var(--text); }
   .grid button svg { width: 40px; height: 40px; color: var(--accent); }
   .grid button span {
