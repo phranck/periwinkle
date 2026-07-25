@@ -1,5 +1,5 @@
 /**
- * Client bundle for the generated `config-builder.html` page.
+ * Client bundle for the generated config-builder page (`config-builder/index.html`).
  *
  * The React component in `components/ConfigBuilder.tsx` renders the
  * static shell (top bar, section headers, empty body wrappers, preview
@@ -304,9 +304,7 @@ function createInitialState(): BuilderState {
     navigation: {
       ...DEFAULT_NAVIGATION,
       logo: "assets/Logo_Banner/logo.png",
-      links: [
-        { label: "Config builder", href: "/periwinkle/config-builder.html", target: "_blank" },
-      ],
+      links: [{ label: "Config builder", href: "/periwinkle/config-builder/", target: "_blank" }],
     },
     sidebar: { ...DEFAULT_SIDEBAR },
     themeTogglePlacement: THEME_TOGGLE_DEFAULT,
@@ -2103,6 +2101,41 @@ export function setupConfigBuilder(doc: Document): void {
       summary.setAttribute("aria-expanded", "true");
     }
     summary.addEventListener("click", () => toggleSection(container, summary, key));
+  }
+
+  // Expand/collapse-all control above the sections. Toggles every section to
+  // the same state and mirrors it onto the button via data-pw-cb-all-expanded
+  // so the stylesheet can rotate the chevron.
+  const toggleAll = doc.querySelector<HTMLElement>("[data-pw-cb-toggle-all]");
+  if (toggleAll) {
+    const sectionList = [...sections].map((container) => ({
+      container,
+      key: container.dataset.pwCbSection ?? "",
+      summary: container.querySelector<HTMLElement>("[data-pw-cb-toggle]"),
+    }));
+    const syncToggleAll = (): void => {
+      const allOpen =
+        sectionList.length > 0 &&
+        sectionList.every(({ container }) => container.dataset.open === "true");
+      toggleAll.dataset.pwCbAllExpanded = String(allOpen);
+      const label = allOpen ? "Collapse all sections" : "Expand all sections";
+      toggleAll.setAttribute("aria-label", label);
+      toggleAll.setAttribute("title", label);
+    };
+    toggleAll.addEventListener("click", () => {
+      const shouldOpen = sectionList.some(({ container }) => container.dataset.open !== "true");
+      for (const { container, key, summary } of sectionList) {
+        container.dataset.open = String(shouldOpen);
+        summary?.setAttribute("aria-expanded", String(shouldOpen));
+        sectionOpenState.set(key, shouldOpen);
+      }
+      persistSectionOpenState();
+      syncToggleAll();
+    });
+    for (const { summary } of sectionList) {
+      summary?.addEventListener("click", () => syncToggleAll());
+    }
+    syncToggleAll();
   }
 
   // Top-bar actions

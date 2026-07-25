@@ -87,7 +87,7 @@ function ConfigBuilderMark({ className }: { className?: string }) {
 }
 
 /** Matches the auto-generated config-builder link so it can carry an icon. */
-const CONFIG_BUILDER_HREF_RE = /config-builder\.html(?:$|[?#])/;
+const CONFIG_BUILDER_HREF_RE = /config-builder(?:\.html|\/)(?:$|[?#])/;
 
 /**
  * Renders the top navigation bar, or `null` when every affordance is off.

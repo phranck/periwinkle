@@ -295,6 +295,132 @@ export function bindTopNavScrollState(root: Document): void {
   view.addEventListener("scroll", update, { passive: true });
 }
 
+/** One ordered content target measured relative to the current viewport. */
+interface ScrollSpyTarget {
+  top: number;
+  link: HTMLAnchorElement;
+}
+
+/** Covers fractional final positions produced by native (Safari) scrolling. */
+const SCROLL_SPY_TOLERANCE_PX = 1;
+
+/**
+ * Selects the nav link at the viewport activation line: the last ordered
+ * target whose top has reached (or passed) the line. The `break` relies on the
+ * targets being in document order, and the tolerance absorbs the fractional
+ * pixel Safari can settle on. Ported from musiccloud's `selectActiveScrollTarget`.
+ *
+ * @param targets Content targets in document order, each with its viewport top.
+ * @param activationLine Viewport y where a section counts as "current".
+ * @returns The active nav link, or the first one before any has crossed.
+ */
+export function selectActiveScrollSpyLink(
+  targets: readonly ScrollSpyTarget[],
+  activationLine: number,
+): HTMLAnchorElement | undefined {
+  let active = targets[0]?.link;
+  for (const target of targets) {
+    if (target.top > activationLine + SCROLL_SPY_TOLERANCE_PX) break;
+    active = target.link;
+  }
+  return active;
+}
+
+/**
+ * Scroll-spy for the sidebar: as the reader scrolls, highlights the nav item
+ * whose content section sits at the top of the viewport, expands that item's
+ * collapsed sidebar section so the highlight is visible, and scrolls the item
+ * into the rail's own view. Ported from musiccloud's ApiReferenceNav: the
+ * shared activation line is the targets' `scroll-margin-top` (so it matches the
+ * anchor-scroll landing spot under the sticky top bar), and the last ordered
+ * target to cross it wins (see {@link selectActiveScrollSpyLink}). Scroll and
+ * resize reads are coalesced into one layout read per animation frame.
+ *
+ * @param root The document containing the sidebar and its content sections.
+ */
+export function bindScrollSpy(root: Document): void {
+  const view = root.defaultView ?? window;
+  const links = [...root.querySelectorAll<HTMLAnchorElement>("[data-pw-nav-item]")].filter((link) =>
+    (link.getAttribute("href") ?? "").startsWith("#"),
+  );
+  const targets = links
+    .map((link) => {
+      const id = decodeURIComponent((link.getAttribute("href") ?? "").slice(1));
+      const target = id ? root.getElementById(id) : null;
+      return target ? { link, target } : undefined;
+    })
+    .filter((entry): entry is { link: HTMLAnchorElement; target: HTMLElement } => Boolean(entry));
+  if (targets.length === 0) return;
+
+  // Keeping the active item visible must scroll ONLY the sidebar's scroll
+  // region. Element.scrollIntoView would scroll the window (the rail is not
+  // always overflow-scrollable), which feeds back into the scroll listener and
+  // drags the page down — so scroll the region directly, never the window.
+  const rail = links[0]?.closest<HTMLElement>("[data-pw-nav-body]") ?? null;
+  const revealInRail = (item: HTMLElement): void => {
+    if (!rail) return;
+    const itemRect = item.getBoundingClientRect();
+    const railRect = rail.getBoundingClientRect();
+    if (itemRect.top < railRect.top) rail.scrollTop -= railRect.top - itemRect.top;
+    else if (itemRect.bottom > railRect.bottom) rail.scrollTop += itemRect.bottom - railRect.bottom;
+  };
+
+  let activeLink: HTMLAnchorElement | undefined;
+  const setActive = (next: HTMLAnchorElement): void => {
+    if (activeLink === next) return;
+    activeLink = next;
+    for (const { link } of targets) {
+      if (link === next) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    }
+    // Reveal the highlight: expand the item's collapsed sidebar section, then
+    // bring the item into the rail's own view (never the window).
+    const section = next.closest<HTMLDetailsElement>("[data-pw-nav-section]");
+    if (section && section.dataset.pwExpanded !== "true") setSectionOpen(section, true);
+    revealInRail(next);
+  };
+
+  /** The shared activation line is the largest scroll-margin-top of the targets. */
+  const activationLine = (): number =>
+    Math.max(
+      0,
+      ...targets.map(
+        ({ target }) => Number.parseFloat(view.getComputedStyle(target).scrollMarginTop) || 0,
+      ),
+    );
+
+  let frame: number | undefined;
+  const update = (): void => {
+    frame = undefined;
+    const ordered = targets.map(({ link, target }) => ({
+      top: target.getBoundingClientRect().top,
+      link,
+    }));
+    // Sections in the final viewport can never reach a fixed top activation
+    // line — the page runs out of scroll room. As the bottom approaches, lower
+    // the effective line from its resting spot toward the viewport bottom in
+    // proportion to the remaining scroll, so those trailing sections still take
+    // their turn as the reader reaches them.
+    const scroller = root.scrollingElement ?? root.documentElement;
+    const remaining = scroller.scrollHeight - scroller.scrollTop - view.innerHeight;
+    const base = activationLine();
+    const line =
+      remaining >= view.innerHeight
+        ? base
+        : base + (view.innerHeight - base) * (1 - Math.max(0, remaining) / view.innerHeight);
+    const next = selectActiveScrollSpyLink(ordered, line);
+    if (next) setActive(next);
+  };
+  const schedule = (): void => {
+    if (frame !== undefined) return;
+    frame = view.requestAnimationFrame(update);
+  };
+
+  view.addEventListener("scroll", schedule, { passive: true });
+  view.addEventListener("resize", schedule, { passive: true });
+  schedule();
+}
+
 /** Keyboard keys that move focus/selection inside the schema view tablist. */
 const SCHEMA_TAB_NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "Home", "End"]);
 
@@ -483,6 +609,7 @@ export function setupPeriwinkle(root: Document): void {
   bindCollapsibles(root);
   bindToggleAll(root);
   bindSidebarScrollState(root);
+  bindScrollSpy(root);
   bindTopNavScrollState(root);
   bindSchemaCardsToggleAll(root);
   bindSearchDialog(root);

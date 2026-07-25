@@ -311,6 +311,55 @@ function IconSave() {
   );
 }
 
+/** Iconsax Setting3 (Bulk) — sliders panel; column heading mark for Settings. */
+function SettingsMark() {
+  return (
+    <svg className="pw-cb__column-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path
+        opacity="0.4"
+        d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2Z"
+      />
+      <path d="M15.5801 19.2496C15.1701 19.2496 14.8301 18.9096 14.8301 18.4996V14.5996C14.8301 14.1896 15.1701 13.8496 15.5801 13.8496C15.9901 13.8496 16.3301 14.1896 16.3301 14.5996V18.4996C16.3301 18.9096 15.9901 19.2496 15.5801 19.2496Z" />
+      <path d="M15.5801 8.2C15.1701 8.2 14.8301 7.86 14.8301 7.45V5.5C14.8301 5.09 15.1701 4.75 15.5801 4.75C15.9901 4.75 16.3301 5.09 16.3301 5.5V7.45C16.3301 7.86 15.9901 8.2 15.5801 8.2Z" />
+      <path d="M8.41992 19.2508C8.00992 19.2508 7.66992 18.9108 7.66992 18.5008V16.5508C7.66992 16.1408 8.00992 15.8008 8.41992 15.8008C8.82992 15.8008 9.16992 16.1408 9.16992 16.5508V18.5008C9.16992 18.9108 8.83992 19.2508 8.41992 19.2508Z" />
+      <path d="M8.41992 10.15C8.00992 10.15 7.66992 9.81 7.66992 9.4V5.5C7.66992 5.09 8.00992 4.75 8.41992 4.75C8.82992 4.75 9.16992 5.09 9.16992 5.5V9.4C9.16992 9.81 8.83992 10.15 8.41992 10.15Z" />
+      <path d="M15.5801 7.33008C14.0801 7.33008 12.8501 8.55008 12.8501 10.0501C12.8501 11.5501 14.0701 12.7801 15.5801 12.7801C17.0801 12.7801 18.3001 11.5601 18.3001 10.0501C18.3001 8.54008 17.0801 7.33008 15.5801 7.33008Z" />
+      <path d="M8.4202 11.2305C6.9202 11.2305 5.7002 12.4505 5.7002 13.9605C5.7002 15.4705 6.9202 16.6805 8.4202 16.6805C9.9202 16.6805 11.1502 15.4605 11.1502 13.9605C11.1502 12.4605 9.9302 11.2305 8.4202 11.2305Z" />
+    </svg>
+  );
+}
+
+/** Iconsax Monitor (Bulk) — display; column heading mark for the config preview. */
+function PreviewMark() {
+  return (
+    <svg className="pw-cb__column-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path
+        opacity="0.4"
+        d="M21.97 6.41V12.91H2V6.41C2 3.98 3.98 2 6.41 2H17.56C19.99 2 21.97 3.98 21.97 6.41Z"
+      />
+      <path d="M2 12.9199V13.1199C2 15.5599 3.98 17.5299 6.41 17.5299H10.25C10.8 17.5299 11.25 17.9799 11.25 18.5299V19.4999C11.25 20.0499 10.8 20.4999 10.25 20.4999H7.83C7.42 20.4999 7.08 20.8399 7.08 21.2499C7.08 21.6599 7.41 21.9999 7.83 21.9999H16.18C16.59 21.9999 16.93 21.6599 16.93 21.2499C16.93 20.8399 16.59 20.4999 16.18 20.4999H13.76C13.21 20.4999 12.76 20.0499 12.76 19.4999V18.5299C12.76 17.9799 13.21 17.5299 13.76 17.5299H17.57C20.01 17.5299 21.98 15.5499 21.98 13.1199V12.9199H2Z" />
+    </svg>
+  );
+}
+
+/** Iconsax ArrowCircleDown (Bulk) — the expand/collapse-all chevron. */
+function ToggleAllMark() {
+  return (
+    <svg
+      className="pw-cb__toggle-all-icon"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        opacity="0.4"
+        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+      />
+      <path d="M12 15.01c-.19 0-.38-.07-.53-.22l-3.53-3.53a.754.754 0 010-1.06c.29-.29.77-.29 1.06 0l3 3 3-3c.29-.29.77-.29 1.06 0 .29.29.29.77 0 1.06l-3.53 3.53c-.15.15-.34.22-.53.22z" />
+    </svg>
+  );
+}
+
 /**
  * The full builder page. Wraps the shared TopNav, intro block, form
  * (11 empty section shells) and preview panel. The client bundle takes
@@ -342,50 +391,71 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
       </section>
 
       <main className="pw-cb__layout" data-pw-cb-root>
-        <form className="pw-cb__form" id="pw-cb-form" autoComplete="off">
-          {SECTIONS.map((meta) => (
-            <Section key={meta.key} meta={meta} />
-          ))}
-        </form>
+        <div className="pw-cb__column">
+          <header className="pw-cb__column-header">
+            <SettingsMark />
+            <h2 className="pw-cb__column-title">Settings</h2>
+            <button
+              type="button"
+              className="pw-cb__toggle-all pw-chevron"
+              data-pw-cb-toggle-all
+              aria-label="Expand all sections"
+              title="Expand all sections"
+            >
+              <ToggleAllMark />
+            </button>
+          </header>
+          <form className="pw-cb__form" id="pw-cb-form" autoComplete="off">
+            {SECTIONS.map((meta) => (
+              <Section key={meta.key} meta={meta} />
+            ))}
+          </form>
+        </div>
 
-        <aside className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
-          <div className="pw-cb__preview-header">
-            <div className="pw-cb__preview-actions">
-              <button
-                type="button"
-                className="pw-cb__action pw-cb__action--danger"
-                data-pw-cb-action="reset"
-                title="Reset all fields to their defaults"
-              >
-                <IconReset /> Reset defaults
-              </button>
-              <button
-                type="button"
-                className="pw-cb__action"
-                data-pw-cb-action="copy"
-                title="Copy the generated periwinkle.config.ts to the clipboard"
-              >
-                <IconCopy /> Copy
-              </button>
-              <button
-                type="button"
-                className="pw-cb__action pw-cb__action--accent"
-                data-pw-cb-action="save"
-                title="Save periwinkle.config.ts (browser will prompt where to save)"
-              >
-                <IconSave /> Save file
-              </button>
+        <div className="pw-cb__column pw-cb__column--preview">
+          <header className="pw-cb__column-header">
+            <PreviewMark />
+            <h2 className="pw-cb__column-title">Configuration Preview</h2>
+          </header>
+          <aside className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
+            <div className="pw-cb__preview-header">
+              <div className="pw-cb__preview-actions">
+                <button
+                  type="button"
+                  className="pw-cb__action pw-cb__action--danger"
+                  data-pw-cb-action="reset"
+                  title="Reset all fields to their defaults"
+                >
+                  <IconReset /> Reset
+                </button>
+                <button
+                  type="button"
+                  className="pw-cb__action"
+                  data-pw-cb-action="copy"
+                  title="Copy the generated periwinkle.config.ts to the clipboard"
+                >
+                  <IconCopy /> Copy
+                </button>
+                <button
+                  type="button"
+                  className="pw-cb__action pw-cb__action--accent"
+                  data-pw-cb-action="save"
+                  title="Save periwinkle.config.ts (browser will prompt where to save)"
+                >
+                  <IconSave /> Save
+                </button>
+              </div>
+              <span className="pw-cb__preview-filename">periwinkle.config.ts</span>
             </div>
-            <span className="pw-cb__preview-filename">periwinkle.config.ts</span>
-          </div>
-          {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here — it hosts monospaced source; using a list would be misleading semantically. */}
-          <pre
-            className="pw-cb__preview-body"
-            id="pw-cb-preview"
-            role="region"
-            aria-live="polite"
-          />
-        </aside>
+            {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here — it hosts monospaced source; using a list would be misleading semantically. */}
+            <pre
+              className="pw-cb__preview-body"
+              id="pw-cb-preview"
+              role="region"
+              aria-live="polite"
+            />
+          </aside>
+        </div>
       </main>
 
       <dialog className="pw-cb__dialog" id="pw-cb-reset-dialog">

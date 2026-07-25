@@ -874,8 +874,10 @@ code {
 [data-pw-nav-item][aria-current="true"],
 [data-pw-nav-item][aria-current="true"]:hover {
   color: var(--pw-docs-nav-active-color);
-  background: var(--pw-surface-alt);
-  font-weight: 400;
+  /* Accent-tinted background + medium weight so the scroll-spy position stands
+     out clearly against the muted rail, not just the neutral hover surface. */
+  background: color-mix(in srgb, var(--pw-accent) 12%, var(--pw-surface-alt));
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -944,6 +946,15 @@ details[data-pw-expanded="false"] .pw-chevron {
   color: var(--pw-text-muted);
   cursor: pointer;
   flex: none;
+}
+
+/* Safari collapses an SVG with no explicit dimensions inside a flex button to
+   zero width, so the toggle-all chevron was invisible there while Chrome gave
+   it an intrinsic size. Pin the icon to the button size like the schema-card
+   chevron (.pw-schema-card__chevron > .pw-icon) already does. */
+.api-content__chapter-toggle > .pw-icon {
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
 }
 
 .api-content__chapter-toggle:hover {
@@ -1368,7 +1379,9 @@ details[data-pw-expanded="false"] .pw-chevron {
   color: var(--pw-status-error);
   border: 1px solid var(--pw-status-error);
   border-radius: 999px;
-  padding: 0.1em 0.6em;
+  /* 1px extra bottom padding balances the uppercase glyphs (which crowd the
+     top of the line box) so DEPRECATED reads vertically centered in the pill. */
+  padding: 0.1em 0.6em calc(0.1em + 1px);
 }
 
 .pw-endpoint__access {
@@ -1440,8 +1453,9 @@ details[data-pw-expanded="false"] .pw-chevron {
   flex: none;
   /* Same cap-mid alignment logic as the H2 chapter icon: the flex-row
      centering lands above the cap-mid, so lower the icon back onto it
-     (verified in Chrome against the H4 text's range rect). */
-  transform: translateY(0.15em);
+     (verified in Chrome against the H4 text's range rect). Trimmed by 2px,
+     which sat too low. */
+  transform: translateY(calc(0.15em - 2px));
 }
 
 .pw-endpoint__section-icon svg,
@@ -3097,7 +3111,7 @@ mark[data-api-search-highlight] {
 
 .pw-cb__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--pw-space-6);
   max-width: var(--pw-container-max-width);
   margin: 0 auto;
@@ -3118,23 +3132,87 @@ mark[data-api-search-highlight] {
   min-width: 0;
 }
 
-/* Sticky preview column: pinned below the top nav (with a small gap) so
-   the generated config stays visible while the user scrolls the form. */
-.pw-cb__preview {
+/* Each grid column wraps a heading (icon + H2, plus the expand/collapse-all
+   chevron on the form side) above its content. */
+.pw-cb__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-space-4);
+  min-width: 0;
+}
+
+.pw-cb__column-header {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-3);
+}
+
+.pw-cb__column-icon {
+  /* Match the H2's own size so the mark reads as part of the heading. */
+  width: var(--pw-text-section);
+  height: var(--pw-text-section);
+  color: var(--pw-accent);
+  flex: none;
+}
+
+.pw-cb__column-title {
+  margin: 0;
+  font-size: var(--pw-text-section);
+  font-weight: 500;
+  color: var(--pw-text);
+}
+
+.pw-cb__toggle-all {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pw-text-muted);
+  cursor: pointer;
+  flex: none;
+}
+
+.pw-cb__toggle-all:hover {
+  color: var(--pw-accent);
+}
+
+.pw-cb__toggle-all-icon {
+  width: var(--pw-docs-nav-toggle-size);
+  height: var(--pw-docs-nav-toggle-size);
+}
+
+.pw-cb__toggle-all[data-pw-cb-all-expanded="true"].pw-chevron {
+  transform: rotate(180deg);
+}
+
+/* Sticky preview column: the heading + card wrapper is pinned below the top
+   nav (with a small gap) so the generated config stays visible while the user
+   scrolls the form. */
+.pw-cb__column--preview {
   position: sticky;
   top: calc(var(--pw-topnav-height, 0px) + var(--pw-space-4));
   align-self: start;
+  max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-8));
+}
+
+.pw-cb__preview {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-8));
+  min-height: 0;
+  flex: 1;
   border: 1px solid var(--pw-border);
   border-radius: var(--pw-radius);
   background: var(--pw-surface);
   overflow: hidden;
 }
 @media (max-width: 56rem) {
-  .pw-cb__preview {
+  .pw-cb__column--preview {
     position: static;
     max-height: none;
   }

@@ -41,8 +41,8 @@ describe("buildSite", () => {
     });
     expect(result.files.sort()).toEqual([
       "client.js",
-      "config-builder.html",
       "config-builder.js",
+      "config-builder/index.html",
       "index.html",
       "openapi.json",
       "styles.css",
@@ -75,7 +75,7 @@ describe("buildSite", () => {
   });
 
   it("emits the config-builder page alongside the docs page", () => {
-    const builderHtml = readFileSync(join(outDir, "config-builder.html"), "utf8");
+    const builderHtml = readFileSync(join(outDir, "config-builder", "index.html"), "utf8");
     expect(builderHtml).toContain("<!doctype html>");
     expect(builderHtml).toContain("Bookstore API — configuration builder");
     expect(builderHtml).toContain('<link rel="stylesheet" href="/docs/styles.css">');
@@ -84,7 +84,7 @@ describe("buildSite", () => {
   });
 
   it("adds an automatic 'Config builder' link to the docs top nav", () => {
-    expect(html).toContain('href="/docs/config-builder.html"');
+    expect(html).toContain('href="/docs/config-builder/"');
     expect(html).toContain("Config builder");
   });
 
@@ -95,19 +95,19 @@ describe("buildSite", () => {
       /public-navigation__link--active" aria-current="page">[\s\S]*?>API reference<\/span>/,
     );
     // The cross-link to the builder opens in the same window (no target).
-    expect(html).toContain('<a class="public-navigation__link" href="/docs/config-builder.html"');
-    expect(html).not.toMatch(/config-builder\.html"[^>]*target="_blank"/);
+    expect(html).toContain('<a class="public-navigation__link" href="/docs/config-builder/"');
+    expect(html).not.toMatch(/config-builder\/"[^>]*target="_blank"/);
   });
 
   it("marks the builder item active and links home back to the docs page", () => {
-    const builderHtml = readFileSync(join(outDir, "config-builder.html"), "utf8");
+    const builderHtml = readFileSync(join(outDir, "config-builder", "index.html"), "utf8");
     // On the builder page the "Config builder" item is the active, non-clickable span.
     expect(builderHtml).toMatch(
       /public-navigation__link--active" aria-current="page">[\s\S]*?>Config builder<\/span>/,
     );
-    // "API reference" becomes a same-window link back to the docs index.
-    expect(builderHtml).toContain('<a class="public-navigation__link" href="/docs/index.html"');
-    expect(builderHtml).not.toMatch(/index\.html"[^>]*target="_blank"/);
+    // "API reference" becomes a same-window link back to the docs root.
+    expect(builderHtml).toContain('<a class="public-navigation__link" href="/docs/"');
+    expect(builderHtml).not.toMatch(/href="\/docs\/"[^>]*target="_blank"/);
     // The builder has no searchable content, so its nav drops the search trigger.
     expect(builderHtml).not.toContain("data-pw-search-trigger");
   });
@@ -155,7 +155,7 @@ describe("buildSite auto builder nav-link", () => {
       assetPaths: { stylesCss, clientJs },
     });
     const html = readFileSync(join(outDir, "index.html"), "utf8");
-    expect(html).not.toContain("config-builder.html");
+    expect(html).not.toContain("config-builder");
   });
 });
 

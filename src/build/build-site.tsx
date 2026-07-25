@@ -193,13 +193,14 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   // opt out by omitting `assetPaths.configBuilderJs`.
   if (configBuilderJs) {
     // On the builder page, the home link ("API reference") must navigate
-    // back to the docs in the same window, so its href points at index.html
-    // instead of the docs' own homeHref (which is usually "#"). Search is
-    // dropped here: the builder has no searchable content and the client
-    // bundle never binds the trigger, so the button would be a dead affordance.
+    // back to the docs in the same window, so its href points at the base-path
+    // root (e.g. "/periwinkle/") instead of the docs' own homeHref (which is
+    // usually "#"). Search is dropped here: the builder has no searchable
+    // content and the client bundle never binds the trigger, so the button
+    // would be a dead affordance.
     const builderNavigation: ResolvedConfig["navigation"] = {
       ...siteConfig.navigation,
-      homeHref: withBase(siteConfig.site.basePath, "index.html"),
+      homeHref: withBase(siteConfig.site.basePath, ""),
       showSearch: false,
     };
     const builderBody = renderToStaticMarkup(<ConfigBuilder navigation={builderNavigation} />);
@@ -208,8 +209,14 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
       builderScript: "config-builder.js",
       ...(siteConfig.site.favicon ? { favicon: siteConfig.site.favicon } : {}),
     });
-    writeFileSync(resolve(outDir, "config-builder.html"), builderHtml);
-    files.push("config-builder.html");
+    // The builder page is served as a directory index so its public URL is a
+    // clean "…/config-builder/" rather than "…/config-builder.html". The
+    // client bundle and stylesheet stay at the site root and are referenced by
+    // absolute base-path URLs, so they resolve from the nested index.html.
+    const builderDir = resolve(outDir, "config-builder");
+    mkdirSync(builderDir, { recursive: true });
+    writeFileSync(resolve(builderDir, "index.html"), builderHtml);
+    files.push("config-builder/index.html");
     copyFileSync(configBuilderJs, resolve(outDir, "config-builder.js"));
     files.push("config-builder.js");
   }
@@ -221,14 +228,15 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
  * When the config-builder page is generated, prepend an auto
  * "Config builder" nav-link to the docs' top bar so users can discover
  * the builder from any doc page. Skipped when the consumer already
- * added an entry that points at `config-builder.html` (no duplicates).
+ * added an entry that points at the builder (`config-builder/` or a legacy
+ * `config-builder.html`) — no duplicates.
  */
 function addBuilderNavLink(navigation: ResolvedConfig["navigation"], basePath: string): void {
   const alreadyHasBuilderLink = navigation.links.some((link) =>
-    /config-builder\.html(?:$|[?#])/.test(link.href),
+    /config-builder(?:\.html|\/)(?:$|[?#])/.test(link.href),
   );
   if (alreadyHasBuilderLink) return;
-  const builderHref = withBase(basePath, "config-builder.html");
+  const builderHref = withBase(basePath, "config-builder/");
   // No target: the builder opens in the same window (cross-linked with the
   // docs home link), and on the builder page this item renders as the
   // non-interactive active item instead.

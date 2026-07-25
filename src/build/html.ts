@@ -84,7 +84,8 @@ ${themeCss}    </style>
 }
 
 /**
- * Assembles the standalone `config-builder.html` document. Shares the
+ * Assembles the configuration-builder document, emitted as
+ * `config-builder/index.html`. Shares the
  * same document chrome as the docs page — favicon, font stylesheets,
  * compiled theme variables, early theme script, main stylesheet — so
  * both routes look the same. Only the body markup and the loaded
