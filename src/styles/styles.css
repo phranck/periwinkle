@@ -3151,9 +3151,18 @@ mark[data-api-search-highlight] {
 }
 
 .pw-cb__column-header {
+  position: sticky;
+  top: var(--pw-topnav-height, 0px);
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: var(--pw-space-3);
+  padding-block: var(--pw-space-4);
+  /* Frosted backdrop like the top nav so content scrolling underneath does not
+     show through the pinned heading. */
+  background: color-mix(in srgb, var(--pw-background) 82%, transparent);
+  -webkit-backdrop-filter: blur(var(--pw-space-4));
+  backdrop-filter: blur(var(--pw-space-4));
 }
 
 .pw-cb__column-icon {
@@ -3204,9 +3213,9 @@ mark[data-api-search-highlight] {
    scrolls the form. */
 .pw-cb__column--preview {
   position: sticky;
-  top: calc(var(--pw-topnav-height, 0px) + var(--pw-space-4));
+  top: var(--pw-topnav-height, 0px);
   align-self: start;
-  max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-8));
+  max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-4));
 }
 
 .pw-cb__preview {
