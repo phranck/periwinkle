@@ -3092,6 +3092,9 @@ mark[data-api-search-highlight] {
 
 .pw-cb__intro {
   padding: var(--pw-space-8) var(--pw-page-padding) 0;
+  /* Text outside the cards is indented by half the card corner radius so it
+     lines up with the rounded card edge (same as the column headings). */
+  padding-inline-start: calc(var(--pw-page-padding) + var(--pw-radius) / 2);
   max-width: var(--pw-container-max-width);
   margin: 0 auto;
   width: 100%;
@@ -3108,7 +3111,8 @@ mark[data-api-search-highlight] {
 .pw-cb__lead {
   color: var(--pw-text-muted);
   font-size: var(--pw-text-lead);
-  margin: 0;
+  /* Three separate paragraphs, each its own flowing block. */
+  margin: 0 0 var(--pw-space-4);
   max-width: 60rem;
 }
 
@@ -3158,6 +3162,9 @@ mark[data-api-search-highlight] {
   align-items: center;
   gap: var(--pw-space-3);
   padding-block: var(--pw-space-4);
+  /* Indent by half the card corner radius so the heading lines up with the
+     rounded card edge below it. */
+  padding-inline-start: calc(var(--pw-radius) / 2);
   /* Frosted backdrop like the top nav so content scrolling underneath does not
      show through the pinned heading. */
   background: color-mix(in srgb, var(--pw-background) 82%, transparent);
