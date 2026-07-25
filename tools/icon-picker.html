@@ -12,10 +12,12 @@
     --bg: #ffffff; --surface: #f6f8fa; --surface-alt: #eff2f5;
     --text: #1f2328; --muted: #59636e; --border: #d1d9e0;
     --accent: #6667ab; --danger: #d1242f; --radius: 12px;
+    --header-bg: color-mix(in srgb, var(--text) 4%, var(--surface-alt));
   }
   [data-theme="dark"] {
     --bg: #0d1117; --surface: #161b22; --surface-alt: #21262d;
     --text: #e6edf3; --muted: #8b949e; --border: #30363d; --accent: #9a9bd4;
+    --header-bg: var(--surface-alt);
   }
   * { box-sizing: border-box; }
   body {
@@ -81,7 +83,7 @@
      inner radius = outer radius - inset, so 20 - 10 = 10. */
   .table-card {
     --card-radius: 20px;
-    --card-inset: 8px;
+    --card-inset: 6px;
     --row-gap: 4px;
     --row-radius: calc(var(--card-radius) - var(--card-inset));
     --cell-inset: 6px;
@@ -100,9 +102,9 @@
   th, td { text-align: left; padding: var(--cell-inset); }
   th {
     font-size: 14px; color: var(--muted); font-weight: 600;
-    /* surface-alt is darker than the card in light mode and lighter in dark,
-       so the header separates either way. */
-    background: var(--surface-alt); padding-top: 12px; padding-bottom: 12px;
+    /* Separates either way: darker than the card in light mode, lighter in
+       dark. The light value is mixed a little further down for contrast. */
+    background: var(--header-bg); padding-top: 12px; padding-bottom: 12px;
   }
   thead th:first-child {
     border-top-left-radius: var(--row-radius); border-bottom-left-radius: var(--row-radius);
@@ -183,7 +185,7 @@
   .notice--warn { border-color: var(--danger); color: var(--danger); }
   dialog {
     --dialog-radius: 20px;
-    --grid-inset: 8px;
+    --grid-inset: 6px;
     /* Chain continues: tiles are inset from the dialog by the grid padding. */
     --tile-radius: calc(var(--dialog-radius) - var(--grid-inset));
     width: min(860px, 92vw); max-height: 84vh; padding: 0;
