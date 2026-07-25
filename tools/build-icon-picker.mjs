@@ -65,16 +65,25 @@ const html = `<!doctype html>
     background: var(--bg); color: var(--text); font: inherit; min-width: 220px;
   }
   button {
+    /* Flex centring: with a fixed height, line-height alone leaves the label
+       sitting low in the box. */
+    display: inline-flex; align-items: center; justify-content: center;
     padding: 5px 14px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); font: inherit; cursor: pointer;
+    line-height: 1;
   }
   button:hover { border-color: var(--accent); color: var(--accent); }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   button.primary:hover { filter: brightness(1.1); color: #fff; }
   main { padding: 20px; max-width: 1100px; margin: 0 auto; }
   .hint { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
-  .intro { color: var(--muted); font-size: 15px; margin: 0 0 20px; max-width: 78ch; }
-  .intro p { margin: 0 0 10px; }
+  /* Newspaper layout: the text uses the full width but keeps a readable
+     measure. Falls back to a single column when two would get too narrow. */
+  .intro {
+    color: var(--muted); font-size: 15px; margin: 0 0 24px;
+    columns: 26rem 2; column-gap: 44px;
+  }
+  .intro p { margin: 0 0 10px; break-inside: avoid; }
   .intro strong { color: var(--text); }
   .intro code {
     font-size: 13px; padding: 1px 5px; border-radius: 5px;
