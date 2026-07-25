@@ -14,15 +14,19 @@
  *         a.public-navigation__link (home)
  *           <Icon class=public-navigation__item-icon />
  *           <span class=public-navigation__label>API reference</span>
- *         a.public-navigation__link data-public-search-command (search)
- *           <Icon /> <span>Search</span> <KeyCap shortcut="⌘K" />
  *         a.public-navigation__link (custom nav links, if any)
  *           <span>Label</span>
  *         a.public-navigation__link (github)
  *           <GithubMark /> <span>GitHub</span>
+ *         a.public-navigation__link data-public-search-command (search)
+ *           <Icon /> <span>Search</span> <KeyCap shortcut="⌘K" />
  *         button.public-navigation__link (theme toggle, periwinkle addition)
  *           <Sun /><Moon />
  * ```
+ *
+ * Search and the theme toggle are the fixed trailing pair, in that order:
+ * search always sits directly left of the toggle, with every other item to
+ * their left. Disabling either just moves the remaining items right.
  *
  * Every entry uses the reference `.public-navigation__link` surface: an
  * icon left of a text label, with a pill backdrop on hover. Search is a
@@ -159,19 +163,6 @@ export function TopNav({
                 </a>
               )
             ) : null}
-            {hasSearch ? (
-              <button
-                type="button"
-                className="public-navigation__link"
-                aria-label="Search API reference"
-                data-pw-search-trigger
-                data-public-search-command
-              >
-                <SearchStatusIcon className="public-navigation__item-icon" aria-hidden="true" />
-                <span className="public-navigation__label">Search</span>
-                <KeyCap shortcut="⌘K" />
-              </button>
-            ) : null}
             {navigation.links.map((link) => {
               const isConfigBuilder = CONFIG_BUILDER_HREF_RE.test(link.href);
               const linkActive = isConfigBuilder && currentPage === "builder";
@@ -218,6 +209,22 @@ export function TopNav({
                   {navigation.github.label ?? "GitHub"}
                 </span>
               </a>
+            ) : null}
+            {/* Search and the theme toggle are the trailing pair: search sits
+                directly left of the toggle, after every other item. If either
+                is disabled, the rest simply moves right. */}
+            {hasSearch ? (
+              <button
+                type="button"
+                className="public-navigation__link"
+                aria-label="Search API reference"
+                data-pw-search-trigger
+                data-public-search-command
+              >
+                <SearchStatusIcon className="public-navigation__item-icon" aria-hidden="true" />
+                <span className="public-navigation__label">Search</span>
+                <KeyCap shortcut="⌘K" />
+              </button>
             ) : null}
             {hasThemeToggle ? (
               <button

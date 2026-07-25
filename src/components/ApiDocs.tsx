@@ -11,6 +11,7 @@
  * embed it directly.
  */
 
+import { withBase } from "../build/html.js";
 import type { CustomSection } from "../config/config.js";
 import type { GuideSection } from "../render/guide.js";
 import { customSectionsAt, type DocsData } from "../render/prepare.js";
@@ -151,7 +152,14 @@ function GuideChapter({
               {data.guideSections.map((section) => (
                 <GuidePanel key={section.id} section={section} />
               ))}
-              {openApiContract ? <OpenApiContractPanel contractUrl={data.serverUrl} /> : null}
+              {openApiContract ? (
+                // The build writes the spec next to the page, so link the
+                // contract itself. The server URL would send readers to the
+                // API root, which is not the document.
+                <OpenApiContractPanel
+                  contractUrl={withBase(data.config.site.basePath, "openapi.json")}
+                />
+              ) : null}
             </div>
             {curlBlock.html ? (
               <CodeBlock

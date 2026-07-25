@@ -105,12 +105,18 @@ export async function prepareDocsData(
 
   const pending: Array<{ key: string; code: string; language: HighlightLanguage }> = [];
 
-  // Integration essentials curl example, shared by the guide chapter.
-  pending.push({
-    key: codeKey("integration-essentials", "curl"),
-    code: buildIntegrationCurl(serverUrl, reference.securitySchemes),
-    language: "bash",
-  });
+  // Integration essentials curl example, shared by the guide chapter. Empty
+  // for a public API (no declared security scheme); skipped entirely then,
+  // because highlighting an empty snippet still yields markup and the guide
+  // would render an empty example block.
+  const integrationCurl = buildIntegrationCurl(serverUrl, reference.securitySchemes);
+  if (integrationCurl) {
+    pending.push({
+      key: codeKey("integration-essentials", "curl"),
+      code: integrationCurl,
+      language: "bash",
+    });
+  }
 
   for (const group of reference.groups) {
     for (const operation of group.operations) {

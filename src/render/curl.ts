@@ -9,6 +9,12 @@
 
 import type { ApiOperation, ApiSecurityScheme } from "../model/api-reference.js";
 
+/**
+ * Stand-in base URL for documents that declare no server. `example.com` is
+ * reserved for documentation (RFC 2606), so it reads as a placeholder and can
+ * never point at somebody's real host.
+ */
+const PLACEHOLDER_BASE_URL = "https://api.example.com";
 /** Placeholder shell variable used for API keys in generated examples. */
 const API_KEY_VARIABLE = "$API_KEY";
 /** Placeholder shell variable used for bearer tokens in generated examples. */
@@ -58,7 +64,7 @@ export function buildCurlExample(
   serverUrl: string | undefined,
   securitySchemes: ApiSecurityScheme[],
 ): string {
-  const base = (serverUrl ?? "https://api.example.com").replace(/\/+$/, "");
+  const base = (serverUrl ?? PLACEHOLDER_BASE_URL).replace(/\/+$/, "");
   const scheme = securitySchemes.find((candidate) => candidate.name === operation.security[0]);
   const url = `${base}${operation.path}${queryAuthSuffix(scheme)}`;
 
@@ -73,9 +79,13 @@ export function buildCurlExample(
 /**
  * Builds the illustrative "authenticated request" shell snippet that pairs
  * with the Integration essentials panel grid. When an API-key header scheme
- * is declared the placeholder uses that header name; otherwise it falls
- * back to a generic bearer-token hint (reference `ApiReferenceContent.astro`
- * bakes an equivalent snippet with `MUSICCLOUD_API_KEY`).
+ * is declared the placeholder uses that header name; a declared non-API-key
+ * scheme falls back to a generic bearer-token hint.
+ *
+ * Returns an empty string for documents that declare no security scheme at
+ * all. Such an API is public, and showing an `Authorization` header there
+ * would tell readers to send a credential that does not exist; the caller
+ * drops the snippet entirely when it is empty.
  *
  * @param serverUrl Effective server base URL, when known.
  * @param schemes All declared security schemes.
@@ -84,10 +94,11 @@ export function buildIntegrationCurl(
   serverUrl: string | undefined,
   schemes: ApiSecurityScheme[],
 ): string {
+  if (schemes.length === 0) return "";
   const apiKeyHeader = schemes.find(
     (scheme) => scheme.type === "apiKey" && scheme.location === "header" && scheme.parameterName,
   );
-  const baseUrl = (serverUrl ?? "https://api.example.test").replace(/\/+$/, "");
+  const baseUrl = (serverUrl ?? PLACEHOLDER_BASE_URL).replace(/\/+$/, "");
   if (apiKeyHeader?.parameterName) {
     return `# Requires the API key to be set in your shell environment.
 curl ${baseUrl}/resource \\

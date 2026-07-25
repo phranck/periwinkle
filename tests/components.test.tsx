@@ -95,6 +95,13 @@ describe("ApiDocs", () => {
     expect(defaultHtml).toContain("View OpenAPI contract");
   });
 
+  it("points the contract panel at the bundled spec, not at the server root", () => {
+    // The build writes openapi.json next to the page; linking the server URL
+    // would drop readers on the API root instead of the document.
+    expect(defaultHtml).toContain('href="/openapi.json"');
+    expect(defaultHtml).not.toMatch(/available at[\s\S]{0,120}href="https:\/\/api\.bookstore/);
+  });
+
   it("renders the OpenAPI-contract dialog with aria wiring", () => {
     expect(defaultHtml).toContain('id="openapi-contract-dialog"');
     expect(defaultHtml).toContain('data-openapi-contract-dialog=""');
@@ -118,6 +125,99 @@ describe("ApiDocs", () => {
     expect(defaultHtml).toContain('data-api-search-kind="schema"');
     expect(defaultHtml).toContain('id="api-document-search-results"');
     expect(defaultHtml).toContain("api-search-highlight-notice");
+  });
+});
+
+describe("TopNav ordering", () => {
+  it("keeps search directly left of the theme toggle, after all other items", async () => {
+    const data = await prepareDocsData(
+      bookstore,
+      resolveConfig({
+        navigation: {
+          github: { url: "https://github.com/example/repo" },
+          links: [{ label: "Home page", href: "https://example.com" }],
+        },
+      }),
+    );
+    const html = renderToStaticMarkup(<ApiDocs data={data} />);
+
+    const order = [
+      "Home page",
+      "github.com/example/repo",
+      "data-pw-search-trigger",
+      "data-pw-theme-toggle",
+    ];
+    const positions = order.map((needle) => html.indexOf(needle));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+});
+
+describe("ApiDocs invents nothing the document does not state", () => {
+  // Regression net for a whole class of bugs: derived guide copy and examples
+  // must never assert protocol specifics the contract is silent about. A
+  // minimal document declares no auth, no servers and no descriptions, so any
+  // credential, header or host in the output would be fabricated.
+  it("renders a bare-minimum document without fabricated specifics", async () => {
+    const minimalSpec = {
+      openapi: "3.1.0",
+      info: { title: "Minimal API", version: "1.0.0" },
+      paths: {
+        "/ping": {
+          get: {
+            operationId: "ping",
+            responses: { "200": { description: "Pong." } },
+          },
+        },
+      },
+    };
+
+    const data = await prepareDocsData(minimalSpec, resolveConfig());
+    const html = renderToStaticMarkup(<ApiDocs data={data} />);
+
+    // No invented credentials.
+    expect(html).not.toContain("Authorization");
+    expect(html).not.toContain("Bearer");
+    expect(html).not.toContain("API_KEY");
+    expect(html).not.toContain("ACCESS_TOKEN");
+    expect(html).not.toContain("Authenticated request");
+    // No invented host: without a server the endpoint example may use the
+    // reserved documentation placeholder, but nothing else.
+    const hosts = [...html.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map((match) => match[1]);
+    for (const host of hosts) {
+      expect(host).toMatch(/(^|\.)(example\.com|w3\.org|localhost)$/);
+    }
+    // The document's own facts still render.
+    expect(html).toContain("Minimal API");
+    expect(html).toContain("/ping");
+  });
+});
+
+describe("ApiDocs for an API without authentication", () => {
+  it("omits the authenticated-request example", async () => {
+    // A spec that declares no security scheme describes a public API. Showing
+    // an Authorization header there would tell readers to send a credential
+    // that does not exist.
+    const publicSpec: Record<string, unknown> = structuredClone(bookstore);
+    const components = publicSpec.components as Record<string, unknown>;
+    delete components.securitySchemes;
+    delete publicSpec.security;
+    const paths = publicSpec.paths as Record<string, Record<string, unknown>>;
+    for (const path of Object.values(paths)) {
+      for (const operation of Object.values(path)) {
+        if (operation && typeof operation === "object") {
+          delete (operation as Record<string, unknown>).security;
+        }
+      }
+    }
+
+    const data = await prepareDocsData(publicSpec, resolveConfig());
+    const html = renderToStaticMarkup(<ApiDocs data={data} />);
+
+    expect(html).not.toContain("Authenticated request");
+    expect(html).not.toContain("Authorization: Bearer");
+    // The rest of the guide still renders.
+    expect(html).toContain("Integration essentials");
   });
 });
 
