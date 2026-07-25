@@ -1199,6 +1199,42 @@ details[data-pw-expanded="false"] .pw-chevron {
    endpoint section (reference `.content-panel`). The card variants built on
    top (parameter, request-body, response) override the surface by document
    order, so this base rule must precede them. */
+/* Shared card primitive (see Card.tsx). One structure for every framed
+   surface: builder settings sections, the builder preview, and the API-doc
+   content panels. `--elevated` is the heavy card (border + solid surface);
+   `--inset` is the light, semi-transparent panel embedded in endpoint blocks. */
+.pw-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pw-card--elevated {
+  border: 1px solid var(--pw-border);
+  border-radius: var(--pw-radius);
+  background: var(--pw-surface);
+}
+
+.pw-card--inset {
+  border-radius: var(--pw-docs-content-panel-radius);
+  background: color-mix(in srgb, var(--pw-surface-alt) 72%, transparent);
+}
+
+.pw-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-space-3);
+  padding: var(--pw-space-3) var(--pw-space-4);
+  background: var(--pw-docs-card-chrome);
+}
+
+/* Elevated card headers share one minimum height so sibling cards (the
+   settings sections beside the preview) line up regardless of what their
+   header content weighs. 60px is the taller of the two builder headers: the
+   settings title (22px) versus the preview's filename (16px) plus buttons. */
+.pw-card--elevated > .pw-card__header {
+  min-height: 3.75rem;
+}
+
 .content-panel {
   min-width: 0;
   overflow: hidden;
@@ -3235,16 +3271,13 @@ mark[data-api-search-highlight] {
   position: static;
 }
 
+/* Container chrome comes from `.pw-card--elevated`; only the column-fill
+   layout (so the card stretches to the sticky column height) lives here. */
 .pw-cb__preview {
   display: flex;
   flex-direction: column;
-  min-width: 0;
   min-height: 0;
   flex: 1;
-  border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
-  background: var(--pw-surface);
-  overflow: hidden;
 }
 @media (max-width: 56rem) {
   .pw-cb__column--preview {
@@ -3253,13 +3286,10 @@ mark[data-api-search-highlight] {
   }
 }
 
+/* Flex/padding/background come from `.pw-card__header`; only the toolbar
+   specifics (push filename and actions apart, allow wrapping) live here. */
 .pw-cb__preview-header {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: var(--pw-space-3);
-  padding: var(--pw-space-3) var(--pw-space-4);
-  background: var(--pw-surface-alt);
   border-bottom: 1px solid var(--pw-border);
   flex-wrap: wrap;
 }
@@ -3394,19 +3424,9 @@ mark[data-api-search-highlight] {
 /* Sections (the collapsible field blocks). Structure mirrors the sidebar
    details/summary pattern, but as a plain button + wrapper so the body
    animates open AND closed via the grid-template-rows trick. */
-.pw-cb__form .section {
-  border: 1px solid var(--pw-border);
-  border-radius: var(--pw-radius);
-  background: var(--pw-surface);
-  overflow: hidden;
-}
-
+/* Container chrome (border, radius, surface, overflow) comes from
+   `.pw-card--elevated`; only the collapsible-summary specifics live here. */
 .pw-cb__form .section__summary {
-  display: flex;
-  align-items: center;
-  gap: var(--pw-space-3);
-  padding: var(--pw-space-3) var(--pw-space-4);
-  background: var(--pw-docs-card-chrome);
   border: 0;
   border-bottom: 1px solid transparent;
   width: 100%;

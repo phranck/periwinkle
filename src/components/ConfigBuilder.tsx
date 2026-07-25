@@ -23,6 +23,7 @@
  */
 
 import type { ResolvedConfig } from "../config/config.js";
+import { Card } from "./Card.jsx";
 import { TopNav } from "./TopNav.jsx";
 
 /**
@@ -291,8 +292,9 @@ function SectionIcon({ sectionKey }: { sectionKey: string }) {
  */
 function Section({ meta }: { meta: SectionMeta }) {
   return (
-    <div className="section" data-pw-cb-section={meta.key} data-open="false">
-      <button
+    <Card className="section" data-pw-cb-section={meta.key} data-open="false">
+      <Card.Header
+        as="button"
         type="button"
         className="section__summary"
         aria-expanded="false"
@@ -302,7 +304,7 @@ function Section({ meta }: { meta: SectionMeta }) {
         <Chevron />
         <SectionIcon sectionKey={meta.key} />
         <span className="section__title">{meta.title}</span>
-      </button>
+      </Card.Header>
       <div className="section__body-outer" id={`pw-cb-body-${meta.key}`}>
         <div className="section__body">
           <p className="section__description">{meta.description}</p>
@@ -319,7 +321,7 @@ function Section({ meta }: { meta: SectionMeta }) {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -508,8 +510,8 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
             <PreviewMark />
             <h2 className="pw-cb__column-title">Configuration Preview</h2>
           </header>
-          <aside className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
-            <div className="pw-cb__preview-header">
+          <Card as="aside" className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
+            <Card.Header className="pw-cb__preview-header">
               <span className="pw-cb__preview-filename">periwinkle.config.ts</span>
               <div className="pw-cb__preview-actions">
                 <button
@@ -546,7 +548,7 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
                   <IconSave /> Save
                 </button>
               </div>
-            </div>
+            </Card.Header>
             {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here — it hosts monospaced source; using a list would be misleading semantically. */}
             <pre
               className="pw-cb__preview-body"
@@ -554,7 +556,7 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
               role="region"
               aria-live="polite"
             />
-          </aside>
+          </Card>
         </div>
       </main>
 
