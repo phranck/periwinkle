@@ -500,6 +500,7 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
           </header>
           <aside className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
             <div className="pw-cb__preview-header">
+              <span className="pw-cb__preview-filename">periwinkle.config.ts</span>
               <div className="pw-cb__preview-actions">
                 <button
                   type="button"
@@ -535,7 +536,6 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
                   <IconSave /> Save
                 </button>
               </div>
-              <span className="pw-cb__preview-filename">periwinkle.config.ts</span>
             </div>
             {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here — it hosts monospaced source; using a list would be misleading semantically. */}
             <pre
