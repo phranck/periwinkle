@@ -3169,7 +3169,8 @@ mark[data-api-search-highlight] {
   /* Match the H2's own size so the mark reads as part of the heading. */
   width: var(--pw-text-section);
   height: var(--pw-text-section);
-  color: var(--pw-accent);
+  /* Lifted a touch off the full accent so the marks read softer. */
+  color: color-mix(in srgb, var(--pw-accent) 74%, var(--pw-background));
   flex: none;
 }
 
@@ -3447,7 +3448,7 @@ mark[data-api-search-highlight] {
 .pw-cb__form .section__icon {
   width: var(--pw-size-icon-md);
   height: var(--pw-size-icon-md);
-  color: var(--pw-accent);
+  color: color-mix(in srgb, var(--pw-accent) 74%, var(--pw-background));
   flex: none;
 }
 
