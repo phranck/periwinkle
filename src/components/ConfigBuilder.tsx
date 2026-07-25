@@ -365,6 +365,24 @@ function IconSave() {
   );
 }
 
+/** Upload glyph for the "Import" action button. */
+function IconImport() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 8l5-5 5 5M12 3v12" />
+    </svg>
+  );
+}
+
 /** Iconsax Setting3 (Bulk) — sliders panel; column heading mark for Settings. */
 function SettingsMark() {
   return (
@@ -483,6 +501,15 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
           <aside className="pw-cb__preview" aria-label="Generated periwinkle.config.ts">
             <div className="pw-cb__preview-header">
               <div className="pw-cb__preview-actions">
+                <button
+                  type="button"
+                  className="pw-cb__action"
+                  data-pw-cb-action="import"
+                  title="Import an existing periwinkle.config.ts and fine-tune it here"
+                >
+                  <IconImport /> Import
+                </button>
+                <input type="file" accept=".ts,.mts,.js,.mjs,.cjs" data-pw-cb-import-input hidden />
                 <button
                   type="button"
                   className="pw-cb__action pw-cb__action--danger"

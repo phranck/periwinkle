@@ -18,6 +18,7 @@
  * Step 5 wires the actual TypeScript serializer + preview highlighter.
  */
 
+import JSON5 from "json5";
 import { bindThemeToggle, bindTopNavScrollState, initTheme } from "./client.js";
 
 // ---------- Defaults (mirrored from src/config/config.ts) ----------
@@ -2105,6 +2106,254 @@ function applyReset(): void {
   showToast("Defaults restored");
 }
 
+// ---------- Import an existing periwinkle.config ----------
+
+/** Narrowing helpers for reading an untrusted, parsed config object. */
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+function asString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+function asBool(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+/** A clean state on the built-in defaults, with no demo seed, used as the import base. */
+function emptyState(): BuilderState {
+  const guide: Record<string, GuideItemState> = {};
+  for (const s of GUIDE_SECTIONS) guide[s.key] = { mode: "default", markdown: "" };
+  return {
+    spec: "",
+    site: { basePath: "", serverUrl: "", title: "", logo: "", favicon: "" },
+    theme: {
+      colors: { light: { ...DEFAULT_LIGHT_COLORS }, dark: { ...DEFAULT_DARK_COLORS } },
+      fonts: { ...DEFAULT_FONTS, stylesheets: [...DEFAULT_FONTS.stylesheets] },
+      radius: DEFAULT_RADIUS,
+    },
+    navigation: { ...DEFAULT_NAVIGATION, links: [] },
+    sidebar: { ...DEFAULT_SIDEBAR },
+    themeTogglePlacement: THEME_TOGGLE_DEFAULT,
+    searchPlacement: SEARCH_DEFAULT,
+    features: { ...DEFAULT_FEATURES },
+    sizing: { ...DEFAULT_SIZING },
+    motion: { ...DEFAULT_MOTION },
+    guide,
+    customSections: [],
+    footer: { text: "", links: [] },
+  };
+}
+
+/** Copies every matching boolean key from a parsed record onto a flags object. */
+function assignBoolFlags(target: Record<string, boolean>, source: Record<string, unknown>): void {
+  for (const [key, raw] of Object.entries(source)) {
+    const value = asBool(raw);
+    if (value !== undefined && key in target) target[key] = value;
+  }
+}
+
+/** Copies every matching string key from a parsed record onto a values object. */
+function assignStringValues(target: Record<string, string>, source: Record<string, unknown>): void {
+  for (const [key, raw] of Object.entries(source)) {
+    const value = asString(raw);
+    if (value !== undefined && key in target) target[key] = value;
+  }
+}
+
+/**
+ * Maps a parsed periwinkle config object back onto builder state. This is the
+ * inverse of buildConfigObject(): shapes that match map one to one, while the
+ * placement flags (search / theme toggle), the guide entries, and the github
+ * link get the same special handling reversed.
+ */
+function stateFromConfig(config: Record<string, unknown>): BuilderState {
+  const s = emptyState();
+
+  const spec = asString(config.spec);
+  if (spec) s.spec = spec;
+
+  const site = asRecord(config.site);
+  if (site) assignStringValues(s.site as unknown as Record<string, string>, site);
+
+  const theme = asRecord(config.theme);
+  if (theme) {
+    const colors = asRecord(theme.colors);
+    if (colors) {
+      const light = asRecord(colors.light);
+      if (light)
+        assignStringValues(s.theme.colors.light as unknown as Record<string, string>, light);
+      const dark = asRecord(colors.dark);
+      if (dark) assignStringValues(s.theme.colors.dark as unknown as Record<string, string>, dark);
+    }
+    const fonts = asRecord(theme.fonts);
+    if (fonts) {
+      for (const k of ["base", "heading", "mono"] as const) {
+        const v = asString(fonts[k]);
+        if (v !== undefined) s.theme.fonts[k] = v;
+      }
+      if (Array.isArray(fonts.stylesheets)) {
+        s.theme.fonts.stylesheets = fonts.stylesheets.filter(
+          (x): x is string => typeof x === "string",
+        );
+      }
+    }
+    const radius = asString(theme.radius);
+    if (radius) s.theme.radius = radius;
+  }
+
+  const nav = asRecord(config.navigation);
+  if (nav) {
+    const logo = asString(nav.logo);
+    if (logo) s.navigation.logo = logo;
+    const showHome = asBool(nav.showHome);
+    if (showHome !== undefined) s.navigation.showHome = showHome;
+    const homeLabel = asString(nav.homeLabel);
+    if (homeLabel !== undefined) s.navigation.homeLabel = homeLabel;
+    const homeHref = asString(nav.homeHref);
+    if (homeHref !== undefined) s.navigation.homeHref = homeHref;
+    const github = asRecord(nav.github);
+    if (github) {
+      s.navigation.githubUrl = asString(github.url) ?? "";
+      s.navigation.githubLabel = asString(github.label) ?? "";
+    }
+    if (Array.isArray(nav.links)) {
+      s.navigation.links = nav.links.flatMap((raw) => {
+        const l = asRecord(raw);
+        const label = l && asString(l.label);
+        const href = l && asString(l.href);
+        if (!label || !href) return [];
+        return [{ label, href, target: (l && asString(l.target)) ?? "" }];
+      });
+    }
+  }
+
+  const sidebar = asRecord(config.sidebar);
+  if (sidebar) assignBoolFlags(s.sidebar as unknown as Record<string, boolean>, sidebar);
+
+  const features = asRecord(config.features);
+  if (features) assignBoolFlags(s.features as unknown as Record<string, boolean>, features);
+
+  const sizing = asRecord(config.sizing);
+  if (sizing) assignStringValues(s.sizing as unknown as Record<string, string>, sizing);
+
+  const motion = asRecord(config.motion);
+  if (motion) assignStringValues(s.motion as unknown as Record<string, string>, motion);
+
+  // Placements: reverse of buildConfigObject. A control lives in the sidebar
+  // when that flag is explicitly true, is off when navigation turns it off, and
+  // otherwise stays on the built-in "navigation" default.
+  s.searchPlacement =
+    asBool(sidebar?.showSearch) === true
+      ? "sidebar"
+      : asBool(nav?.showSearch) === false
+        ? "off"
+        : SEARCH_DEFAULT;
+  s.themeTogglePlacement =
+    asBool(sidebar?.showThemeToggle) === true
+      ? "sidebar"
+      : asBool(nav?.showThemeToggle) === false
+        ? "off"
+        : THEME_TOGGLE_DEFAULT;
+
+  const guide = asRecord(config.guide);
+  if (guide) {
+    for (const [key, val] of Object.entries(guide)) {
+      if (val === false) s.guide[key] = { mode: "off", markdown: "" };
+      else {
+        const md = asString(val);
+        if (md !== undefined) s.guide[key] = { mode: "custom", markdown: md };
+      }
+    }
+  }
+
+  if (Array.isArray(config.customSections)) {
+    s.customSections = config.customSections.flatMap((raw) => {
+      const cs = asRecord(raw);
+      const id = cs && asString(cs.id);
+      const title = cs && asString(cs.title);
+      if (!id || !title) return [];
+      const position =
+        (cs && asString(cs.position)) === "after-guide" ? "after-guide" : "before-guide";
+      return [{ id, title, markdown: (cs && asString(cs.markdown)) ?? "", position }];
+    });
+  }
+
+  const footer = asRecord(config.footer);
+  if (footer) {
+    const text = asString(footer.text);
+    if (text !== undefined) s.footer.text = text;
+    if (Array.isArray(footer.links)) {
+      s.footer.links = footer.links.flatMap((raw) => {
+        const l = asRecord(raw);
+        const label = l && asString(l.label);
+        const href = l && asString(l.href);
+        if (!label || !href) return [];
+        return [{ label, href }];
+      });
+    }
+  }
+
+  return s;
+}
+
+/**
+ * Extracts the config object literal from a periwinkle.config source file and
+ * parses it with JSON5 (which accepts unquoted keys, trailing commas, and
+ * comments, no code evaluation involved). Handles both `defineConfig({ ... })`
+ * and a bare `export default { ... }`. Throws when no balanced object is found.
+ */
+function parseConfigSource(source: string): Record<string, unknown> {
+  const defineAt = source.indexOf("defineConfig(");
+  let start = defineAt >= 0 ? source.indexOf("{", defineAt) : -1;
+  if (start < 0) {
+    const exportAt = source.indexOf("export default");
+    start = exportAt >= 0 ? source.indexOf("{", exportAt) : source.indexOf("{");
+  }
+  if (start < 0) throw new Error("No config object found in the file.");
+
+  let depth = 0;
+  let end = -1;
+  let quote: string | null = null;
+  for (let i = start; i < source.length; i++) {
+    const ch = source[i];
+    if (quote) {
+      if (ch === "\\") i++;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") quote = ch;
+    else if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) {
+      end = i;
+      break;
+    }
+  }
+  if (end < 0) throw new Error("The config object is not balanced.");
+
+  const value = JSON5.parse(source.slice(start, end + 1)) as unknown;
+  const record = asRecord(value);
+  if (!record) throw new Error("The config did not evaluate to an object.");
+  return record;
+}
+
+/** Reads a chosen config file, maps it onto state, and re-renders. */
+function importConfigFile(file: File): void {
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      state = stateFromConfig(parseConfigSource(String(reader.result ?? "")));
+      render();
+      showToast(`Imported ${file.name}`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Could not read that config file.");
+    }
+  });
+  reader.addEventListener("error", () => showToast("Could not read that file."));
+  reader.readAsText(file);
+}
+
 // ---------- Boot ----------
 
 /**
@@ -2174,12 +2423,20 @@ export function setupConfigBuilder(doc: Document): void {
   }
 
   // Top-bar actions
+  const importInput = doc.querySelector<HTMLInputElement>("[data-pw-cb-import-input]");
   for (const btn of doc.querySelectorAll<HTMLElement>("[data-pw-cb-action]")) {
     const action = btn.dataset.pwCbAction;
     if (action === "copy") btn.addEventListener("click", () => void copySource());
     else if (action === "save") btn.addEventListener("click", () => void saveSource());
     else if (action === "reset") btn.addEventListener("click", () => openResetDialog(doc));
+    else if (action === "import") btn.addEventListener("click", () => importInput?.click());
   }
+  importInput?.addEventListener("change", () => {
+    const file = importInput.files?.[0];
+    if (file) importConfigFile(file);
+    // Clear the value so choosing the same file again still fires a change.
+    importInput.value = "";
+  });
 
   // Reset dialog handlers
   const dialog = doc.getElementById("pw-cb-reset-dialog") as HTMLDialogElement | null;
