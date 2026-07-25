@@ -79,7 +79,11 @@ The config covers site identity, the full color palette per mode, fonts, corner 
 
 Endpoint groups take their sidebar icon from the tag name, so a generated reference does not repeat one mark down the whole rail. `Shops` gets a storefront, `Search` a magnifier, `Users` two avatars. Titles that are not covered keep a neutral default, and singular and plural resolve to the same entry unless the icon set offers a real plural counterpart.
 
-The mapping lives in [`src/render/section-icons.json`](src/render/section-icons.json) and covers common API vocabulary out of the box. To adapt it, open [`tools/icon-picker.html`](tools/icon-picker.html) straight from disk: it needs no server and no network. Browse or search all 993 Iconsax icons in both the Bulk and TwoTone style, add your own titles, then save the exported JSON over the mapping file.
+The mapping lives in [`src/render/section-icons.json`](src/render/section-icons.json) and covers common API vocabulary out of the box.
+
+To adapt it, use the **[icon picker](https://phranck.github.io/periwinkle/icon-picker.html)**: browse or search all 993 Iconsax icons in both the Bulk and TwoTone style, add your own titles, then download the JSON and save it over the mapping file. The page keeps everything in the browser and uploads nothing.
+
+It also ships in this repository as `tools/icon-picker.html` and runs offline, with no server and no network:
 
 ```bash
 open tools/icon-picker.html          # or double-click it

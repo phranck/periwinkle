@@ -30,6 +30,10 @@ jobs:
       # demo config opts in via features.configBuilder — the builder page at
       # config-builder/index.html.
       - run: node dist/cli.js build --config demo/periwinkle.config.mjs --out site
+      # Publish the icon picker next to the demo so it can be used straight
+      # from the browser. Linking the file in the repository would only show
+      # its source, and the page is self-contained anyway.
+      - run: cp tools/icon-picker.html site/icon-picker.html
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
