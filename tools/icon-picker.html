@@ -43,6 +43,13 @@
   button.primary:hover { filter: brightness(1.1); color: #fff; }
   main { padding: 20px; max-width: 1100px; margin: 0 auto; }
   .hint { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+  .intro { color: var(--muted); font-size: 15px; margin: 0 0 20px; max-width: 78ch; }
+  .intro p { margin: 0 0 10px; }
+  .intro strong { color: var(--text); }
+  .intro code {
+    font-size: 13px; padding: 1px 5px; border-radius: 5px;
+    background: var(--surface-alt); color: var(--text);
+  }
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
   th { font-size: 14px; color: var(--muted); font-weight: 600; }
@@ -68,7 +75,7 @@
   .composer {
     position: sticky; bottom: 0; z-index: 8; margin: 24px auto 0;
     padding: 12px 20px 18px; background: transparent;
-    max-width: 1100px; width: 100%;
+    max-width: 620px; width: 100%;
     /* Clicks pass through the transparent area to the rows underneath. */
     pointer-events: none;
   }
@@ -179,13 +186,35 @@
   <button type="button" class="icon-button" id="theme" aria-label="Toggle color scheme" title="Toggle color scheme"></button>
 </header>
 <main>
-  <p class="hint">
-    Each row maps a section title to an Iconsax icon. periwinkle matches the title of an
-    OpenAPI tag against these keys (lowercased, singular and plural both work) and falls back
-    to the default icon when nothing matches. Click an icon to change it, add your own titles
-    at the bottom, then save the file over
-    <code>src/render/section-icons.json</code>.
-  </p>
+  <div class="intro">
+    <p>
+      This page edits the icons that periwinkle puts in front of the groups in a generated
+      API reference's sidebar.
+    </p>
+    <p>
+      Those groups come from the <strong>tags of your OpenAPI document</strong>. A tag named
+      <code>Shops</code> becomes a sidebar group "Shops", and periwinkle looks up that name in
+      the list below to decide which icon it gets. So the keys on the left are not free text:
+      each one is a tag name you expect to see in an API contract, and the icon next to it is
+      what that group will show.
+    </p>
+    <p>
+      Matching ignores case and treats <code>_</code>, <code>-</code> and <code>/</code> as
+      spaces, so <code>Rate_Limits</code>, <code>rate-limits</code> and
+      <code>Rate limits</code> all find the same entry. Singular and plural also find each
+      other: one entry for <code>invoices</code> covers a tag named <code>Invoice</code> too.
+      Both forms are only listed separately where the icon set has a genuine plural
+      counterpart, as with <code>user</code> (one avatar) and <code>users</code> (two).
+      A tag that matches nothing keeps the default icon shown below, so nothing ever renders
+      without one.
+    </p>
+    <p>
+      Every icon exists in two styles. Pick whichever column reads better at sidebar size; the
+      highlighted one is in use. When you are done, download the JSON and save it over
+      <code>src/render/section-icons.json</code> in your periwinkle checkout. Nothing leaves
+      your browser.
+    </p>
+  </div>
 
   <p class="hint default-hint">
     Default icon for unmatched titles:
