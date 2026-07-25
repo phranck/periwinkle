@@ -123,6 +123,28 @@
     background: var(--bg); color: var(--text);
   }
   dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+  /* Fade and lift on open, reverse on close. The allow-discrete keyword keeps
+     the element around long enough for the closing frames to play. */
+  dialog, dialog::backdrop {
+    transition:
+      opacity 160ms ease,
+      translate 160ms ease,
+      overlay 160ms ease allow-discrete,
+      display 160ms ease allow-discrete;
+  }
+  dialog { opacity: 0; translate: 0 8px; }
+  dialog[open] { opacity: 1; translate: 0 0; }
+  @starting-style {
+    dialog[open] { opacity: 0; translate: 0 8px; }
+  }
+  dialog::backdrop { opacity: 0; }
+  dialog[open]::backdrop { opacity: 1; }
+  @starting-style {
+    dialog[open]::backdrop { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    dialog, dialog::backdrop { transition: none; }
+  }
   .dlg-head {
     position: sticky; top: 0; display: flex; gap: 12px; align-items: center;
     padding: 14px 16px; background: var(--surface);
@@ -206,6 +228,13 @@
       the list below to decide which icon it gets. So the keys on the left are not free text:
       each one is a tag name you expect to see in an API contract, and the icon next to it is
       what that group will show.
+    </p>
+    <p>
+      The list that ships with periwinkle covers common API vocabulary, but your contract is
+      yours: add every tag you actually use, remove what you never will, and repoint any icon
+      that does not fit your domain. Building your own list this way is the point of this
+      page, and it means no group in your reference falls back to the generic default unless
+      you want it to.
     </p>
     <p>
       Matching ignores case and treats <code>_</code>, <code>-</code> and <code>/</code> as
