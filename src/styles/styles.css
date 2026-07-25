@@ -3398,6 +3398,16 @@ mark[data-api-search-highlight] {
   color: var(--pw-text);
 }
 
+/* Plain-language description at the top of an open section body. No bottom
+   padding: the body-inner's own top padding sets the gap to the fields. */
+.pw-cb__form .section__description {
+  margin: 0;
+  padding: var(--pw-space-4) var(--pw-space-4) 0;
+  color: var(--pw-text-muted);
+  font-size: var(--pw-text-code);
+  line-height: 1.5;
+}
+
 .pw-cb__form .section__hint {
   margin-left: auto;
   color: var(--pw-text-faint);

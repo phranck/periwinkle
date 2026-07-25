@@ -172,25 +172,77 @@ const SECTION_ICONS: Record<string, Array<{ d: string; opacity?: number }>> = {
 interface SectionMeta {
   key: string;
   title: string;
-  hint: string;
+  /** Plain-language description shown at the top of the open section body. */
+  description: string;
 }
 
 const SECTIONS: readonly SectionMeta[] = [
-  { key: "spec", title: "Spec", hint: "OpenAPI 3.x document (JSON or YAML)" },
-  { key: "site", title: "Site", hint: "Page identity, base path, favicon" },
-  { key: "theme", title: "Theme", hint: "Colors, fonts, corner radius" },
-  { key: "navigation", title: "Navigation (top bar)", hint: "Sticky top bar affordances" },
-  { key: "sidebar", title: "Sidebar", hint: "Left navigation rail" },
-  { key: "features", title: "Features", hint: "Global on/off switches" },
-  { key: "sizing", title: "Sizing", hint: "Typography scale and layout dimensions" },
-  { key: "motion", title: "Motion", hint: "Animation timing and visual color-mix intensities" },
+  {
+    key: "spec",
+    title: "Spec",
+    description:
+      "This is the OpenAPI 3.x contract that periwinkle renders. Point it at a local JSON or YAML file, and every endpoint, schema, and description in the reference is generated from it.",
+  },
+  {
+    key: "site",
+    title: "Site",
+    description:
+      "This section defines the identity of the generated site. You set its title, the base path the site is served under, the server URL shown in the code examples, and the favicon.",
+  },
+  {
+    key: "theme",
+    title: "Theme",
+    description:
+      "This section controls the visual design of the reference. Here you choose the light and dark color palettes, the heading, body, and monospace fonts, and the global corner radius.",
+  },
+  {
+    key: "navigation",
+    title: "Navigation (top bar)",
+    description:
+      "This section configures the sticky top bar and the affordances it shows. You can enable a brand logo, the home link, the search trigger, a GitHub link, and the theme toggle.",
+  },
+  {
+    key: "sidebar",
+    title: "Sidebar",
+    description:
+      "This section configures the left navigation rail. You decide whether it carries its own search field and how its collapsible sections behave.",
+  },
+  {
+    key: "features",
+    title: "Features",
+    description:
+      "This section holds the global switches for optional affordances. Each switch turns a part of the reference on or off, such as the OpenAPI contract viewer, the access badge, and the copy buttons.",
+  },
+  {
+    key: "sizing",
+    title: "Sizing",
+    description:
+      "This section sets the typography scale and the layout dimensions. It defines the body, code, and heading sizes together with the spacing that controls the overall density of the reference.",
+  },
+  {
+    key: "motion",
+    title: "Motion",
+    description:
+      "This section controls the animation of the interface. It sets the timing of the collapsible sections and transitions, together with the intensity of the color-mix effects used across the UI.",
+  },
   {
     key: "guide",
     title: "Integration guide",
-    hint: "Auto = derive from spec · Custom = your Markdown · Off = hide panel",
+    description:
+      "This section controls the integration guide panel. Auto derives the guide from your spec, Custom lets you write your own Markdown, and Off hides the panel entirely.",
   },
-  { key: "customSections", title: "Custom sections", hint: "Your own Markdown chapters" },
-  { key: "footer", title: "Footer", hint: "Links and closing text" },
+  {
+    key: "customSections",
+    title: "Custom sections",
+    description:
+      "This section lets you add your own Markdown chapters. Each chapter is inserted into the reference at a position you choose, either before or after the integration guide.",
+  },
+  {
+    key: "footer",
+    title: "Footer",
+    description:
+      "This section configures the footer that appears at the bottom of every page. You set its links and its closing line of text.",
+  },
 ] as const;
 
 /** Chevron toggle indicator on every section summary. */
@@ -230,10 +282,12 @@ function SectionIcon({ sectionKey }: { sectionKey: string }) {
 }
 
 /**
- * Empty section shell: summary button (icon, title, hint, chevron) plus
- * the collapsible body wrapper. `data-pw-cb-section` on the container
- * lets the client bind toggle + persistence to it, and
- * `data-pw-cb-body` marks the slot the client fills with field widgets.
+ * Empty section shell: summary button (icon, title, chevron) plus the
+ * collapsible body wrapper. The body opens with a plain-language description
+ * above the field widgets so the header stays a clean title row.
+ * `data-pw-cb-section` on the container lets the client bind toggle +
+ * persistence to it, and `data-pw-cb-body` marks the slot the client fills
+ * with field widgets.
  */
 function Section({ meta }: { meta: SectionMeta }) {
   return (
@@ -248,10 +302,10 @@ function Section({ meta }: { meta: SectionMeta }) {
         <Chevron />
         <SectionIcon sectionKey={meta.key} />
         <span className="section__title">{meta.title}</span>
-        <span className="section__hint">{meta.hint}</span>
       </button>
       <div className="section__body-outer" id={`pw-cb-body-${meta.key}`}>
         <div className="section__body">
+          <p className="section__description">{meta.description}</p>
           <div className="section__body-inner" data-pw-cb-body={meta.key} />
         </div>
       </div>
