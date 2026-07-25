@@ -27,7 +27,7 @@ export default defineConfig([
     outExtension: () => ({ js: ".js" }),
   },
   {
-    // Standalone browser bundle for the generated config-builder.html page.
+    // Standalone browser bundle for the generated config-builder page.
     // Same IIFE + defer-load contract as the docs client bundle.
     entry: { "config-builder": "src/client/config-builder-entry.ts" },
     format: ["iife"],

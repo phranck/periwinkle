@@ -16,10 +16,10 @@ Static API documentation generator for OpenAPI 3.x — turn a spec plus a small 
 
 **Live demo:** [phranck.github.io/periwinkle](https://phranck.github.io/periwinkle/) — built from a fictional bookstore contract on every push.
 
-- Static output: `index.html`, one stylesheet, one small vanilla-JS bundle. No runtime framework, deployable to any host.
+- Static output: `index.html`, one stylesheet, one small vanilla-JS bundle, and a copy of the spec as `openapi.json`. No runtime framework, deployable to any host.
 - Sticky top navigation with a frosted-glass backdrop: optional brand logo, home link, search, GitHub link, and theme toggle — every affordance toggleable via config.
 - Sidebar navigation with endpoint groups, integration guide, endpoint blocks with generated curl examples, schema cards with field tables and raw JSON view.
-- Light/dark theming via CSS custom properties, fully configurable (colors, fonts, logo, radius).
+- Light/dark theming via CSS custom properties, fully configurable (colors, fonts, logo, radius). Pick which palette first-time visitors see, or follow their operating system.
 - Document search dialog (`⌘K`) and persisted collapsible sections — all progressive enhancement over working plain HTML.
 - Embeddable React components for host apps (e.g. Astro via `@astrojs/react`).
 
@@ -56,7 +56,13 @@ export default defineConfig({
 The config covers site identity, the full color palette per mode, fonts, corner radius, the top navigation bar, sidebar affordances, feature switches, typography/layout sizing, animation timing, the integration guide content, custom Markdown chapters, and the footer.
 
 - **Full reference:** every option, its type, default, and where it appears on the page is documented in [CONFIGURATION.md](CONFIGURATION.md).
-- **Interactive builder:** click your config together at [phranck.github.io/periwinkle/config-builder.html](https://phranck.github.io/periwinkle/config-builder.html) — live preview, copy to clipboard, save file. The demo site links to it from its own top-nav ("Config builder"). Locally the same page ships as [`config-builder.html`](config-builder.html) at the project root.
+- **Interactive builder:** click your config together at [phranck.github.io/periwinkle/config-builder/](https://phranck.github.io/periwinkle/config-builder/) — live preview, import an existing config, copy to clipboard, save file.
+
+  The builder is a second page periwinkle can generate, and it is **off by default**: a published API reference should not ship the tool that authors its own config. Turn it on where it belongs, as the demo does:
+
+  ```ts
+  features: { configBuilder: true },
+  ```
 
 ## Deploying
 

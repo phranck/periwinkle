@@ -48,6 +48,7 @@ export type {
   ResolvedConfig,
   ThemeColors,
   ThemeFonts,
+  ThemeMode,
 } from "./config/config.js";
 export {
   DEFAULT_DARK_COLORS,

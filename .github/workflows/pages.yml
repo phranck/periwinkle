@@ -25,11 +25,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      # The CLI build emits the whole site: index.html, the integrated
-      # config-builder.html (with the shared periwinkle top nav), both
-      # client bundles, and any bundled logo/favicon assets. No extra
-      # copy step — copying the standalone root config-builder.html here
-      # would overwrite the generated, integrated one.
+      # The CLI build emits the whole site: index.html, the spec copy, both
+      # client bundles, any bundled logo/favicon assets, and — because the
+      # demo config opts in via features.configBuilder — the builder page at
+      # config-builder/index.html.
       - run: node dist/cli.js build --config demo/periwinkle.config.mjs --out site
       - uses: actions/upload-pages-artifact@v4
         with:
