@@ -14,6 +14,7 @@
  *   `opacity=".4"` so the two-tone contrast stays readable on dark surfaces.
  */
 
+import * as iconsax from "iconsax-react";
 import {
   ArrowCircleDown,
   ArrowCircleUp,
@@ -63,18 +64,50 @@ export type BoundIcon = FC<IconProps & DataAttributes>;
  * @param Base The raw iconsax-react icon component.
  * @returns The pre-styled icon component.
  */
-function bulk(Base: Icon): BoundIcon {
+function bulk(Base: Icon, variant: IconVariant = "Bulk"): BoundIcon {
   const Bound: BoundIcon = ({ className, ...rest }) => (
     <Base
-      variant="Bulk"
+      variant={variant}
       color="currentColor"
       className={className ? `pw-icon ${className}` : "pw-icon"}
       {...rest}
     />
   );
-  Bound.displayName = `Bulk(${Base.displayName ?? Base.name ?? "Icon"})`;
+  Bound.displayName = `${variant}(${Base.displayName ?? Base.name ?? "Icon"})`;
   return Bound;
 }
+
+/**
+ * Icon styles periwinkle renders. `Bulk` is the default; `TwoTone` is offered
+ * because some marks read better in it at sidebar size.
+ */
+export type IconVariant = "Bulk" | "TwoTone";
+
+/**
+ * Resolves an Iconsax icon by name and binds the periwinkle icon policy onto
+ * it. Used for icons chosen through configuration or the section-icon
+ * mapping, where the name is only known at build time.
+ *
+ * Results are cached so a repeated name reuses one bound component instead
+ * of creating a new one per render.
+ *
+ * @param name The Iconsax icon name, e.g. `"Shop"`.
+ * @param variant Icon style; defaults to `Bulk`.
+ * @returns The bound icon, or `undefined` when no such icon exists.
+ */
+export function iconByName(name: string, variant: IconVariant = "Bulk"): BoundIcon | undefined {
+  const cacheKey = `${name}:${variant}`;
+  const cached = boundByName.get(cacheKey);
+  if (cached) return cached;
+  const candidate = (iconsax as Record<string, unknown>)[name];
+  if (typeof candidate !== "function" && typeof candidate !== "object") return undefined;
+  if (candidate === null) return undefined;
+  const bound = bulk(candidate as Icon, variant);
+  boundByName.set(cacheKey, bound);
+  return bound;
+}
+
+const boundByName = new Map<string, BoundIcon>();
 
 export const ArrowCircleDownIcon = bulk(ArrowCircleDown);
 export const ArrowCircleUpIcon = bulk(ArrowCircleUp);

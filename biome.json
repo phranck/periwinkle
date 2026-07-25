@@ -6,7 +6,15 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!graphify-out", "!dist", "!node_modules", "!assets"]
+    "includes": [
+      "**",
+      "!graphify-out",
+      "!dist",
+      "!node_modules",
+      "!assets",
+      "!tools/icon-picker.html",
+      "!tools/iconsax-bulk.json"
+    ]
   },
   "formatter": {
     "enabled": true,

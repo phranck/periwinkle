@@ -64,6 +64,23 @@ The config covers site identity, the full color palette per mode, fonts, corner 
   features: { configBuilder: true },
   ```
 
+## Sidebar icons
+
+Endpoint groups take their sidebar icon from the tag name, so a generated reference does not repeat one mark down the whole rail. `Shops` gets a storefront, `Search` a magnifier, `Users` two avatars. Titles that are not covered keep a neutral default, and singular and plural resolve to the same entry unless the icon set offers a real plural counterpart.
+
+The mapping lives in [`src/render/section-icons.json`](src/render/section-icons.json) and covers common API vocabulary out of the box. To adapt it, open [`tools/icon-picker.html`](tools/icon-picker.html) straight from disk: it needs no server and no network. Browse or search all 993 Iconsax icons in both the Bulk and TwoTone style, add your own titles, then save the exported JSON over the mapping file.
+
+```bash
+open tools/icon-picker.html          # or double-click it
+```
+
+After upgrading `iconsax-react`, refresh the tool's icon data:
+
+```bash
+node tools/extract-icons.mjs
+node tools/build-icon-picker.mjs
+```
+
 ## Deploying
 
 The output directory is plain static files. Recipes:

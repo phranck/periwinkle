@@ -26,6 +26,7 @@
 import type { CustomSection } from "../config/config.js";
 import type { ApiOperation } from "../model/api-reference.js";
 import { customSectionsAt, type DocsData } from "../render/prepare.js";
+import { sectionIcon } from "../render/section-icon.js";
 import {
   ArrowCircleDownIcon,
   Book1Icon,
@@ -33,6 +34,7 @@ import {
   type BoundIcon,
   CategoryIcon,
   CodeIcon,
+  iconByName,
   MoonIcon,
   SearchNormal1Icon,
   Sun1Icon,
@@ -153,6 +155,16 @@ function TopLink({
   );
 }
 
+/**
+ * Resolves the sidebar icon for one endpoint group from its tag name, so
+ * groups do not all share a single mark. Unknown titles and unknown icon
+ * names both fall back to the neutral category icon.
+ */
+function groupIcon(name: string): BoundIcon {
+  const { name: iconName, variant } = sectionIcon(name);
+  return iconByName(iconName, variant) ?? CategoryIcon;
+}
+
 function CustomSectionLink({ section }: { section: CustomSection }) {
   return (
     <TopLink href={`#${section.id}`} icon={Book1Icon} searchText={section.title.toLowerCase()}>
@@ -256,7 +268,9 @@ export function SidebarNav({ data }: { data: DocsData }) {
             key={group.name}
             name={group.name}
             count={group.operations.length}
-            icon={CategoryIcon}
+            // Derived from the tag name so groups do not all share one mark;
+            // unknown titles keep the neutral default.
+            icon={groupIcon(group.name)}
             searchText={`${group.name} ${group.operations.map(operationSearchText).join(" ")}`.toLowerCase()}
           >
             {group.operations.map((operation) => (
