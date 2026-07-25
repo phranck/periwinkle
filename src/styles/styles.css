@@ -3320,6 +3320,9 @@ mark[data-api-search-highlight] {
   font-family: inherit;
   font-size: var(--pw-text-code);
   font-weight: 500;
+  /* Collapse the line box to the glyph height so the label sits on the flex
+     center with the icon instead of riding low in a taller line box. */
+  line-height: 1;
   cursor: pointer;
   transition:
     color var(--pw-motion-duration-fast) var(--pw-nav-transition-easing),
