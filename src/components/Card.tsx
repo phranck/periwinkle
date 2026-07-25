@@ -23,14 +23,10 @@
  */
 
 import type { ElementType, HTMLAttributes } from "react";
+import { cx } from "./classnames.js";
 
 /** Visual weight of the card frame. */
 export type CardVariant = "elevated" | "inset";
-
-/** Join a required base class with an optional caller-supplied class. */
-function cx(base: string, extra?: string): string {
-  return extra ? `${base} ${extra}` : base;
-}
 
 interface CardProps extends HTMLAttributes<HTMLElement> {
   /** Element to render as (`div` by default, e.g. `aside` for the preview). */

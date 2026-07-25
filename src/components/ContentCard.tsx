@@ -21,14 +21,11 @@
  */
 
 import type { ReactNode } from "react";
+import { cx } from "./classnames.js";
 
 interface BaseProps {
   className?: string;
   children?: ReactNode;
-}
-
-function cx(base: string, extra?: string): string {
-  return extra ? `${base} ${extra}` : base;
 }
 
 /**

@@ -9,6 +9,7 @@
 
 import type { HTMLAttributes, ReactNode } from "react";
 import { Card } from "./Card.jsx";
+import { cx } from "./classnames.js";
 
 interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
@@ -17,10 +18,6 @@ interface PanelProps extends HTMLAttributes<HTMLDivElement> {
 interface BaseProps {
   className?: string;
   children?: ReactNode;
-}
-
-function cx(base: string, extra?: string): string {
-  return extra ? `${base} ${extra}` : base;
 }
 
 /**
