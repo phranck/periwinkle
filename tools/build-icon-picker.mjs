@@ -131,7 +131,11 @@ const html = `<!doctype html>
   .pick .variant { font-size: 12px; color: var(--accent); }
   /* Resize affordances: the dialog grows symmetrically around its centre, so
      every edge and corner drags the same box outwards from the middle. */
-  dialog { position: relative; }
+  /* Stays pinned while the page behind it scrolls. Fixed positioning also
+     gives the absolutely positioned resize handles their containing block. */
+  dialog { position: fixed; inset: 0; margin: auto; }
+  /* Freeze the page behind the modal so a scroll gesture cannot drift it. */
+  body:has(dialog[open]) { overflow: hidden; }
   .rz { position: absolute; z-index: 5; }
   .rz-n { top: -4px; left: 12px; right: 12px; height: 8px; cursor: ns-resize; }
   .rz-s { bottom: -4px; left: 12px; right: 12px; height: 8px; cursor: ns-resize; }
