@@ -127,15 +127,16 @@
      the element around long enough for the closing frames to play. */
   dialog, dialog::backdrop {
     transition:
-      opacity 160ms ease,
-      translate 160ms ease,
-      overlay 160ms ease allow-discrete,
-      display 160ms ease allow-discrete;
+      opacity 280ms ease,
+      translate 280ms cubic-bezier(0.22, 0.68, 0.36, 1),
+      overlay 280ms ease allow-discrete,
+      display 280ms ease allow-discrete;
   }
-  dialog { opacity: 0; translate: 0 8px; }
+  /* Slides down into place from 60px above and retraces that path on close. */
+  dialog { opacity: 0; translate: 0 -60px; }
   dialog[open] { opacity: 1; translate: 0 0; }
   @starting-style {
-    dialog[open] { opacity: 0; translate: 0 8px; }
+    dialog[open] { opacity: 0; translate: 0 -60px; }
   }
   dialog::backdrop { opacity: 0; }
   dialog[open]::backdrop { opacity: 1; }
