@@ -160,7 +160,11 @@ const html = `<!doctype html>
     font-size: 12px; color: var(--muted); text-align: center;
     word-break: break-word; line-height: 1.2;
   }
-  .grid button.active { border-color: var(--accent); }
+  .grid button.active {
+    border-color: var(--accent); background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  .grid button.active span { color: var(--accent); }
   .count { color: var(--muted); font-size: 14px; }
   .icon-button {
     display: inline-flex; align-items: center; justify-content: center;
@@ -380,6 +384,8 @@ function openPicker(title, style) {
   renderGrid();
   dlg.showModal();
   applySize(storedSize());
+  // Only now does the grid have a measurable height to centre against.
+  centreActiveIcon();
   iconSearch.focus();
 }
 
@@ -400,6 +406,27 @@ function renderGrid() {
     button.append(svgFor(entry.name, variant), el("span", undefined, entry.name));
     grid.append(button);
   }
+  if (dlg.open) centreActiveIcon();
+}
+
+/**
+ * Scrolls the current pick into the middle of the grid. Setting scrollTop
+ * directly keeps the scrolling inside the grid; scrollIntoView would also
+ * move ancestors.
+ */
+function centreActiveIcon() {
+  const active = grid.querySelector("button.active");
+  if (!active) {
+    grid.scrollTop = 0;
+    return;
+  }
+  // Measured rects rather than offsetTop: the grid is not the offset parent,
+  // and its padding would skew the result.
+  const gridRect = grid.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  const delta = activeRect.top - gridRect.top - (grid.clientHeight - activeRect.height) / 2;
+  const target = grid.scrollTop + delta;
+  grid.scrollTop = Math.max(0, Math.min(target, grid.scrollHeight - grid.clientHeight));
 }
 
 document.addEventListener("click", (event) => {
