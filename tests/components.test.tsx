@@ -39,8 +39,8 @@ describe("ApiDocs", () => {
   });
 
   it("renders responses without code blocks (reference behavior)", () => {
-    // The reference response-card renders no CodeBlock for its media examples
-    // — only the labeled Content-Type / Response Object meta rows. Verify no
+    // The reference response-card renders no CodeBlock for its media examples,
+    // only the labeled Content-Type / Response Object meta rows. Verify no
     // code-block markup appears inside any .response-card.
     const responseSlices = [
       ...defaultHtml.matchAll(

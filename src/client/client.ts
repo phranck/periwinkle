@@ -374,7 +374,7 @@ export function bindScrollSpy(root: Document): void {
   // Keeping the active item visible must scroll ONLY the sidebar's scroll
   // region. Element.scrollIntoView would scroll the window (the rail is not
   // always overflow-scrollable), which feeds back into the scroll listener and
-  // drags the page down — so scroll the region directly, never the window.
+  // drags the page down, so scroll the region directly, never the window.
   const rail = links[0]?.closest<HTMLElement>("[data-pw-nav-body]") ?? null;
   const revealInRail = (item: HTMLElement): void => {
     if (!rail) return;
@@ -416,7 +416,7 @@ export function bindScrollSpy(root: Document): void {
       link,
     }));
     // Sections in the final viewport can never reach a fixed top activation
-    // line — the page runs out of scroll room. As the bottom approaches, lower
+    // line, because the page runs out of scroll room. As the bottom approaches, lower
     // the effective line from its resting spot toward the viewport bottom in
     // proportion to the remaining scroll, so those trailing sections still take
     // their turn as the reader reaches them.

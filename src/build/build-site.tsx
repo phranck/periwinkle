@@ -4,8 +4,8 @@
  * `buildSite()` turns an OpenAPI document plus a resolved config into a
  * self-contained static site: `index.html`, `styles.css`, `client.js`,
  * `openapi.json`, and any local logo/favicon assets. Every failure (missing
- * spec, invalid document, unreadable assets) throws with a clear message —
- * a broken input must never produce a silently wrong site.
+ * spec, invalid document, unreadable assets) throws with a clear message,
+ * because a broken input must never produce a silently wrong site.
  */
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -190,7 +190,7 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
 
   // Second page: the configuration builder. Shares the same document
   // chrome (top bar, theme, fonts) so both routes feel like one site.
-  // Only emitted when the client bundle path is available — tests can
+  // Only emitted when the client bundle path is available, so tests can
   // opt out by omitting `assetPaths.configBuilderJs`.
   if (configBuilderJs) {
     // On the builder page, the home link ("API reference") must navigate
@@ -230,7 +230,7 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
  * "Config builder" nav-link to the docs' top bar so users can discover
  * the builder from any doc page. Skipped when the consumer already
  * added an entry that points at the builder (`config-builder/` or a legacy
- * `config-builder.html`) — no duplicates.
+ * `config-builder.html`), so no duplicates are added.
  */
 function addBuilderNavLink(navigation: ResolvedConfig["navigation"], basePath: string): void {
   const alreadyHasBuilderLink = navigation.links.some((link) =>

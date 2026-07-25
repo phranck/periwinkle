@@ -147,7 +147,7 @@ code {
 /* ---------- Layout ---------- */
 
 /* Page root: hosts the full-width top navigation bar plus the max-width
-   shell. Carries no geometry of its own — it exists so `:has()` state
+   shell. Carries no geometry of its own, since it exists so `:has()` state
    (top-nav present) can cascade custom properties to both children. */
 .pw-app {
   min-height: 100vh;
@@ -382,7 +382,7 @@ code {
   text-decoration: none;
 }
 
-/* Backdrop only fades in on hover — never on `:focus-visible`. Otherwise
+/* Backdrop only fades in on hover, never on `:focus-visible`. Otherwise
    opening the Search dialog and dismissing it with ESC returns keyboard
    focus to the trigger, which browsers treat as a `:focus-visible`
    context and would keep the pill tinted after the dialog closes. Keep
@@ -454,7 +454,7 @@ code {
   --pw-docs-nav-active-color: var(--pw-accent);
   --pw-color-mask-opaque: #000;
   /* Reference `--mc-card-content-inset` (docs.css § api-content) equals
-     `radius / 2` — the horizontal inset every free-standing headline/copy
+     `radius / 2`, the horizontal inset every free-standing headline/copy
      uses so its text aligns with the copy inside a card whose header
      already carries `padding-inline-start: --mc-docs-content-card-copy-inset`
      (identical value). Adopted verbatim as `--pw-card-content-inset`. */
@@ -724,7 +724,7 @@ code {
 }
 
 /* Search trigger (periwinkle addition): the field is a twin of the search
-   dialog's header search — the shared geometry lives in the combined
+   dialog's header search, and the shared geometry lives in the combined
    selectors of the search-dialog block below. Only the trigger behavior
    differs: the whole field (readonly input included) acts as a button. */
 .pw-nav__search,

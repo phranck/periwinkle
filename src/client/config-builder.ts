@@ -274,14 +274,14 @@ interface BuilderState {
  * Initial state for a fresh visit. Seeded with the demo config so a
  * newcomer sees a working example instead of an empty form. The
  * built-in periwinkle defaults still drive the diff in
- * buildConfigObject() (step 5) — this only seeds the form values.
+ * buildConfigObject() (step 5), so this only seeds the form values.
  */
 function createInitialState(): BuilderState {
   const guide: Record<string, GuideItemState> = {};
   for (const s of GUIDE_SECTIONS) guide[s.key] = { mode: "default", markdown: "" };
   guide.rateLimits = {
     mode: "custom",
-    markdown: "This is a demo deployment of a fictional API — there are no real rate limits.",
+    markdown: "This is a demo deployment of a fictional API, so there are no real rate limits.",
   };
   return {
     spec: "tests/fixtures/bookstore.openapi.json",
@@ -355,7 +355,7 @@ function persistSectionOpenState(): void {
     const snapshot: Record<string, boolean> = Object.fromEntries(sectionOpenState);
     localStorage.setItem(SECTION_OPEN_STORAGE_KEY, JSON.stringify(snapshot));
   } catch {
-    // storage may be full or disabled — silently degrade
+    // storage may be full or disabled, so degrade silently
   }
 }
 
@@ -419,7 +419,7 @@ function getGuideItem(key: string): GuideItemState {
 
 /**
  * Safe accessor for sizing/motion values. Both maps are typed as
- * `Record<string, string>` which — under `noUncheckedIndexedAccess` —
+ * `Record<string, string>`, which under `noUncheckedIndexedAccess`
  * widens indexed reads to `string | undefined`. These helpers fall back
  * to the built-in default (or an empty string) so callers can treat
  * the returned value as a plain string.
@@ -937,7 +937,7 @@ function iconToneSlider(key: string, label: string): HTMLElement {
   apply(initial);
   return slider({
     label,
-    hint: `Icon opacity mix on the ${mode} surface. Higher = stronger currentColor.`,
+    hint: `Icon opacity mix on the ${mode} surface. A higher value strengthens currentColor.`,
     min: 0,
     max: 100,
     step: 5,
@@ -1462,7 +1462,7 @@ function renderMotion(): HTMLElement[] {
       percentSlider({
         key: "responseTintLight",
         label: "Response tint (light)",
-        hint: "Status color mixed into the response-card surface (light mode).",
+        hint: "Status colour mixed into the response-card surface (light mode).",
         toneVarLight: DEFAULT_LIGHT_COLORS.methodPost,
         toneVarDark: DEFAULT_DARK_COLORS.methodPost,
       }),
@@ -1479,7 +1479,7 @@ function renderMotion(): HTMLElement[] {
       percentSlider({
         key: "cardChromeMixLight",
         label: "Card chrome mix (light)",
-        hint: "How much text color mixes into card/panel header chrome.",
+        hint: "How much text colour mixes into card and panel header chrome.",
         toneVarLight: DEFAULT_LIGHT_COLORS.text,
         toneVarDark: DEFAULT_DARK_COLORS.text,
       }),
@@ -1686,7 +1686,7 @@ function renderFooter(): HTMLElement[] {
   return [
     textField({
       label: "Text",
-      hint: "Free-form closing text, e.g. a copyright line.",
+      hint: "Free-form closing text, for instance a copyright line.",
       value: f.text,
       onInput: (v) => {
         f.text = v;
@@ -1957,7 +1957,7 @@ interface Token {
 
 /**
  * Tokenize a single source line into typed spans. Only line comments
- * are recognised — block comments are not emitted by the serializer.
+ * are recognised, since block comments are not emitted by the serializer.
  */
 function tokenize(line: string): Token[] {
   const tokens: Token[] = [];
@@ -2043,7 +2043,7 @@ async function copySource(): Promise<void> {
     showToast("Copied to clipboard");
   } catch (err) {
     console.error(err);
-    showToast("Copy failed — check console");
+    showToast("Copy failed, check the console");
   }
 }
 

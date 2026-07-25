@@ -2,9 +2,9 @@
  * Statically rendered modal search surface, adopted from the reference
  * implementation's `SearchDialog`/`ApiDialog` compounds.
  *
- * The markup (classes, roles, ids) matches the reference exactly; all state
- * — opening, query, grouped results, keyboard navigation, and the highlight
- * notice — is driven by `bindSearchDialog` in the client bundle. Hidden
+ * The markup (classes, roles, ids) matches the reference exactly. All state,
+ * covering opening, query, grouped results, keyboard navigation, and the
+ * highlight notice, is driven by `bindSearchDialog` in the client bundle. Hidden
  * Iconsax templates ship alongside the dialog so the framework-free client
  * can clone the correct result icon per entry kind.
  */

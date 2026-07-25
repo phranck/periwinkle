@@ -14,9 +14,9 @@
  * on the right carries the expand/collapse-all chevron button. periwinkle
  * additions: the theme toggle sits next to the toggle-all button (spatially
  * separated by a gap so the two never read as one control), and the search
- * trigger field lives on a second row inside the header — the reference's
- * search dialog is triggered from a global affordance which periwinkle
- * embeds directly in the sidebar for convenience.
+ * trigger field lives on a second row inside the header, because the
+ * reference's search dialog is triggered from a global affordance which
+ * periwinkle embeds directly in the sidebar for convenience.
  *
  * Top-level links mirror the content's document order exactly (custom
  * sections before the guide link when placed `before-guide`, and so on);
@@ -216,8 +216,8 @@ export function SidebarNav({ data }: { data: DocsData }) {
               <button
                 type="button"
                 className="pw-nav__icon-button"
-                aria-label="Toggle color scheme"
-                title="Toggle color scheme"
+                aria-label="Toggle colour scheme"
+                title="Toggle colour scheme"
                 data-pw-theme-toggle
               >
                 <Sun1Icon

@@ -80,7 +80,7 @@ describe("buildSite", () => {
   it("emits the config-builder page alongside the docs page", () => {
     const builderHtml = readFileSync(join(outDir, "config-builder", "index.html"), "utf8");
     expect(builderHtml).toContain("<!doctype html>");
-    expect(builderHtml).toContain("Bookstore API — configuration builder");
+    expect(builderHtml).toContain("Configuration builder for Bookstore API");
     expect(builderHtml).toContain('<link rel="stylesheet" href="/docs/styles.css">');
     expect(builderHtml).toContain('<script defer src="/docs/config-builder.js"></script>');
     expect(builderHtml).toContain("data-pw-cb-root");
@@ -211,7 +211,7 @@ describe("buildSite auto builder nav-link", () => {
     const outDir = join(workDir, "dist");
     const clientJs = join(workDir, "client-stub.js");
     writeFileSync(clientJs, "/* stub */");
-    // Omit configBuilderJs so buildSite skips the second page — the
+    // Omit configBuilderJs so buildSite skips the second page. The
     // auto link should be skipped too, since it would 404.
     await buildSite({
       specPath,

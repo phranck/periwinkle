@@ -7,7 +7,7 @@
  * - the shared top navigation (same `TopNav` as the docs page, so both
  *   routes carry identical chrome)
  * - the top-bar action buttons (Reset defaults, Copy, Save file, theme
- *   toggle) — plain `<button>`s tagged with `data-pw-cb-action`
+ *   toggle), which are plain `<button>`s tagged with `data-pw-cb-action`
  * - the intro block (title, lead, doc pointer)
  * - the two-column layout (form on the left, sticky preview on the
  *   right) with all 11 section headers pre-rendered and their bodies
@@ -16,7 +16,7 @@
  *   line at boot
  * - the Reset confirmation `<dialog>`
  *
- * The section bodies stay empty in SSR — the client renders the actual
+ * The section bodies stay empty in SSR, because the client renders the actual
  * field widgets on boot. That keeps SSR deterministic (no server-side
  * state), lets the client be the single source of truth for values,
  * and keeps the initial HTML tiny.
@@ -194,7 +194,7 @@ const SECTIONS: readonly SectionMeta[] = [
     key: "theme",
     title: "Theme",
     description:
-      "This section controls the visual design of the reference. Here you choose the light and dark color palettes, the heading, body, and monospace fonts, and the global corner radius.",
+      "This section controls the visual design of the reference. Here you choose the light and dark colour palettes, the heading, body, and monospace fonts, and the global corner radius.",
   },
   {
     key: "navigation",
@@ -395,7 +395,7 @@ function IconImport() {
   );
 }
 
-/** Iconsax Setting3 (Bulk) — sliders panel; column heading mark for Settings. */
+/** Iconsax Setting3 (Bulk), a sliders panel; column heading mark for Settings. */
 function SettingsMark() {
   return (
     <svg className="pw-cb__column-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -413,7 +413,7 @@ function SettingsMark() {
   );
 }
 
-/** Iconsax Monitor (Bulk) — display; column heading mark for the config preview. */
+/** Iconsax Monitor (Bulk), a display; column heading mark for the config preview. */
 function PreviewMark() {
   return (
     <svg className="pw-cb__column-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -426,7 +426,7 @@ function PreviewMark() {
   );
 }
 
-/** Iconsax ArrowCircleDown (Bulk) — the expand/collapse-all chevron. */
+/** Iconsax ArrowCircleDown (Bulk), the expand/collapse-all chevron. */
 function ToggleAllMark() {
   return (
     <svg
@@ -457,7 +457,7 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
       <section className="pw-cb__intro">
         <h1 className="pw-cb__title">Configuration Builder</h1>
         <p className="pw-cb__lead">
-          Configure the look and behavior of your API documentation with this builder. Instead of
+          Configure the look and behaviour of your API documentation with this builder. Instead of
           editing <code>periwinkle.config.ts</code> by hand, you assemble it visually from settings
           that speak for themselves.
         </p>
@@ -549,7 +549,7 @@ export function ConfigBuilder({ navigation }: { navigation: ResolvedConfig["navi
                 </button>
               </div>
             </Card.Header>
-            {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here — it hosts monospaced source; using a list would be misleading semantically. */}
+            {/* biome-ignore lint/a11y/useSemanticElements: <pre> is intentional here because it hosts monospaced source; using a list would be misleading semantically. */}
             <pre
               className="pw-cb__preview-body"
               id="pw-cb-preview"

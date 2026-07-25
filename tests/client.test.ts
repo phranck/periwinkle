@@ -368,7 +368,7 @@ describe("schema tabs", () => {
     jsonTab()?.click();
     expect(window.localStorage.getItem("periwinkle:schema-view:schema-book")).toBe("json");
 
-    // Reset DOM to the pristine fixture (fields selected) and rebind — the
+    // Reset DOM to the pristine fixture (fields selected) and rebind, so the
     // controller must restore the persisted view.
     document.body.innerHTML = PAGE_FIXTURE + DIALOG_FIXTURE;
     bindSchemaTabs(document);

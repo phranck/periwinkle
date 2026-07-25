@@ -6,16 +6,16 @@
  *
  * The compound owns three things:
  *
- * - `Card` — the framed container. The `variant` picks the visual weight:
+ * - `Card` is the framed container. The `variant` picks the visual weight:
  *   `elevated` is the heavy card (solid surface + border, used for the
  *   builder's settings and preview panels) and `inset` is the light,
  *   semi-transparent panel embedded inside API-doc endpoint blocks.
- * - `Card.Header` — the header bar. It carries the shared flex/padding recipe
+ * - `Card.Header` is the header bar. It carries the shared flex/padding recipe
  *   and, on elevated cards, a fixed minimum height so sibling card headers
  *   line up pixel-for-pixel regardless of what their content weighs. It is
  *   polymorphic via `as` so a header can render as a `<button>` (collapsible
  *   sections), a plain `<div>` (static toolbars), or any other element.
- * - `Card.Body` — the content region below the header.
+ * - `Card.Body` is the content region below the header.
  *
  * Consumers keep their own modifier classes (for example `section__summary` or
  * `pw-cb__preview-header`) for the few genuinely local differences; everything

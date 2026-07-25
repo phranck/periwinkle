@@ -26,8 +26,8 @@ jobs:
       - run: npm ci
       - run: npm run build
       # The CLI build emits the whole site: index.html, the spec copy, both
-      # client bundles, any bundled logo/favicon assets, and — because the
-      # demo config opts in via features.configBuilder — the builder page at
+      # client bundles, any bundled logo/favicon assets, and, because the
+      # demo config opts in via features.configBuilder, the builder page at
       # config-builder/index.html.
       - run: node dist/cli.js build --config demo/periwinkle.config.mjs --out site
       # Publish the icon picker next to the demo so it can be used straight

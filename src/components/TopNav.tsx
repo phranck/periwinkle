@@ -98,8 +98,8 @@ const CONFIG_BUILDER_HREF_RE = /config-builder(?:\.html|\/)(?:$|[?#])/;
 /**
  * Renders the top navigation bar, or `null` when every affordance is off.
  *
- * The two built-in destinations — the docs home ("API reference") and the
- * generated config builder — cross-link. `currentPage` tells the bar which
+ * The docs home ("API reference") and the generated config builder are the two
+ * built-in destinations, and they cross-link. `currentPage` tells the bar which
  * one is the page being rendered: that item renders as a non-interactive,
  * highlighted `<span>` (no href, not focusable), while the other renders as
  * a plain link that navigates in the same window. This makes the active
@@ -242,8 +242,8 @@ export function TopNav({
               <button
                 type="button"
                 className="public-navigation__link public-header__theme-toggle"
-                aria-label="Toggle color scheme"
-                title="Toggle color scheme"
+                aria-label="Toggle colour scheme"
+                title="Toggle colour scheme"
                 data-pw-theme-toggle
               >
                 <Sun1Icon

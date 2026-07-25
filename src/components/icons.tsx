@@ -1,8 +1,8 @@
 /**
  * Central icon module.
  *
- * periwinkle renders Iconsax icons in the Bulk style — the same set and
- * style the reference design uses. Every icon used anywhere in the UI is
+ * periwinkle renders Iconsax icons in the Bulk style, which is the same set
+ * and style the reference design uses. Every icon used anywhere in the UI is
  * bound and re-exported here so the style decision (variant + color
  * inheritance) lives in exactly one place:
  *

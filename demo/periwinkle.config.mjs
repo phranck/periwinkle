@@ -15,7 +15,7 @@ export default {
   navigation: {
     logo: "assets/Logo_Banner/logo.png",
     // The "Config builder" nav link is added automatically by periwinkle
-    // when the builder page is generated — no need to configure it here.
+    // when the builder page is generated, so there is no need to configure it here.
   },
   features: {
     // The demo is where people come to try periwinkle out, so it ships the
@@ -23,7 +23,7 @@ export default {
     configBuilder: true,
   },
   guide: {
-    rateLimits: "This is a demo deployment of a fictional API — there are no real rate limits.",
+    rateLimits: "This is a demo deployment of a fictional API, so there are no real rate limits.",
   },
   customSections: [
     {

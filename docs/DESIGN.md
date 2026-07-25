@@ -1,18 +1,18 @@
-# periwinkle — Design
+# periwinkle Design
 
-Static API documentation generator for OpenAPI 3.x. Named after the violet-blooming periwinkle flower (Vinca).
+periwinkle is a static API documentation generator for OpenAPI 3.x. Its name comes from the violet-blooming periwinkle flower (Vinca).
 
 ## Goal
 
-periwinkle turns an OpenAPI 3.x document plus a small config into a polished, static API reference site: sidebar navigation with endpoint groups, an integration guide, endpoint detail blocks, and a schema section — rendered as static HTML with a minimal JavaScript layer for interactivity.
+periwinkle turns an OpenAPI 3.x document plus a small config into a polished, static API reference site: sidebar navigation with endpoint groups, an integration guide, endpoint detail blocks, and a schema section, all rendered as static HTML with a minimal JavaScript layer for interactivity.
 
 It replaces per-project, hand-built API doc setups with one reusable, themable tool.
 
 ## Consumer equality (hard rule)
 
-- periwinkle contains **no project-specific code** — for no consumer, including the author's own projects.
+- periwinkle contains **no project-specific code** for any consumer, including the author's own projects.
 - Every consumer uses the same public surface: the CLI with a config file, or the package exports.
-- Everything project-specific (colors, fonts, logos, guide texts, extra sections) lives in the consuming project.
+- Everything project-specific (colours, fonts, logos, guide texts, extra sections) lives in the consuming project.
 - If a consumer needs something the generic feature set cannot express, the generic feature set is extended. Special-case hooks are never added.
 - Test fixtures in this repo are neutral example specs. Real-world specs may serve as additional test data but have no special status in the code.
 
@@ -20,13 +20,13 @@ It replaces per-project, hand-built API doc setups with one reusable, themable t
 
 Two consumption layers over one implementation:
 
-1. **CLI** — `periwinkle build --spec openapi.json --config periwinkle.config.ts --out dist` produces a self-contained static site. `periwinkle preview` serves a built output directory locally.
-2. **Package exports** — for embedding in an existing app (e.g. an Astro app with `@astrojs/react`):
+1. **CLI.** `periwinkle build --spec openapi.json --config periwinkle.config.ts --out dist` produces a self-contained static site. `periwinkle preview` serves a built output directory locally.
+2. **Package exports.** These cover embedding in an existing app, for instance an Astro app with `@astrojs/react`:
    - `periwinkle`: the display model (`buildApiReference()`) and the React components (sidebar, integration guide, endpoint blocks, schema section)
    - `periwinkle/styles.css`: the token-based stylesheet
    - `periwinkle/client.js`: the interactivity bundle (search, collapsibles, dark-mode toggle)
 
-The CLI is a thin wrapper around the same components — there is exactly one UI implementation.
+The CLI is a thin wrapper around the same components, so there is exactly one UI implementation.
 
 ### Display model
 
@@ -56,15 +56,15 @@ A small vanilla-JS bundle (no framework at runtime):
 ### Styling
 
 - Hand-written CSS with design tokens as CSS custom properties. Consumers need no Tailwind/UnoCSS/PostCSS.
-- The theme config compiles to `:root` / `.dark-mode` variable blocks (colors light/dark, fonts, radii).
-- Method badges (GET/POST/PUT/PATCH/DELETE) with per-method accent colors.
+- The theme config compiles to `:root` / `.dark-mode` variable blocks (colours light/dark, fonts, radii).
+- Method badges (GET/POST/PUT/PATCH/DELETE) with per-method accent colours.
 
 ## Configuration
 
 `periwinkle.config.ts` (also accepts `.js`/`.mjs`), typed:
 
 - **Identity**: title, logo, favicon
-- **Theme**: color palettes (light/dark), font families, optional external font CSS URLs or font-face sources, radii
+- **Theme**: colour palettes (light/dark), font families, optional external font CSS URLs or font-face sources, radii
 - **Site**: `basePath` (e.g. `/docs`), server/base URL used in curl examples
 - **Integration guide**: per-section Markdown content (auth, requests, errors, rate limits, versioning); each section can be disabled
 - **Custom sections**: free-form Markdown/structured sections with a configurable position (before/after the guide, before/after the reference)

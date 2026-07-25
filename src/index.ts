@@ -1,5 +1,5 @@
 /**
- * periwinkle — static API documentation generator for OpenAPI 3.x.
+ * periwinkle generates static API documentation from OpenAPI 3.x contracts.
  *
  * Public library entry point. Consumers import the display model and the
  * React components from here; the CLI in `cli.ts` wraps the same exports.

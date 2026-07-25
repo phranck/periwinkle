@@ -37,8 +37,8 @@ export interface LoadedConfig {
  * Loads and resolves the periwinkle configuration.
  *
  * @param explicitPath Config file path passed explicitly (e.g. via the CLI
- *   `--config` flag). When set, the file must exist — a missing explicit path
- *   is an error, not a fallback to defaults.
+ *   `--config` flag). When set, the file must exist, since a missing explicit
+ *   path is an error rather than a fallback to defaults.
  * @param cwd Directory used for path resolution and discovery. Defaults to
  *   the process working directory.
  * @returns The resolved config and the path it was loaded from.

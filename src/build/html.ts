@@ -93,10 +93,10 @@ ${themeCss}    </style>
 /**
  * Assembles the configuration-builder document, emitted as
  * `config-builder/index.html`. Shares the
- * same document chrome as the docs page — favicon, font stylesheets,
- * compiled theme variables, early theme script, main stylesheet — so
- * both routes look the same. Only the body markup and the loaded
- * client bundle differ.
+ * same document chrome as the docs page, comprising the favicon, font
+ * stylesheets, compiled theme variables, early theme script, and main
+ * stylesheet, so both routes look the same. Only the body markup and the
+ * loaded client bundle differ.
  *
  * @param data Prepared docs data (title, theme, font stylesheets).
  * @param bodyHtml Statically rendered configuration-builder markup.
@@ -117,7 +117,7 @@ export function renderBuilderDocument(
   const faviconLink = assets.favicon
     ? `<link rel="icon" href="${escapeHtml(assets.favicon)}">`
     : "";
-  const pageTitle = `${data.title} — configuration builder`;
+  const pageTitle = `Configuration builder for ${data.title}`;
 
   return `<!doctype html>
 <html lang="en">

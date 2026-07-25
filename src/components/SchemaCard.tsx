@@ -132,7 +132,7 @@ export function SchemaCard({ schema, data }: { schema: ApiSchema; data: DocsData
                       <code>{field.type}</code>
                     </td>
                     <td className="pw-fields__description">
-                      {field.description ? <InlineMarkdown content={field.description} /> : "—"}
+                      {field.description ? <InlineMarkdown content={field.description} /> : "None"}
                     </td>
                   </tr>
                 ))}

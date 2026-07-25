@@ -18,7 +18,7 @@ import { buildSite } from "./build/build-site.jsx";
 import { loadConfig } from "./config/load-config.js";
 import { startPreviewServer } from "./preview/serve.js";
 
-const HELP_TEXT = `periwinkle — static API documentation generator for OpenAPI 3.x
+const HELP_TEXT = `periwinkle generates static API documentation from OpenAPI 3.x contracts.
 
 Usage:
   periwinkle build [--spec <file>] [--config <file>] [--out <dir>]

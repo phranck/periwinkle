@@ -3,7 +3,7 @@
   "info": {
     "title": "Bookstore API",
     "version": "1.2.3",
-    "description": "**This API documentation is a live demo of the [periwinkle](https://github.com/phranck/periwinkle) project**, a static documentation generator for OpenAPI 3.x contracts. The Bookstore API described below is a neutral example contract invented for this demo — none of its endpoints actually exist."
+    "description": "**This API documentation is a live demo of the [periwinkle](https://github.com/phranck/periwinkle) project**, a static documentation generator for OpenAPI 3.x contracts. The Bookstore API described below is a neutral example contract invented for this demo, and none of its endpoints actually exist."
   },
   "tags": [
     { "name": "Books", "description": "Browse and manage books." },
@@ -159,7 +159,7 @@
     "schemas": {
       "Book": {
         "type": "object",
-        "description": "A single book in the catalog.",
+        "description": "A single book in the catalogue.",
         "required": ["id", "title"],
         "properties": {
           "title": { "type": "string", "description": "Display title." },
@@ -193,7 +193,7 @@
       },
       "Category": {
         "type": "object",
-        "description": "Hierarchical catalog category.",
+        "description": "Hierarchical catalogue category.",
         "required": ["id", "name"],
         "properties": {
           "id": { "type": "integer" },

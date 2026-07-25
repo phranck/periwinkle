@@ -3,8 +3,8 @@
  *
  * Adopted verbatim from the reference `ContentCard` compound
  * (`apps/developer/src/components/docs/ContentCard.tsx`): every consumer
- * shares one card treatment — outer radius, chrome header, body grid, and
- * footer — instead of rebuilding individual rounded-card layouts. Surface
+ * shares one card treatment, comprising the outer radius, chrome header, body
+ * grid, and footer, instead of rebuilding individual rounded-card layouts. Surface
  * geometry and spacing live in `styles.css`.
  *
  * Usage:
