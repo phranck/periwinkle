@@ -3111,9 +3111,9 @@ mark[data-api-search-highlight] {
 .pw-cb__lead {
   color: var(--pw-text-muted);
   font-size: var(--pw-text-lead);
-  /* Three separate paragraphs, each its own flowing block. */
+  /* Three separate paragraphs, each its own flowing block that runs the full
+     content width instead of wrapping early inside a narrow measure. */
   margin: 0 0 var(--pw-space-4);
-  max-width: 60rem;
 }
 
 .pw-cb__meta {
@@ -3224,6 +3224,15 @@ mark[data-api-search-highlight] {
   top: var(--pw-topnav-height, 0px);
   align-self: start;
   max-height: calc(100dvh - var(--pw-topnav-height, 0px) - var(--pw-space-4));
+}
+
+/* The preview column pins as a whole, so the heading and card scroll together.
+   The heading must not open a second sticky context here: with its own sticky
+   top the card would slide up underneath the opaque heading. Keeping it static
+   pins the whole column below the top nav with the card always beneath the
+   heading. */
+.pw-cb__column--preview .pw-cb__column-header {
+  position: static;
 }
 
 .pw-cb__preview {
