@@ -84,7 +84,7 @@ export function EndpointBlock({
           <span className="pw-endpoint__request">
             <span className="pw-endpoint__method">{operation.method}</span>
             <code className="pw-endpoint__path">{operation.path}</code>
-            {operation.deprecated && features.deprecatedBadge ? (
+            {operation.deprecated ? (
               <span className="pw-endpoint__deprecated">Deprecated</span>
             ) : null}
           </span>

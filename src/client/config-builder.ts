@@ -168,14 +168,12 @@ const THEME_TOGGLE_DEFAULT: PlacementValue = "navigation";
 interface FeaturesState {
   openApiContract: boolean;
   accessBadge: boolean;
-  deprecatedBadge: boolean;
   copyButton: boolean;
 }
 
 const DEFAULT_FEATURES: FeaturesState = {
   openApiContract: true,
   accessBadge: true,
-  deprecatedBadge: true,
   copyButton: true,
 };
 
@@ -1372,7 +1370,6 @@ function renderFeatures(): HTMLElement[] {
         "'View OpenAPI contract' panel + dialog with the raw spec.",
       ),
       item("accessBadge", "Access badge", "'Authentication required' / 'Public endpoint' pill."),
-      item("deprecatedBadge", "Deprecated badge", "'Deprecated' pill next to the request line."),
       item("copyButton", "Copy button", "Copy-to-clipboard control in every code block."),
     ]),
   ];

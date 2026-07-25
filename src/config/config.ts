@@ -195,14 +195,11 @@ export interface NavigationConfig {
  *   and the dialog that shows the raw spec.
  * @property accessBadge "Authentication required" / "Public endpoint" pill in
  *   the endpoint header.
- * @property deprecatedBadge "Deprecated" pill next to the request line when the
- *   operation is marked `deprecated: true`.
  * @property copyButton Copy button in every rendered code block.
  */
 export interface FeatureFlags {
   openApiContract?: boolean;
   accessBadge?: boolean;
-  deprecatedBadge?: boolean;
   copyButton?: boolean;
 }
 
@@ -440,7 +437,6 @@ export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "log
 export const DEFAULT_FEATURES: Required<FeatureFlags> = {
   openApiContract: true,
   accessBadge: true,
-  deprecatedBadge: true,
   copyButton: true,
 };
 
@@ -647,21 +643,14 @@ function validateSidebar(value: unknown): Required<SidebarConfig> {
 function validateFeatures(value: unknown): Required<FeatureFlags> {
   if (value === undefined) return { ...DEFAULT_FEATURES };
   if (!isRecord(value)) fail("features must be an object.");
-  assertKnownKeys(
-    value,
-    ["openApiContract", "accessBadge", "deprecatedBadge", "copyButton"],
-    "features",
-  );
+  assertKnownKeys(value, ["openApiContract", "accessBadge", "copyButton"], "features");
   assertOptionalBoolean(value.openApiContract, "features.openApiContract");
   assertOptionalBoolean(value.accessBadge, "features.accessBadge");
-  assertOptionalBoolean(value.deprecatedBadge, "features.deprecatedBadge");
   assertOptionalBoolean(value.copyButton, "features.copyButton");
   return {
     openApiContract:
       (value.openApiContract as boolean | undefined) ?? DEFAULT_FEATURES.openApiContract,
     accessBadge: (value.accessBadge as boolean | undefined) ?? DEFAULT_FEATURES.accessBadge,
-    deprecatedBadge:
-      (value.deprecatedBadge as boolean | undefined) ?? DEFAULT_FEATURES.deprecatedBadge,
     copyButton: (value.copyButton as boolean | undefined) ?? DEFAULT_FEATURES.copyButton,
   };
 }
