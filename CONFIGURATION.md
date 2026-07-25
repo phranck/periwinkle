@@ -1,6 +1,6 @@
 # Configuring periwinkle
 
-Everything periwinkle renders is driven by two inputs: your OpenAPI 3.x document and a `periwinkle.config` file. This page documents **every** configuration option — what it does, what it defaults to, and where its effect appears on the rendered page.
+Everything periwinkle renders is driven by two inputs: your OpenAPI 3.x document and a `periwinkle.config` file. This page documents **every** configuration option, stating what it does, what it defaults to, and where its effect appears on the rendered page.
 
 ## The config file
 
@@ -23,7 +23,7 @@ export default defineConfig({
 });
 ```
 
-**Every field is optional.** An empty config (or none at all, when `--spec` is passed) produces a fully working site with the built-in periwinkle look. Validation is strict: unknown keys, wrong types, or malformed entries abort the build with an `Invalid periwinkle config: …` message — a typo never silently degrades the output.
+**Every field is optional.** An empty config (or none at all, when `--spec` is passed) produces a fully working site with the built-in periwinkle look. Validation is strict: unknown keys, wrong types, or malformed entries abort the build with an `Invalid periwinkle config: …` message, so a typo never silently degrades the output.
 
 ### Asset paths (logos, favicon)
 
@@ -61,7 +61,7 @@ export default defineConfig({
 
 | Type | Default |
 | --- | --- |
-| `string` | — |
+| `string` | none (required) |
 
 Path to the OpenAPI 3.x document, JSON or YAML. The CLI flag `--spec <file>` overrides it. If neither is set, the build aborts. Broken or unparsable specs fail the build with a clear message.
 
@@ -73,11 +73,11 @@ Page identity and serving location.
 
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
-| `basePath` | `string` | `"/"` | Path prefix the site is served under (must start with `/`). Applied to every generated asset URL — set it to `/docs` when the site lives at `example.com/docs`, or to the repo name for GitHub Pages project sites. |
+| `basePath` | `string` | `"/"` | Path prefix the site is served under (must start with `/`). Applied to every generated asset URL. Set it to `/docs` when the site lives at `example.com/docs`, or to the repository name for GitHub Pages project sites. |
 | `serverUrl` | `string` | first `servers` entry of the spec | Base URL printed in every generated `curl` example and shown as the OpenAPI contract link in the integration guide. |
 | `title` | `string` | the spec's `info.title` | Document `<title>` and the hero heading at the top of the page. |
-| `logo` | `string` | — | Small logo rendered next to the sidebar title (see [asset paths](#asset-paths-logos-favicon)). |
-| `favicon` | `string` | — | Browser favicon, linked in the document head. |
+| `logo` | `string` | none | Small logo rendered next to the sidebar title (see [asset paths](#asset-paths-logos-favicon)). |
+| `favicon` | `string` | none | Browser favicon, linked in the document head. |
 
 **Where it appears:** the hero block (title), the `curl` examples inside every endpoint and the integration guide (serverUrl), the sidebar header (logo), the browser tab (title, favicon).
 
@@ -85,7 +85,7 @@ Page identity and serving location.
 
 ## `theme`
 
-Colors, fonts, and the corner-radius token. Compiled at build time into CSS custom properties, injected as a `<style>` block *after* the stylesheet link — your values always win over the built-in defaults.
+Colors, fonts, and the corner-radius token. Compiled at build time into CSS custom properties, injected as a `<style>` block *after* the stylesheet link, so your values always win over the built-in defaults.
 
 ### `theme.defaultMode`
 
@@ -104,7 +104,7 @@ Two partial palettes: any token you set overrides the default of that mode; ever
 | Token | Light default | Dark default | Where it appears |
 | --- | --- | --- | --- |
 | `background` | `#ffffff` | `#0d1117` | Page background; also the base of the frosted top-bar wash and the search dialog backdrop veil |
-| `surface` | `#f6f8fa` | `#161b22` | Cards, sidebar rail, dialogs — every raised surface |
+| `surface` | `#f6f8fa` | `#161b22` | Every raised surface, including cards, the sidebar rail, and dialogs |
 | `surfaceAlt` | `#eff2f5` | `#21262d` | Inset surfaces: content panels, code frames, hover backdrops, inline code, keycaps |
 | `text` | `#1f2328` | `#e6edf3` | Primary copy, headings, card titles |
 | `textMuted` | `#59636e` | `#8b949e` | Descriptions, labels, sidebar links, meta rows |
@@ -134,7 +134,7 @@ theme: {
 | Key | Type | Default | Where it appears |
 | --- | --- | --- | --- |
 | `base` | `string` | `"Barlow", …` system stack | Body copy, navigation, labels |
-| `heading` | `string` | `"Barlow Condensed", …` system stack | H1–H4, card titles, chapter headers |
+| `heading` | `string` | `"Barlow Condensed", …` system stack | Headings from H1 to H4, card titles, chapter headers |
 | `mono` | `string` | `ui-monospace, …` system stack | Code blocks, endpoint paths, parameter names, media types, keycaps |
 | `stylesheets` | `string[]` | one Google-Fonts URL loading Barlow + Barlow Condensed | `<link rel="stylesheet">` entries in the document head, so custom `@font-face` sources load before use. Set to `[]` when your stacks are system-only. |
 
@@ -150,18 +150,18 @@ The single geometry token the whole design derives from: cards and dialogs rende
 
 ## `navigation`
 
-The sticky top bar. It spans the full viewport width, blurs the content scrolling behind it (frosted glass), and deepens its wash once the page is scrolled. Every affordance is toggleable — **when the logo is unset and every `show*` flag is `false`, the bar is not rendered at all** and the layout reclaims its height.
+The sticky top bar. It spans the full viewport width, blurs the content scrolling behind it (frosted glass), and deepens its wash once the page is scrolled. Every affordance is toggleable, and **when the logo is unset and every `show*` flag is `false`, the bar is not rendered at all**, so the layout reclaims its height.
 
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
-| `logo` | `string` | — | Brand mark on the far left, scaled to the control height, linking to `homeHref` (see [asset paths](#asset-paths-logos-favicon)). |
+| `logo` | `string` | none | Brand mark on the far left, scaled to the control height, linking to `homeHref` (see [asset paths](#asset-paths-logos-favicon)). |
 | `logoTint` | `boolean` | `false` | Paint the logo in the current text color instead of its own. Use it for single-color silhouettes so one file stays legible in light and dark; leave it off for multi-color marks, whose colors it would flatten. |
 | `showHome` | `boolean` | `true` | Leading nav pill with an icon and the `homeLabel` text; marked as the current page. |
 | `homeLabel` | `string` | `"API reference"` | Text of the home pill; also the accessible label of the logo link. |
 | `homeHref` | `string` | `"#"` | Where the home pill and logo point. Default jumps to the top of the page; set an absolute URL to link back to a parent site. |
 | `showSearch` | `boolean` | `true` | "Search" pill with the `⌘K` keycap. Opens the document search dialog (the `⌘K`/`Ctrl+K` shortcut works regardless). |
 | `showThemeToggle` | `boolean` | `true` | Light/dark toggle on the far right. The chosen scheme persists in `localStorage`. |
-| `github` | `{ url, label? }` | — | GitHub pill between search and theme toggle. `url` is required, opens in a new tab; `label` overrides the visible text and accessible name (default `"GitHub"`). |
+| `github` | `{ url, label? }` | none | GitHub pill between search and theme toggle. `url` is required, opens in a new tab; `label` overrides the visible text and accessible name (default `"GitHub"`). |
 | `links` | `Array<{ label, href, target? }>` | `[]` | Custom nav pills rendered between the built-in home/search affordances and the GitHub/theme cluster. Each entry needs `label` + `href`; set `target: "_blank"` to open in a new tab (`rel="noopener noreferrer"` is applied automatically). |
 
 ```ts
@@ -181,7 +181,7 @@ The left rail: a sticky card with a glass header, one collapsible section per en
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
 | `title` | `string` | `"Reference"` | Header label above the section list (next to `site.logo` when set). |
-| `showMethods` | `boolean` | `false` | Right-aligned HTTP method (`GET`, `POST`, …) in each endpoint item, tinted in the method color — makes the rail scannable without opening groups. |
+| `showMethods` | `boolean` | `false` | Right-aligned HTTP method (`GET`, `POST`, …) in each endpoint item, tinted in the method color, which makes the rail scannable without opening groups. |
 | `showThemeToggle` | `boolean` | `false` | Duplicate theme toggle in the sidebar header. Off by default because the top bar carries one; enable for both places. |
 | `showSearch` | `boolean` | `false` | Search field in the sidebar header (opens the same dialog as the top-bar trigger). Off by default for the same reason. |
 
@@ -227,7 +227,7 @@ Typography scale and layout dimensions. Every value is a CSS length string (`rem
 | `fontSection` | `"2.25rem"` | Chapter headers (H2: "Integration guide", group names, "Schemas") |
 | `fontHero` | `"3.25rem"` | The page title at the very top |
 | `sidebarWidth` | `"20rem"` | Width of the sidebar column in the two-column layout |
-| `containerMaxWidth` | `"88rem"` | Maximum width of the content shell **and** the top bar's inner row — both recenter on the same measure |
+| `containerMaxWidth` | `"88rem"` | Maximum width of the content shell **and** the top bar's inner row, both of which share the same measure |
 | `pagePadding` | `"1.5rem"` | Outer page gutter; also feeds the top bar's inline padding and dialog width margins |
 
 ---
@@ -241,9 +241,9 @@ Animation timing and the color-mix intensities that shape the visual texture. Va
 | `duration` | `"160ms"` | Base duration for sidebar expand/collapse, dialog fade, chevron rotation, hover transitions. `"0ms"` effectively disables animations (users with `prefers-reduced-motion` get that automatically). |
 | `easing` | `"ease-in-out"` | Timing function for the same set of transitions. |
 | `codeLineHeight` | `"1.5"` | Line-height inside code blocks (also drives the 20-line scroll cap of long blocks). |
-| `responseTintLight` | `"12%"` | How much of the status color mixes into a response card's surface in light mode — higher = stronger green/orange/red tint on 2xx/4xx/5xx cards. |
+| `responseTintLight` | `"12%"` | How much of the status color mixes into a response card's surface in light mode. A higher value gives a stronger green, orange, or red tint on 2xx, 4xx, and 5xx cards. |
 | `responseTintDark` | `"16%"` | Same in dark mode (dark surfaces need a stronger mix to stay perceptible). |
-| `cardChromeMixLight` | `"6%"` | Text-color share mixed into card/panel header chrome in light mode — higher = darker header separation. |
+| `cardChromeMixLight` | `"6%"` | Text-color share mixed into card and panel header chrome in light mode. A higher value darkens the separation of the header. |
 | `cardChromeMixDark` | `"12%"` | Same in dark mode. |
 | `iconToneLight` | `"60%"` | Icon color intensity in light mode: icons render as a mix of their color into the surface beneath, so they read lifted instead of pure black. `"100%"` = full color. |
 | `iconToneDark` | `"100%"` | Same in dark mode. |
@@ -252,11 +252,11 @@ Animation timing and the color-mix intensities that shape the visual texture. Va
 
 ## `guide`
 
-Content of the built-in "Integration guide" chapter — a card with one panel per section plus an authenticated `curl` example. Each key accepts **Markdown** or **`false`**:
+Content of the built-in "Integration guide" chapter, which is a card with one panel per section plus an authenticated `curl` example. Each key accepts **Markdown** or **`false`**:
 
-- *Markdown string* — replaces the panel's content.
-- *`false`* — removes the panel entirely.
-- *unset* — the panel renders generic English copy derived from the spec (declared security schemes, server URL, version).
+- A *Markdown string* replaces the panel's content.
+- *`false`* removes the panel entirely.
+- Leaving the key *unset* renders generic English copy derived from the spec, covering the declared security schemes, the server URL, and the version.
 
 | Key | Panel | Derived fallback content |
 | --- | --- | --- |
@@ -285,7 +285,7 @@ Your own Markdown chapters, woven into the page and picked up by the sidebar and
 
 | Key | Type | Notes |
 | --- | --- | --- |
-| `id` | `string` | Required, unique across all sections — becomes the in-page anchor (`#your-id`). Duplicates fail the build. |
+| `id` | `string` | Required and unique across all sections, since it becomes the in-page anchor (`#your-id`). Duplicates fail the build. |
 | `title` | `string` | Chapter heading, shown in content, sidebar, and search results. |
 | `markdown` | `string` | Body content, rendered as Markdown. |
 | `position` | `"before-guide"` \| `"after-guide"` \| `"after-reference"` | Where the chapter appears: before the integration guide, between guide and endpoint reference (default), or after the schemas chapter. |
@@ -310,7 +310,7 @@ Rendered at the end of the content column, above a hairline separator.
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
 | `links` | `{ label, href }[]` | `[]` | Link row on the left. |
-| `text` | `string` | — | Free-form closing text on the right, e.g. a copyright line. |
+| `text` | `string` | none | Free-form closing text on the right, for instance a copyright line. |
 
 When both are empty, no footer is rendered.
 
