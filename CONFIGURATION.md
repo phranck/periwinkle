@@ -178,14 +178,27 @@ The left rail: a sticky card with a glass header, one collapsible section per en
 
 ## `features`
 
-Global on/off switches. Each defaults to `true`; `false` removes the affordance everywhere.
+Global on/off switches for the affordances periwinkle renders. Each defaults to `true`; `false` removes the affordance everywhere.
 
 | Key | Default | What `false` removes |
 | --- | --- | --- |
 | `openApiContract` | `true` | The "OpenAPI contract" panel in the integration guide **and** the "View OpenAPI contract" dialog showing the raw highlighted spec. |
 | `accessBadge` | `true` | The "Authentication required" / "Public endpoint" pill in every endpoint header. |
-| `deprecatedBadge` | `true` | The "Deprecated" pill next to the request line of operations marked `deprecated: true`. |
 | `copyButton` | `true` | The copy-to-clipboard button in every code block (curl examples, request examples, contract dialog). |
+
+One flag works the other way round, because it adds a whole extra page rather than an affordance:
+
+| Key | Default | What `true` adds |
+| --- | --- | --- |
+| `configBuilder` | `false` | The interactive configuration builder as a second page at `<basePath>/config-builder/`, cross-linked from the top navigation. |
+
+Leave `configBuilder` off for a published API reference: the builder authors a `periwinkle.config.ts`, which serves the people who publish a reference, not the people who read one. Turn it on for periwinkle's own demo or an internal docs site where readers are expected to generate their own config.
+
+```ts
+features: {
+  configBuilder: true,
+},
+```
 
 ---
 

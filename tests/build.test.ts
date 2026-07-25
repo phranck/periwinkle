@@ -36,7 +36,10 @@ describe("buildSite", () => {
     const result = await buildSite({
       specPath,
       outDir,
-      config: resolveConfig({ site: { basePath: "/docs" } }),
+      config: resolveConfig({
+        site: { basePath: "/docs" },
+        features: { configBuilder: true },
+      }),
       assetPaths: testAssetPaths(workDir),
     });
     expect(result.files.sort()).toEqual([
@@ -122,6 +125,7 @@ describe("buildSite auto builder nav-link", () => {
       outDir,
       config: resolveConfig({
         site: { basePath: "/docs" },
+        features: { configBuilder: true },
         navigation: {
           links: [
             {
@@ -139,6 +143,22 @@ describe("buildSite auto builder nav-link", () => {
     // appears (the auto helper detects the builder href and skips).
     expect(html).toContain("My builder link");
     expect(html).not.toContain(">Config builder<");
+  });
+
+  it("omits the builder page by default even when the bundle is available", async () => {
+    // A published API reference must not ship the tool that authors its own
+    // config, so the builder stays off until `features.configBuilder` opts in.
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
+    const outDir = join(workDir, "dist");
+    const result = await buildSite({
+      specPath,
+      outDir,
+      config: resolveConfig({ site: { basePath: "/docs" } }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    expect(result.files.sort()).toEqual(["client.js", "index.html", "openapi.json", "styles.css"]);
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+    expect(html).not.toContain("config-builder");
   });
 
   it("skips the auto link when the builder page is not generated", async () => {

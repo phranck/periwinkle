@@ -17,6 +17,11 @@ export default {
     // The "Config builder" nav link is added automatically by periwinkle
     // when the builder page is generated — no need to configure it here.
   },
+  features: {
+    // The demo is where people come to try periwinkle out, so it ships the
+    // interactive config builder. Ordinary API references leave this off.
+    configBuilder: true,
+  },
   guide: {
     rateLimits: "This is a demo deployment of a fictional API — there are no real rate limits.",
   },

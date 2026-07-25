@@ -188,19 +188,27 @@ export interface NavigationConfig {
 }
 
 /**
- * Feature toggles. Each flag defaults to `true`; set to `false` to remove the
- * corresponding affordance from every rendered page.
+ * Feature toggles. The affordance flags default to `true`; set one to `false`
+ * to remove it from every rendered page. `configBuilder` is the exception: it
+ * adds a whole extra page and is off unless you ask for it.
  *
  * @property openApiContract "OpenAPI contract" panel in the integration guide
  *   and the dialog that shows the raw spec.
  * @property accessBadge "Authentication required" / "Public endpoint" pill in
  *   the endpoint header.
  * @property copyButton Copy button in every rendered code block.
+ * @property configBuilder Emit the interactive configuration builder as a
+ *   second page at `<basePath>/config-builder/` and cross-link it from the top
+ *   navigation. Default `false`: the builder authors a `periwinkle.config.ts`,
+ *   which serves the people who publish an API reference, not the people who
+ *   read one. Enable it for periwinkle's own demo or an internal docs site
+ *   where readers are expected to generate their own config.
  */
 export interface FeatureFlags {
   openApiContract?: boolean;
   accessBadge?: boolean;
   copyButton?: boolean;
+  configBuilder?: boolean;
 }
 
 /**
@@ -433,11 +441,15 @@ export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "log
   links: [],
 };
 
-/** Default feature flags: every affordance shipped by periwinkle is on. */
+/**
+ * Default feature flags: every affordance shipped by periwinkle is on, while
+ * the extra config-builder page stays off until a site opts in.
+ */
 export const DEFAULT_FEATURES: Required<FeatureFlags> = {
   openApiContract: true,
   accessBadge: true,
   copyButton: true,
+  configBuilder: false,
 };
 
 /** Default typography sizes and layout dimensions. */
@@ -643,15 +655,21 @@ function validateSidebar(value: unknown): Required<SidebarConfig> {
 function validateFeatures(value: unknown): Required<FeatureFlags> {
   if (value === undefined) return { ...DEFAULT_FEATURES };
   if (!isRecord(value)) fail("features must be an object.");
-  assertKnownKeys(value, ["openApiContract", "accessBadge", "copyButton"], "features");
+  assertKnownKeys(
+    value,
+    ["openApiContract", "accessBadge", "copyButton", "configBuilder"],
+    "features",
+  );
   assertOptionalBoolean(value.openApiContract, "features.openApiContract");
   assertOptionalBoolean(value.accessBadge, "features.accessBadge");
   assertOptionalBoolean(value.copyButton, "features.copyButton");
+  assertOptionalBoolean(value.configBuilder, "features.configBuilder");
   return {
     openApiContract:
       (value.openApiContract as boolean | undefined) ?? DEFAULT_FEATURES.openApiContract,
     accessBadge: (value.accessBadge as boolean | undefined) ?? DEFAULT_FEATURES.accessBadge,
     copyButton: (value.copyButton as boolean | undefined) ?? DEFAULT_FEATURES.copyButton,
+    configBuilder: (value.configBuilder as boolean | undefined) ?? DEFAULT_FEATURES.configBuilder,
   };
 }
 

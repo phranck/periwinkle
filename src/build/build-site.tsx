@@ -120,10 +120,11 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
       throw new Error(`periwinkle ${label} missing at ${path}. Is the package built?`);
     }
   }
-  // The config-builder client bundle is optional at test time: tests may
-  // omit the path to skip building the second page. In production it is
-  // always resolved from the packaged assets (packagedAssetPaths).
-  const configBuilderJs = assets.configBuilderJs;
+  // The builder page is opt-in (`features.configBuilder`, default false): a
+  // published API reference should not ship the tool that authors its own
+  // config. The bundle path is additionally optional at test time, so tests
+  // can omit it to skip the second page.
+  const configBuilderJs = config.features.configBuilder ? assets.configBuilderJs : undefined;
   if (configBuilderJs && !existsSync(configBuilderJs)) {
     throw new Error(
       `periwinkle config-builder bundle missing at ${configBuilderJs}. Is the package built?`,
