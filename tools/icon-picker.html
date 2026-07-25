@@ -27,11 +27,11 @@
   }
   h1 { font-size: 20px; margin: 0 auto 0 0; }
   input[type="search"], input[type="text"] {
-    padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); font: inherit; min-width: 220px;
   }
   button {
-    padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 14px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); font: inherit; cursor: pointer;
   }
   button:hover { border-color: var(--accent); color: var(--accent); }
@@ -46,16 +46,43 @@
   td.actions { text-align: right; white-space: nowrap; }
   .pick {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 3px 12px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--surface); cursor: pointer; font: inherit; color: inherit;
   }
   .pick:hover { border-color: var(--accent); }
+  .pick--active { border-color: var(--accent); background: var(--surface-alt); }
   .pick svg { width: 28px; height: 28px; color: var(--accent); }
   .pick .name { font-size: 15px; color: var(--muted); }
-  .del { color: var(--muted); border-color: transparent; background: transparent; }
-  .del:hover { color: var(--danger); border-color: var(--danger); }
-  .add-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
-  .add-row #new-title { flex: 1; min-width: 260px; }
+  .del {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 12px; border-radius: 8px;
+    color: var(--danger); border-color: var(--border); background: var(--surface);
+  }
+  .del svg { width: 18px; height: 18px; }
+  .del:hover { color: var(--danger); border-color: var(--danger); background: var(--surface-alt); }
+  /* Sticky composer: adding a title stays reachable at any scroll position. */
+  .composer {
+    position: sticky; bottom: 0; z-index: 8; margin-top: 24px;
+    padding: 12px 0 18px; background: var(--bg);
+  }
+  .composer__inner {
+    display: flex; gap: 10px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface); box-shadow: 0 6px 20px rgb(0 0 0 / 0.08);
+  }
+  .composer__field { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .composer__field input { flex: 1; border: 0; background: transparent; min-width: 0; }
+  .composer__field input:focus { outline: none; }
+  .composer__inner button { border-radius: 999px; }
+  .search-field { display: flex; align-items: center; gap: 8px; position: relative; }
+  .search-field input { padding-right: 8px; }
+  .keycaps { display: inline-flex; gap: 4px; }
+  .keycaps kbd {
+    font: inherit; font-size: 12px; line-height: 1; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 5px; padding: 3px 5px;
+    background: var(--bg);
+  }
+  .default-hint { display: flex; align-items: center; gap: 10px; }
   .notice {
     margin: 10px 0 0; padding: 10px 14px; border-radius: 8px; font-size: 15px;
     border: 1px solid var(--border); background: var(--surface); color: var(--text);
@@ -93,9 +120,15 @@
   }
   .grid button.active { border-color: var(--accent); }
   .count { color: var(--muted); font-size: 14px; }
+  .icon-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 5px; width: 34px; height: 34px;
+  }
+  .icon-button svg { width: 20px; height: 20px; color: var(--muted); }
+  .icon-button:hover svg { color: var(--accent); }
   .variant-label { font-size: 14px; color: var(--muted); }
   select {
-    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); font: inherit;
   }
   .pick .variant { font-size: 12px; color: var(--accent); }
@@ -121,10 +154,13 @@
 <header>
   <h1>Section icon picker</h1>
   <span class="count" id="count"></span>
-  <input type="search" id="filter" placeholder="Filter titles…" aria-label="Filter titles">
-  <button type="button" id="theme">Theme</button>
+  <label class="search-field">
+    <input type="search" id="filter" placeholder="Filter titles…" aria-label="Filter titles">
+    <span class="keycaps" aria-hidden="true"><kbd>⌘</kbd><kbd>K</kbd></span>
+  </label>
   <button type="button" id="copy">Copy JSON</button>
   <button type="button" class="primary" id="download">Download JSON</button>
+  <button type="button" class="icon-button" id="theme" aria-label="Toggle color scheme" title="Toggle color scheme"></button>
 </header>
 <main>
   <p class="hint">
@@ -135,24 +171,35 @@
     <code>src/render/section-icons.json</code>.
   </p>
 
+  <p class="hint default-hint">
+    Default icon for unmatched titles:
+    <button type="button" class="pick" id="default-pick"></button>
+  </p>
+
   <table>
     <thead>
-      <tr><th style="width:38%">Section title</th><th>Icon</th><th style="width:1%"></th></tr>
+      <tr>
+        <th style="width:34%">Section title</th>
+        <th>Bulk</th>
+        <th>TwoTone</th>
+        <th style="width:1%"></th>
+      </tr>
     </thead>
     <tbody id="rows"></tbody>
   </table>
 
-  <div class="add-row">
-    <input type="text" id="new-title" placeholder="New section title, e.g. Warehouses">
+</main>
+
+<div class="composer">
+  <div class="composer__inner">
+    <label class="composer__field">
+      <input type="text" id="new-title" placeholder="New section title, e.g. Warehouses">
+      <span class="keycaps" aria-hidden="true"><kbd>⌘</kbd><kbd>T</kbd></span>
+    </label>
     <button type="button" id="add">Add title</button>
   </div>
   <p class="notice" id="notice" role="status" hidden></p>
-
-  <p class="hint" style="margin-top:24px">
-    Default icon for unmatched titles:
-    <button type="button" class="pick" id="default-pick"></button>
-  </p>
-</main>
+</div>
 
 <dialog id="dlg">
   <div class="dlg-head">
@@ -227,12 +274,15 @@ function el(tag, className, text) {
 }
 
 /** Builds the icon button shown in a row and for the default. */
-function pickButton(ref, targetKey) {
+function pickButton(ref, targetKey, style) {
   const { name, variant } = parseRef(ref);
   const button = el("button", "pick");
   button.dataset.title = targetKey;
-  button.append(svgFor(name, variant), el("span", "name", name));
-  if (variant === "TwoTone") button.append(el("span", "variant", "TwoTone"));
+  button.dataset.style = style;
+  // The badge previews its own style, so both columns show the same icon
+  // drawn each way; the one in use is highlighted.
+  if (variant === style) button.classList.add("pick--active");
+  button.append(svgFor(name, style), el("span", "name", name));
   return button;
 }
 
@@ -247,13 +297,16 @@ function renderRows() {
     const row = el("tr");
     row.append(el("td", "title", title));
 
-    const iconCell = el("td");
-    iconCell.append(pickButton(icon, title));
-    row.append(iconCell);
+    for (const style of ["Bulk", "TwoTone"]) {
+      const cell = el("td");
+      cell.append(pickButton(icon, title, style));
+      row.append(cell);
+    }
 
     const actions = el("td", "actions");
-    const remove = el("button", "del", "Remove");
+    const remove = el("button", "del");
     remove.dataset.del = title;
+    remove.append(svgFor("Trash", "Bulk"), el("span", undefined, "Remove"));
     actions.append(remove);
     row.append(actions);
 
@@ -271,15 +324,16 @@ function renderDefault() {
     el("span", "name", parsedDefault.name),
   );
   if (parsedDefault.variant === "TwoTone") slot.append(el("span", "variant", "TwoTone"));
+  slot.dataset.style = parsedDefault.variant;
   slot.dataset.title = "__default__";
 }
 
-function openPicker(title) {
+function openPicker(title, style) {
   pickTarget = title;
   dlgTitle.textContent =
     title === "__default__" ? "Default icon for unmatched titles" : 'Icon for "' + title + '"';
   const currentRef = title === "__default__" ? STATE.default : STATE.icons[title];
-  variantSelect.value = parseRef(currentRef).variant;
+  variantSelect.value = style ?? parseRef(currentRef).variant;
   iconSearch.value = "";
   renderGrid();
   dlg.showModal();
@@ -309,7 +363,7 @@ function renderGrid() {
 document.addEventListener("click", (event) => {
   const pick = event.target.closest(".pick");
   if (pick) {
-    openPicker(pick.dataset.title);
+    openPicker(pick.dataset.title, pick.dataset.style);
     return;
   }
   const del = event.target.closest("[data-del]");
@@ -465,10 +519,33 @@ for (const handle of dlg.querySelectorAll("[data-rz]")) {
   });
 }
 
-document.getElementById("theme").addEventListener("click", () => {
+/* Shortcuts: ⌘K focuses the title filter, ⌘T the new-title field. Both are
+   the page's two entry points, so they are reachable without the mouse. */
+document.addEventListener("keydown", (event) => {
+  if (!(event.metaKey || event.ctrlKey)) return;
+  const key = event.key.toLowerCase();
+  if (key !== "k" && key !== "t") return;
+  event.preventDefault();
+  const target = key === "k" ? filter : document.getElementById("new-title");
+  target.focus();
+  target.select?.();
+});
+
+const themeButton = document.getElementById("theme");
+
+/** Shows the scheme the button switches to: a sun while dark, a moon while light. */
+function renderThemeIcon() {
+  const dark = document.documentElement.dataset.theme === "dark";
+  themeButton.replaceChildren(svgFor(dark ? "Sun1" : "Moon", "Bulk"));
+}
+
+themeButton.addEventListener("click", () => {
   const root = document.documentElement;
   root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  renderThemeIcon();
 });
+
+renderThemeIcon();
 
 renderRows();
 </script>
