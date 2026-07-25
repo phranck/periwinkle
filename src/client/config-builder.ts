@@ -1179,7 +1179,7 @@ function renderNavigation(): HTMLElement[] {
         },
       }),
       textField({
-        label: "Home href",
+        label: "Home HREF",
         defaultLabel: `"${DEFAULT_NAVIGATION.homeHref}"`,
         value: n.homeHref,
         onInput: (v) => {
@@ -1285,7 +1285,7 @@ function renderNavigationLinks(): HTMLElement[] {
           },
         }),
         textField({
-          label: "Href",
+          label: "HREF",
           value: link.href,
           placeholder: "/path or https://…",
           onInput: (v) => {
@@ -1672,7 +1672,7 @@ function renderFooter(): HTMLElement[] {
           },
         }),
         textField({
-          label: "Href",
+          label: "HREF",
           value: link.href,
           placeholder: "https://…",
           onInput: (v) => {
