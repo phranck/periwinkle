@@ -56,6 +56,10 @@ const html = `<!doctype html>
     border-bottom: 1px solid var(--border);
   }
   h1 { font-size: 20px; margin: 0 auto 0 0; }
+  /* Every header control shares one height, so the row reads as a single strip. */
+  header button, header input, header select, header .search-field input {
+    height: 36px; box-sizing: border-box;
+  }
   input[type="search"], input[type="text"] {
     padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); font: inherit; min-width: 220px;
@@ -92,8 +96,9 @@ const html = `<!doctype html>
   .del:hover { color: var(--danger); border-color: var(--danger); background: var(--surface-alt); }
   /* Sticky composer: adding a title stays reachable at any scroll position. */
   .composer {
-    position: sticky; bottom: 0; z-index: 8; margin-top: 24px;
-    padding: 12px 0 18px; background: var(--bg);
+    position: sticky; bottom: 0; z-index: 8; margin: 24px auto 0;
+    padding: 12px 20px 18px; background: var(--bg);
+    max-width: 1100px; width: 100%;
   }
   .composer__inner {
     display: flex; gap: 10px; align-items: center;
@@ -104,8 +109,9 @@ const html = `<!doctype html>
   .composer__field input { flex: 1; border: 0; background: transparent; min-width: 0; }
   .composer__field input:focus { outline: none; }
   .composer__inner button { border-radius: 999px; }
-  .search-field { display: flex; align-items: center; gap: 8px; position: relative; }
-  .search-field input { padding-right: 8px; }
+  .search-field { display: inline-flex; align-items: center; position: relative; }
+  .search-field input { padding-right: 62px; }
+  .search-field .keycaps { position: absolute; right: 8px; pointer-events: none; }
   .keycaps { display: inline-flex; gap: 4px; }
   .keycaps kbd {
     font: inherit; font-size: 12px; line-height: 1; color: var(--muted);
@@ -152,7 +158,7 @@ const html = `<!doctype html>
   .count { color: var(--muted); font-size: 14px; }
   .icon-button {
     display: inline-flex; align-items: center; justify-content: center;
-    padding: 5px; width: 34px; height: 34px;
+    padding: 5px; width: 36px;
   }
   .icon-button svg { width: 20px; height: 20px; color: var(--muted); }
   .icon-button:hover svg { color: var(--accent); }
@@ -224,7 +230,7 @@ const html = `<!doctype html>
   <div class="composer__inner">
     <label class="composer__field">
       <input type="text" id="new-title" placeholder="New section title, e.g. Warehouses">
-      <span class="keycaps" aria-hidden="true"><kbd>⌘</kbd><kbd>T</kbd></span>
+      <span class="keycaps" aria-hidden="true"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>K</kbd></span>
     </label>
     <button type="button" id="add">Add title</button>
   </div>
@@ -549,14 +555,14 @@ for (const handle of dlg.querySelectorAll("[data-rz]")) {
   });
 }
 
-/* Shortcuts: ⌘K focuses the title filter, ⌘T the new-title field. Both are
-   the page's two entry points, so they are reachable without the mouse. */
+/* Shortcuts: ⌘K focuses the title filter, ⌘⇧K the new-title field. Browsers
+   reserve ⌘T for a new tab and never hand it to the page, so the second entry
+   point uses the shifted variant of the same key. */
 document.addEventListener("keydown", (event) => {
   if (!(event.metaKey || event.ctrlKey)) return;
-  const key = event.key.toLowerCase();
-  if (key !== "k" && key !== "t") return;
+  if (event.key.toLowerCase() !== "k") return;
   event.preventDefault();
-  const target = key === "k" ? filter : document.getElementById("new-title");
+  const target = event.shiftKey ? document.getElementById("new-title") : filter;
   target.focus();
   target.select?.();
 });
