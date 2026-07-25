@@ -43,7 +43,9 @@ describe("ApiDocs", () => {
     // — only the labeled Content-Type / Response Object meta rows. Verify no
     // code-block markup appears inside any .response-card.
     const responseSlices = [
-      ...defaultHtml.matchAll(/class="content-panel response-card [^"]*"[\s\S]*?<\/article>/g),
+      ...defaultHtml.matchAll(
+        /class="pw-card pw-card--inset response-card [^"]*"[\s\S]*?<\/article>/g,
+      ),
     ].map((match) => match[0]);
     expect(responseSlices.length).toBeGreaterThan(0);
     for (const slice of responseSlices) {

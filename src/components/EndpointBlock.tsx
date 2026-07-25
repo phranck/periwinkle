@@ -112,7 +112,7 @@ export function EndpointBlock({
               <dl className="content-panel-list">
                 {operation.parameters.map((parameter) => (
                   <div
-                    className="content-panel parameter-card"
+                    className="pw-card pw-card--inset parameter-card"
                     key={`${parameter.location}-${parameter.name}`}
                   >
                     <dt className="content-panel__header parameter-card__header">
@@ -147,7 +147,7 @@ export function EndpointBlock({
                 {operation.requestBody.mediaTypes.map((media) => {
                   const exampleBlock = data.codeBlocks[codeKey(anchor, "request", media.mediaType)];
                   return (
-                    <div className="content-panel request-body-card" key={media.mediaType}>
+                    <div className="pw-card pw-card--inset request-body-card" key={media.mediaType}>
                       <div className="content-panel__header request-body-card__header">
                         <code className="request-body-card__media-type">{media.mediaType}</code>
                         {mediaSchemaRefs(media).map((ref) => (
@@ -184,7 +184,7 @@ export function EndpointBlock({
                 const StatusIcon = tone === "success" ? TickCircleIcon : Warning2Icon;
                 return (
                   <article
-                    className={`content-panel response-card response-card--${tone}`}
+                    className={`pw-card pw-card--inset response-card response-card--${tone}`}
                     aria-label={responseLabel(response.status)}
                     key={response.status}
                   >

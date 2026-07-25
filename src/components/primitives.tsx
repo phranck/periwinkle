@@ -128,7 +128,7 @@ export function CodeBlock({
           </div>
         ) : null}
         <div
-          className="content-panel code-block__frame"
+          className="pw-card pw-card--inset code-block__frame"
           id={blockId}
           dangerouslySetInnerHTML={{ __html: block.html }}
         />

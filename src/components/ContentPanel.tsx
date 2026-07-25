@@ -8,6 +8,7 @@
  */
 
 import type { HTMLAttributes, ReactNode } from "react";
+import { Card } from "./Card.jsx";
 
 interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
@@ -23,14 +24,16 @@ function cx(base: string, extra?: string): string {
 }
 
 /**
- * Panel root. Accepts `id` and arbitrary `data-*` attributes so search
+ * Panel root. The light, semi-transparent frame is the shared `Card`'s
+ * `inset` variant, so content panels and the builder cards resolve to one
+ * card primitive. Accepts `id` and arbitrary `data-*` attributes so search
  * indexing hooks and scroll targets can attach where needed.
  */
 function ContentPanelRoot({ className, children, ...rest }: PanelProps) {
   return (
-    <div className={cx("content-panel", className)} {...rest}>
+    <Card variant="inset" className={className} {...rest}>
       {children}
-    </div>
+    </Card>
   );
 }
 

@@ -657,7 +657,7 @@ code {
 .pw-endpoint__body,
 .pw-schema-card,
 .pw-schema-card__body,
-.content-panel,
+.pw-card--inset,
 .pw-panel {
   --pw-icon-backdrop: var(--pw-surface);
 }
@@ -1195,14 +1195,12 @@ details[data-pw-expanded="false"] .pw-chevron {
   font-size: var(--pw-text-code);
 }
 
-/* Shared inner surface panel for content nested inside a ContentCard or an
-   endpoint section (reference `.content-panel`). The card variants built on
-   top (parameter, request-body, response) override the surface by document
-   order, so this base rule must precede them. */
 /* Shared card primitive (see Card.tsx). One structure for every framed
    surface: builder settings sections, the builder preview, and the API-doc
    content panels. `--elevated` is the heavy card (border + solid surface);
-   `--inset` is the light, semi-transparent panel embedded in endpoint blocks. */
+   `--inset` is the light, semi-transparent panel embedded in endpoint blocks.
+   The endpoint card variants (parameter, request-body, response) override the
+   `--inset` surface by document order, so this base must precede them. */
 .pw-card {
   min-width: 0;
   overflow: hidden;
@@ -1233,13 +1231,6 @@ details[data-pw-expanded="false"] .pw-chevron {
    settings title (22px) versus the preview's filename (16px) plus buttons. */
 .pw-card--elevated > .pw-card__header {
   min-height: 3.75rem;
-}
-
-.content-panel {
-  min-width: 0;
-  overflow: hidden;
-  border-radius: var(--pw-docs-content-panel-radius);
-  background: color-mix(in srgb, var(--pw-surface-alt) 72%, transparent);
 }
 
 .content-panel__header,
@@ -1618,9 +1609,9 @@ details[data-pw-expanded="false"] .pw-chevron {
 
 /* ---------- Response card (adopted from the reference) ---------- */
 
-/* Tone-tinted `content-panel` variant (reference `.response-card`): the
-   status unit (icon + code) sits left, the content column right. The
-   surface override wins over the `.content-panel` base by document order. */
+/* Tone-tinted inset-card variant (reference `.response-card`): the status
+   unit (icon + code) sits left, the content column right. The surface
+   override wins over the `.pw-card--inset` base by document order. */
 .response-card {
   --pw-response-color: var(--pw-text-muted);
   /* One status line: the lead-size code at its 1.25 line height (reference

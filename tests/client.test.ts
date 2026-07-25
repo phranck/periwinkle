@@ -375,7 +375,7 @@ describe("copy buttons", () => {
           </button>
         </div>
         <span class="sr-only" aria-live="polite" data-copy-status></span>
-        <div id="code-abc123def456" class="content-panel code-block__frame"><pre class="shiki"><code><span class="line">{</span>
+        <div id="code-abc123def456" class="pw-card pw-card--inset code-block__frame"><pre class="shiki"><code><span class="line">{</span>
 <span class="line">  "ok": true</span>
 <span class="line">}</span></code></pre></div>
       </div>
@@ -468,7 +468,7 @@ describe("openapi contract dialog", () => {
         <div class="openapi-contract-dialog__loading"><span class="sr-only">Loading</span></div>
         <div class="code-block" data-code-block>
           <div class="code-block__surface">
-            <div class="content-panel code-block__frame"></div>
+            <div class="pw-card pw-card--inset code-block__frame"></div>
           </div>
         </div>
       </div>
