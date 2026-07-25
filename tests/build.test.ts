@@ -116,6 +116,51 @@ describe("buildSite", () => {
   });
 });
 
+describe("buildSite theme default and brand mark", () => {
+  it("pins the palette when a default mode is configured", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
+    const outDir = join(workDir, "dist");
+    await buildSite({
+      specPath,
+      outDir,
+      config: resolveConfig({ theme: { defaultMode: "light" } }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+
+    // A first-time visitor gets the configured palette; the OS preference is
+    // only consulted for the "system" default.
+    expect(html).toContain('t="light"');
+    expect(html).toContain('if(t==="system")');
+    // A stored choice still wins.
+    expect(html).toContain('localStorage.getItem("periwinkle:theme")');
+  });
+
+  it("tints the brand mark with the text color when asked", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
+    const outDir = join(workDir, "dist");
+    const logo = join(workDir, "brand.png");
+    writeFileSync(logo, "stub");
+    await buildSite({
+      specPath,
+      outDir,
+      cwd: workDir,
+      config: resolveConfig({
+        site: { basePath: "/docs" },
+        navigation: { logo: "brand.png", logoTint: true },
+      }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+
+    // Tinted marks render as a masked box, not an <img>, so the mask can be
+    // filled with currentColor.
+    expect(html).toContain("public-header__brand-logo--tinted");
+    expect(html).toContain("url(&quot;/docs/brand.png&quot;)");
+    expect(html).not.toContain('<img class="public-header__brand-logo" src="/docs/brand.png"');
+  });
+});
+
 describe("buildSite auto builder nav-link", () => {
   it("does not duplicate the auto link when the consumer already added one", async () => {
     const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));

@@ -47,6 +47,12 @@ export interface ThemeColors {
 }
 
 /**
+ * Palette a visitor sees before choosing one themselves. `system` defers to
+ * the operating system preference.
+ */
+export type ThemeMode = "light" | "dark" | "system";
+
+/**
  * Font family tokens and optional external font stylesheets.
  *
  * @property base Body font family stack.
@@ -161,6 +167,11 @@ export interface NavigationLink {
  * @property logo Brand logo shown on the left side of the bar, linking to
  *   `homeHref`. A local file path is bundled into the site output; URLs and
  *   absolute paths pass through untouched. Default: none (no brand mark).
+ * @property logoTint Paint the logo in the current text color instead of
+ *   showing the file's own colors. Use it for single-color silhouettes, which
+ *   would otherwise vanish against one of the two themes; one file then stays
+ *   legible in both. Leave it off for multi-color marks, whose colors this
+ *   would flatten. Default `false`.
  * @property showHome Render the leading home link (title left-aligned).
  *   Default `true`.
  * @property homeLabel Text on the home link. Default `"API reference"`.
@@ -178,6 +189,7 @@ export interface NavigationLink {
  */
 export interface NavigationConfig {
   logo?: string;
+  logoTint?: boolean;
   showHome?: boolean;
   homeLabel?: string;
   homeHref?: string;
@@ -299,6 +311,13 @@ export interface PeriwinkleConfig {
     fonts?: Partial<ThemeFonts>;
     /** Corner radius applied to cards, badges, and buttons, e.g. `6px`. */
     radius?: string;
+    /**
+     * Which palette a first-time visitor sees. `system` follows the operating
+     * system's light/dark preference; `light` or `dark` pin the site to that
+     * palette regardless. A visitor's own choice via the theme toggle is
+     * remembered and always wins. Default `system`.
+     */
+    defaultMode?: ThemeMode;
   };
   navigation?: NavigationConfig;
   sidebar?: SidebarConfig;
@@ -335,6 +354,7 @@ export interface ResolvedConfig {
     };
     fonts: ThemeFonts;
     radius: string;
+    defaultMode: ThemeMode;
   };
   navigation: Required<Omit<NavigationConfig, "github" | "logo" | "links">> & {
     logo: string | undefined;
@@ -417,6 +437,11 @@ export const DEFAULT_FONTS: ThemeFonts = {
 /** Default corner radius token: cards render at this radius, compact controls at half of it. */
 export const DEFAULT_RADIUS = "1rem";
 
+/** Default palette selection: follow the visitor's operating system. */
+export const DEFAULT_THEME_MODE: ThemeMode = "system";
+
+const THEME_MODES: ReadonlySet<string> = new Set(["light", "dark", "system"]);
+
 /** Default sidebar affordances. */
 export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
   title: "Reference",
@@ -432,6 +457,7 @@ export const DEFAULT_NAVIGATION: Required<Omit<NavigationConfig, "github" | "log
   links: NavigationLink[];
 } = {
   logo: undefined,
+  logoTint: false,
   showHome: true,
   homeLabel: "API reference",
   homeHref: "#",
@@ -572,6 +598,7 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
     value,
     [
       "logo",
+      "logoTint",
       "showHome",
       "homeLabel",
       "homeHref",
@@ -583,6 +610,7 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
     "navigation",
   );
   assertOptionalString(value.logo, "navigation.logo");
+  assertOptionalBoolean(value.logoTint, "navigation.logoTint");
   assertOptionalBoolean(value.showHome, "navigation.showHome");
   assertOptionalString(value.homeLabel, "navigation.homeLabel");
   assertOptionalString(value.homeHref, "navigation.homeHref");
@@ -603,6 +631,7 @@ function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
   }
   return {
     logo: (value.logo as string | undefined) ?? DEFAULT_NAVIGATION.logo,
+    logoTint: (value.logoTint as boolean | undefined) ?? DEFAULT_NAVIGATION.logoTint,
     showHome: (value.showHome as boolean | undefined) ?? DEFAULT_NAVIGATION.showHome,
     homeLabel: (value.homeLabel as string | undefined) ?? DEFAULT_NAVIGATION.homeLabel,
     homeHref: (value.homeHref as string | undefined) ?? DEFAULT_NAVIGATION.homeHref,
@@ -755,7 +784,10 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
 
   const theme = config.theme ?? {};
   if (!isRecord(theme)) fail("theme must be an object.");
-  assertKnownKeys(theme, ["colors", "fonts", "radius"], "theme");
+  assertKnownKeys(theme, ["colors", "fonts", "radius", "defaultMode"], "theme");
+  if (theme.defaultMode !== undefined && !THEME_MODES.has(theme.defaultMode as string)) {
+    fail(`theme.defaultMode must be one of ${[...THEME_MODES].join(", ")}.`);
+  }
   const colors = theme.colors ?? {};
   if (!isRecord(colors)) fail("theme.colors must be an object.");
   assertKnownKeys(colors, ["light", "dark"], "theme.colors");
@@ -814,6 +846,7 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
         stylesheets: (fonts.stylesheets as string[] | undefined) ?? DEFAULT_FONTS.stylesheets,
       },
       radius: (theme.radius as string | undefined) ?? DEFAULT_RADIUS,
+      defaultMode: (theme.defaultMode as ThemeMode | undefined) ?? DEFAULT_THEME_MODE,
     },
     navigation: validateNavigation(config.navigation),
     sidebar: validateSidebar(config.sidebar),

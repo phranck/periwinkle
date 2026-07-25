@@ -87,6 +87,16 @@ Page identity and serving location.
 
 Colors, fonts, and the corner-radius token. Compiled at build time into CSS custom properties, injected as a `<style>` block *after* the stylesheet link — your values always win over the built-in defaults.
 
+### `theme.defaultMode`
+
+Which palette a first-time visitor sees: `"system"` (default) follows the operating system's light/dark setting, while `"light"` or `"dark"` pin the site to that palette. A visitor's own choice via the theme toggle is stored and always wins over this setting.
+
+```ts
+theme: {
+  defaultMode: "light",
+},
+```
+
 ### `theme.colors.light` / `theme.colors.dark`
 
 Two partial palettes: any token you set overrides the default of that mode; everything else keeps the built-in value. Defaults are GitHub-light/GitHub-dark neutrals with the periwinkle (velvet) accent.
@@ -145,6 +155,7 @@ The sticky top bar. It spans the full viewport width, blurs the content scrollin
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
 | `logo` | `string` | — | Brand mark on the far left, scaled to the control height, linking to `homeHref` (see [asset paths](#asset-paths-logos-favicon)). |
+| `logoTint` | `boolean` | `false` | Paint the logo in the current text color instead of its own. Use it for single-color silhouettes so one file stays legible in light and dark; leave it off for multi-color marks, whose colors it would flatten. |
 | `showHome` | `boolean` | `true` | Leading nav pill with an icon and the `homeLabel` text; marked as the current page. |
 | `homeLabel` | `string` | `"API reference"` | Text of the home pill; also the accessible label of the logo link. |
 | `homeHref` | `string` | `"#"` | Where the home pill and logo point. Default jumps to the top of the page; set an absolute URL to link back to a parent site. |

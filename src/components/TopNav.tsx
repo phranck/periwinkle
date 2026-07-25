@@ -40,6 +40,8 @@
  * so the stylesheet lifts the frosted-glass backdrop and separator.
  */
 
+import type { CSSProperties } from "react";
+
 import type { ResolvedConfig } from "../config/config.js";
 import { DataIcon, MoonIcon, SearchStatusIcon, Sun1Icon } from "./icons.jsx";
 import { KeyCap } from "./primitives.jsx";
@@ -138,7 +140,17 @@ export function TopNav({
             href={navigation.homeHref}
             aria-label={navigation.homeLabel}
           >
-            <img className="public-header__brand-logo" src={navigation.logo} alt="" />
+            {navigation.logoTint ? (
+              // Tinted marks are painted with the current text color through a
+              // CSS mask, so one silhouette stays legible in both themes.
+              <span
+                className="public-header__brand-logo public-header__brand-logo--tinted"
+                style={{ "--pw-brand-logo": `url("${navigation.logo}")` } as CSSProperties}
+                aria-hidden="true"
+              />
+            ) : (
+              <img className="public-header__brand-logo" src={navigation.logo} alt="" />
+            )}
           </a>
         ) : null}
         <div className="public-header__actions">

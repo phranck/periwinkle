@@ -151,6 +151,22 @@ describe("theme", () => {
     expect(document.documentElement.dataset.theme).toBe("dark");
   });
 
+  it("keeps the theme the inline script already applied", () => {
+    // Only the inline head script knows the configured default mode. Without
+    // a stored choice the bundle must not recompute from the OS preference,
+    // which would override a site pinned to light or dark.
+    document.documentElement.dataset.theme = "light";
+    initTheme(document);
+    expect(document.documentElement.dataset.theme).toBe("light");
+  });
+
+  it("lets a stored choice override the applied theme", () => {
+    document.documentElement.dataset.theme = "light";
+    window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
+    initTheme(document);
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
   it("toggles and persists on click", () => {
     initTheme(document);
     bindThemeToggle(document);

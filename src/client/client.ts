@@ -34,16 +34,25 @@ function storageSet(key: string, value: string): void {
 }
 
 /**
- * Applies the initial theme: an explicit stored choice wins, otherwise the
- * OS preference. Sets `data-theme` on the document element.
+ * Applies the initial theme. An explicit stored choice always wins. Otherwise
+ * the decision of the inline script in the document head is kept: only that
+ * script knows the site's configured default mode, so recomputing here would
+ * override a configured light/dark default with the OS preference. The OS
+ * preference is consulted only when no theme has been applied at all, which
+ * happens when the document is embedded without that script.
  *
  * @param root The document to apply the theme to.
  */
 export function initTheme(root: Document): void {
   const stored = storageGet(THEME_STORAGE_KEY);
-  const preferred = window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  const theme = stored === "dark" || stored === "light" ? stored : preferred;
-  root.documentElement.dataset.theme = theme;
+  if (stored === "dark" || stored === "light") {
+    root.documentElement.dataset.theme = stored;
+    return;
+  }
+  if (root.documentElement.dataset.theme) return;
+  root.documentElement.dataset.theme = window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 /**

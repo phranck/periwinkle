@@ -8,6 +8,7 @@
  * and the deferred client bundle.
  */
 
+import type { ThemeMode } from "../config/config.js";
 import { compileThemeCss } from "../config/theme-css.js";
 import type { DocsData } from "../render/prepare.js";
 
@@ -32,11 +33,17 @@ function escapeHtml(value: string): string {
 }
 
 /**
- * Runs before first paint to avoid a light/dark flash: applies the stored
- * explicit theme, falling back to the OS preference.
+ * Builds the script that runs before first paint to avoid a light/dark flash.
+ *
+ * A visitor's stored choice always wins. Without one, the site's configured
+ * default applies, and only `system` consults the OS preference.
+ *
+ * @param defaultMode The configured `theme.defaultMode`.
+ * @returns The inline script source.
  */
-const EARLY_THEME_SCRIPT =
-  '(function(){try{var t=localStorage.getItem("periwinkle:theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();';
+function earlyThemeScript(defaultMode: ThemeMode): string {
+  return `(function(){try{var t=localStorage.getItem("periwinkle:theme");if(t!=="dark"&&t!=="light"){t=${JSON.stringify(defaultMode)}}if(t==="system"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();`;
+}
 
 /**
  * Assembles the complete `index.html` document.
@@ -70,7 +77,7 @@ export function renderHtmlDocument(
     <meta name="generator" content="periwinkle">
     ${faviconLink}
     ${fontLinks}
-    <script>${EARLY_THEME_SCRIPT}</script>
+    <script>${earlyThemeScript(data.config.theme.defaultMode)}</script>
     <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
     <style>
 ${themeCss}    </style>
@@ -122,7 +129,7 @@ export function renderBuilderDocument(
     <meta name="generator" content="periwinkle">
     ${faviconLink}
     ${fontLinks}
-    <script>${EARLY_THEME_SCRIPT}</script>
+    <script>${earlyThemeScript(data.config.theme.defaultMode)}</script>
     <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
     <style>
 ${themeCss}    </style>

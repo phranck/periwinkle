@@ -307,6 +307,19 @@ code {
   height: var(--pw-size-control);
 }
 
+/* Tinted variant (navigation.logoTint): the file is used as a mask and filled
+   with the current text color, so a single-color mark stays legible in both
+   themes. The box is square and the mask is contained, so non-square marks
+   keep their proportions. */
+.public-header__brand-logo--tinted {
+  width: var(--pw-size-control);
+  height: var(--pw-size-control);
+  color: var(--pw-text);
+  background-color: currentColor;
+  -webkit-mask: var(--pw-brand-logo) center / contain no-repeat;
+  mask: var(--pw-brand-logo) center / contain no-repeat;
+}
+
 .public-header__actions {
   display: flex;
   align-items: center;
