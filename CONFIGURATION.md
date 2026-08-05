@@ -27,7 +27,7 @@ export default defineConfig({
 
 ### Asset paths (logos, favicon)
 
-Fields that accept an image (`site.logo`, `site.favicon`, `navigation.logo`) resolve in three ways:
+Fields that accept an image (`site.logo`, `site.favicon`, `site.socialImage`, `navigation.logo`) resolve in three ways:
 
 | You write | What happens |
 | --- | --- |
@@ -42,7 +42,7 @@ A configured local file that does not exist fails the build.
 ```ts
 export default defineConfig({
   spec: "openapi.json",       // where the contract lives
-  site: { /* … */ },          // page identity: base path, title, favicon
+  site: { /* … */ },          // page identity: base path, title, favicon, search-engine metadata
   theme: { /* … */ },         // colors, fonts, corner radius
   navigation: { /* … */ },    // sticky top bar
   sidebar: { /* … */ },       // left navigation rail
@@ -69,7 +69,7 @@ Path to the OpenAPI 3.x document, JSON or YAML. The CLI flag `--spec <file>` ove
 
 ## `site`
 
-Page identity and serving location.
+Page identity, serving location, and everything search engines and social platforms read.
 
 | Key | Type | Default | Effect |
 | --- | --- | --- | --- |
@@ -78,8 +78,41 @@ Page identity and serving location.
 | `title` | `string` | the spec's `info.title` | Document `<title>` and the hero heading at the top of the page. |
 | `logo` | `string` | none | Small logo rendered next to the sidebar title (see [asset paths](#asset-paths-logos-favicon)). |
 | `favicon` | `string` | none | Browser favicon, linked in the document head. |
+| `url` | `string` | none | Absolute URL the site is published under, including the base path. See [addressing the site](#addressing-the-site) below. |
+| `description` | `string` | the spec's `info.description`, condensed | Meta description and social card text. |
+| `language` | `string` | `"en"` | BCP 47 language tag. Sets the document's `lang` attribute, `og:locale`, and the language field of the structured data. Write `en-GB` or `de-DE` to state a region as well. |
+| `socialImage` | `string` | none | Preview image shown when the site is shared (see [asset paths](#asset-paths-logos-favicon) and [the social card](#the-social-card)). |
+| `socialImageAlt` | `string` | none | Alternative text for that image, read out in place of it. |
+| `robots` | `string` | `"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"` | Crawler directive written as the `robots` meta tag. |
+| `extraSitemapPaths` | `string[]` | `[]` | Site-relative paths of pages you deploy next to the generated ones, listed in `sitemap.xml` alongside them. |
 
-**Where it appears:** the hero block (title), the `curl` examples inside every endpoint and the integration guide (serverUrl), the sidebar header (logo), the browser tab (title, favicon).
+**Where it appears:** the hero block (title), the `curl` examples inside every endpoint and the integration guide (serverUrl), the sidebar header (logo), the browser tab (title, favicon), and the document head plus `sitemap.xml` and `robots.txt` for everything else.
+
+### Addressing the site
+
+`site.url` is the one value the rest of the search-engine metadata hangs on, because a canonical link, a social preview, and a structured-data graph all have to name an absolute address. Set it and periwinkle writes the lot:
+
+```ts
+site: { basePath: "/docs", url: "https://example.com/docs" }
+```
+
+The URL's path has to end with `basePath`, since both say where a page lives. A disagreement aborts the build rather than producing a canonical link that points somewhere the page is not.
+
+Leave `site.url` out and the build still succeeds. The head then keeps everything that works without an address, so the title, the description, the robots directive, the theme colours, the Open Graph title and description, and the Twitter card. What it drops is the canonical link, `og:url`, the preview image, the structured data, `sitemap.xml`, and `robots.txt`.
+
+### What lands in the head
+
+With `site.url` set, every generated page carries a canonical link, the `robots` directive, a `theme-color` for each palette, the full Open Graph set including the image and its dimensions, a Twitter `summary_large_image` card, `preconnect` hints for the font origins, a link to the OpenAPI contract as a machine-readable alternative, and a JSON-LD graph. The documentation page describes itself as a schema.org `APIReference` belonging to a `WebSite`; the configuration builder describes itself as a `WebApplication` with a `BreadcrumbList` leading back to the reference.
+
+### The social card
+
+Platforms lay a shared link out at roughly 1200 by 630 pixels and crop anything wider, so a wide banner loses its top and bottom. Transparency is rendered as black by several of them. Give `socialImage` an opaque image at that size and it survives every crop. periwinkle reads the dimensions of a local PNG and states them in the head, which lets a platform reserve the space before it has fetched the image.
+
+### `sitemap.xml` and `robots.txt`
+
+Both are written into the output directory when `site.url` is set. The sitemap lists each generated page with the build date, plus anything named in `extraSitemapPaths`. The `robots.txt` invites crawlers and points them at the sitemap, and a `site.robots` value containing `noindex` turns it into a full disallow instead, so the file and the meta tag can never say two different things.
+
+One caveat about sub-paths. A crawler only ever reads the `robots.txt` at the domain root, so on a GitHub Pages project site, where the docs live at `user.github.io/project/`, the generated `project/robots.txt` is never fetched. The sitemap is unaffected, because a sitemap covers the URLs beneath its own directory and you submit its address directly to a search console.
 
 ---
 

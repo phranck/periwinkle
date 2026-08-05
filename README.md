@@ -17,6 +17,7 @@ periwinkle is a static API documentation generator for [OpenAPI](https://openapi
 **Live demo:** [phranck.github.io/periwinkle](https://phranck.github.io/periwinkle/). The demo is rebuilt from a fictional bookstore contract on every push.
 
 - The output is entirely static and consists of `index.html`, one stylesheet, one small vanilla-JS bundle, and a copy of the specification as `openapi.json`. No runtime framework is involved, so the site deploys to any host.
+- Tell periwinkle where the site is published and it writes the whole search-engine and social layer for you: a canonical link, Open Graph and Twitter cards with a preview image, a schema.org graph, `sitemap.xml`, and `robots.txt`. All three pages of the live demo score 100 on Lighthouse's SEO audit.
 - A sticky top navigation bar with a frosted-glass backdrop carries an optional brand logo, a home link, search, a GitHub link, and a theme toggle. Every one of these affordances can be switched off in the configuration.
 - The sidebar lists endpoint groups and the integration guide, whilst the main column holds endpoint blocks with generated curl examples and schema cards with field tables and a raw JSON view.
 - Light and dark themes are compiled into CSS custom properties and remain fully configurable, covering the palette, fonts, logo, and corner radius. You may choose which palette first-time visitors see, or defer to their operating system.
@@ -83,7 +84,7 @@ The mapping lives in [`src/render/section-icons.json`](src/render/section-icons.
 
 To adapt it, use the **[icon picker](https://phranck.github.io/periwinkle/icon-picker.html)**: browse or search all 993 Iconsax icons in both the Bulk and TwoTone style, add your own titles, then download the JSON and save it over the mapping file. The page keeps everything in the browser and uploads nothing.
 
-It also ships in this repository as `tools/icon-picker.html` and runs offline, with no server and no network:
+It also ships in this repository as `tools/icon-picker.html` and runs straight from disk with no server. The icons and the mapping are inlined, so nothing but its web fonts is ever fetched:
 
 ```bash
 open tools/icon-picker.html          # or double-click it
@@ -100,7 +101,7 @@ node tools/build-icon-picker.mjs
 
 The output directory is plain static files. Recipes:
 
-**Any static host, such as nginx or GitHub Pages.** Upload `dist/` as it stands. Where the site is served from a sub-path, as GitHub Pages project sites are, set `site.basePath` accordingly.
+**Any static host, such as nginx or GitHub Pages.** Upload `dist/` as it stands. Where the site is served from a sub-path, as GitHub Pages project sites are, set `site.basePath` accordingly. Set `site.url` to the full address the site answers on, and the build adds the canonical link, the social card, `sitemap.xml`, and `robots.txt`. [CONFIGURATION.md](CONFIGURATION.md#addressing-the-site) covers what each of them does.
 
 **GitHub Actions deploying to Pages.** See [`.github/workflows/pages.yml`](.github/workflows/pages.yml) in this repository, which builds the live demo.
 
