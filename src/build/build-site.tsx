@@ -3,12 +3,23 @@
  *
  * `buildSite()` turns an OpenAPI document plus a resolved config into a
  * self-contained static site: `index.html`, `styles.css`, `client.js`,
- * `openapi.json`, and any local logo/favicon assets. Every failure (missing
- * spec, invalid document, unreadable assets) throws with a clear message,
- * because a broken input must never produce a silently wrong site.
+ * `openapi.json`, and any local logo, favicon, or social-image assets. A site
+ * that knows its own address (`site.url`) also gets `sitemap.xml` and
+ * `robots.txt`. Every failure (missing spec, invalid document, unreadable
+ * assets) throws with a clear message, because a broken input must never
+ * produce a silently wrong site.
  */
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  readSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -20,6 +31,7 @@ import type { ResolvedConfig } from "../config/config.js";
 import { highlightCode } from "../render/highlight.js";
 import { prepareDocsData } from "../render/prepare.js";
 import { renderBuilderDocument, renderHtmlDocument, withBase } from "./html.js";
+import { absoluteAssetUrl, renderRobotsTxt, renderSitemap, type SocialImage } from "./seo.js";
 
 /**
  * Options for one site build.
@@ -92,6 +104,46 @@ function isLocalAssetPath(value: string): boolean {
   return !/^([a-z]+:)?\/\//i.test(value) && !value.startsWith("data:") && !value.startsWith("/");
 }
 
+/** Media types of the image formats a social preview may use. */
+const IMAGE_MEDIA_TYPES: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".svg": "image/svg+xml",
+};
+
+/** Byte length of a PNG signature plus the IHDR chunk header and its dimensions. */
+const PNG_HEADER_LENGTH = 24;
+const PNG_SIGNATURE = "\x89PNG\r\n\x1a\n";
+
+/**
+ * Reads the pixel dimensions of a PNG file.
+ *
+ * A PNG states its width and height in the IHDR chunk, which the format
+ * requires to come first, so the first 24 bytes are enough and the image never
+ * has to be decoded. Other formats return nothing, and the social card then
+ * omits the dimension hints.
+ *
+ * @param file Absolute path of the image file.
+ * @returns The dimensions, or `undefined` when the file is not a PNG.
+ */
+function readPngSize(file: string): { width: number; height: number } | undefined {
+  const header = Buffer.alloc(PNG_HEADER_LENGTH);
+  const handle = openSync(file, "r");
+  let read: number;
+  try {
+    read = readSync(handle, header, 0, PNG_HEADER_LENGTH, 0);
+  } finally {
+    closeSync(handle);
+  }
+  if (read < PNG_HEADER_LENGTH || header.toString("latin1", 0, 8) !== PNG_SIGNATURE) {
+    return undefined;
+  }
+  return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+}
+
 /**
  * Builds the static documentation site.
  *
@@ -135,19 +187,26 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   mkdirSync(outDir, { recursive: true });
   const files: string[] = [];
 
-  // Local logo/favicon files are copied into the site and referenced by
-  // their base name; URLs and absolute paths pass through untouched.
+  // Local logo/favicon/social-image files are copied into the site and
+  // referenced by their base name; URLs and absolute paths pass through
+  // untouched. One file may be configured in several places, e.g. as both the
+  // navigation logo and the favicon, so each source is copied and listed once.
   const siteConfig = structuredClone(config);
+  const bundledAssets = new Map<string, string>();
   const bundleLocalAsset = (value: string | undefined, label: string): string | undefined => {
     if (!value || !isLocalAssetPath(value)) return undefined;
     const source = resolve(cwd, value);
+    const alreadyBundled = bundledAssets.get(source);
+    if (alreadyBundled) return alreadyBundled;
     if (!existsSync(source)) {
       throw new Error(`Configured ${label} not found: ${source}`);
     }
     const fileName = basename(source);
     copyFileSync(source, resolve(outDir, fileName));
     files.push(fileName);
-    return withBase(config.site.basePath, fileName);
+    const url = withBase(config.site.basePath, fileName);
+    bundledAssets.set(source, url);
+    return url;
   };
   for (const key of ["logo", "favicon"] as const) {
     const bundled = bundleLocalAsset(config.site[key], `site.${key}`);
@@ -155,6 +214,8 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
   }
   const bundledNavigationLogo = bundleLocalAsset(config.navigation.logo, "navigation.logo");
   if (bundledNavigationLogo) siteConfig.navigation.logo = bundledNavigationLogo;
+
+  const socialImage = resolveSocialImage(config, cwd, bundleLocalAsset);
 
   // When the builder page is going to be generated, weave its top-nav
   // link into the docs' navigation config so both surfaces cross-link.
@@ -177,10 +238,14 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
     stylesheet: "styles.css",
     clientScript: "client.js",
     ...(siteConfig.site.favicon ? { favicon: siteConfig.site.favicon } : {}),
+    ...(socialImage ? { socialImage } : {}),
   });
 
   writeFileSync(resolve(outDir, "index.html"), html);
   files.push("index.html");
+  // Site-relative paths of the generated pages, in the order they are written,
+  // which is also the order the sitemap lists them in.
+  const pagePaths = [""];
   copyFileSync(assets.stylesCss, resolve(outDir, "styles.css"));
   files.push("styles.css");
   copyFileSync(assets.clientJs, resolve(outDir, "client.js"));
@@ -207,8 +272,9 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
     const builderBody = renderToStaticMarkup(<ConfigBuilder navigation={builderNavigation} />);
     const builderHtml = renderBuilderDocument(data, builderBody, {
       stylesheet: "styles.css",
-      builderScript: "config-builder.js",
+      clientScript: "config-builder.js",
       ...(siteConfig.site.favicon ? { favicon: siteConfig.site.favicon } : {}),
+      ...(socialImage ? { socialImage } : {}),
     });
     // The builder page is served as a directory index so its public URL is a
     // clean "…/config-builder/" rather than "…/config-builder.html". The
@@ -220,9 +286,64 @@ export async function buildSite(options: BuildSiteOptions): Promise<BuildSiteRes
     files.push("config-builder/index.html");
     copyFileSync(configBuilderJs, resolve(outDir, "config-builder.js"));
     files.push("config-builder.js");
+    pagePaths.push("config-builder/");
+  }
+
+  // Crawler files carry absolute addresses throughout, so they are only
+  // meaningful once the site knows where it is published.
+  if (config.site.url) {
+    writeFileSync(resolve(outDir, "sitemap.xml"), renderSitemap(config, pagePaths, new Date()));
+    files.push("sitemap.xml");
+    writeFileSync(resolve(outDir, "robots.txt"), renderRobotsTxt(config));
+    files.push("robots.txt");
   }
 
   return { outDir, files };
+}
+
+/**
+ * Resolves the configured social preview image into the absolute reference the
+ * metadata block needs.
+ *
+ * A local file is copied into the site output and its dimensions are read, so
+ * platforms can lay the card out before they have fetched the image. An absolute
+ * URL is used as it stands, since nothing about a foreign image is knowable at
+ * build time. Either way the result needs an absolute address, so a local file
+ * is only bundled when `site.url` says where the site is published; without it
+ * the image would be copied into the output and referenced by nothing.
+ *
+ * @param config The resolved configuration.
+ * @param cwd Base directory for relative path resolution.
+ * @param bundle Copies a local asset into the site output and returns its
+ *   site-relative URL.
+ * @returns The resolved image, or `undefined` when the site has none.
+ */
+function resolveSocialImage(
+  config: ResolvedConfig,
+  cwd: string,
+  bundle: (value: string | undefined, label: string) => string | undefined,
+): SocialImage | undefined {
+  const configured = config.site.socialImage;
+  if (!configured) return undefined;
+  const alt = config.site.socialImageAlt;
+
+  if (!isLocalAssetPath(configured)) {
+    const url = absoluteAssetUrl(config.site.url, configured);
+    return url ? { url, ...(alt ? { alt } : {}) } : undefined;
+  }
+
+  if (!config.site.url) return undefined;
+  const bundled = bundle(configured, "site.socialImage");
+  const url = bundled ? absoluteAssetUrl(config.site.url, bundled) : undefined;
+  if (!url) return undefined;
+  const size = readPngSize(resolve(cwd, configured));
+  const mediaType = IMAGE_MEDIA_TYPES[extname(configured).toLowerCase()];
+  return {
+    url,
+    ...(alt ? { alt } : {}),
+    ...(size ?? {}),
+    ...(mediaType ? { mediaType } : {}),
+  };
 }
 
 /**
