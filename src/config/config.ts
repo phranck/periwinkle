@@ -302,6 +302,51 @@ export interface PeriwinkleConfig {
     logo?: string;
     /** Favicon file path (bundled into the output) or absolute URL. */
     favicon?: string;
+    /**
+     * Absolute URL the site is published under, including the base path, e.g.
+     * `https://example.com/docs`. Setting it turns on everything that needs an
+     * absolute address: the canonical link, `og:url`, the social preview image,
+     * the JSON-LD graph, `sitemap.xml`, and `robots.txt`. Without it the site
+     * still builds, and the head keeps the metadata that works relatively.
+     *
+     * The URL's path must end with `basePath`, so the two can never disagree
+     * about where a page lives.
+     */
+    url?: string;
+    /**
+     * Meta description and social card text. Defaults to the first sentences of
+     * the spec's `info.description`, and to a generic line naming the API and
+     * its version when the spec carries no description.
+     */
+    description?: string;
+    /**
+     * BCP 47 language tag of the documentation, e.g. `en` or `en-GB`. Sets the
+     * document's `lang` attribute, `og:locale`, and the language field of the
+     * JSON-LD graph. Default `en`.
+     */
+    language?: string;
+    /**
+     * Preview image shown when the site is shared on social platforms. A local
+     * file path is bundled into the site output; absolute URLs pass through
+     * untouched. Aim for 1200 by 630 pixels with an opaque background, because
+     * platforms crop to that ratio and render transparency as black.
+     */
+    socialImage?: string;
+    /** Alternative text for {@link socialImage}, read out in place of the image. */
+    socialImageAlt?: string;
+    /**
+     * Crawler directive written as the `robots` meta tag. Default
+     * `"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"`.
+     * Set it to `"noindex, nofollow"` for an internal reference, which also
+     * turns the generated `robots.txt` into a full disallow.
+     */
+    robots?: string;
+    /**
+     * Site-relative paths of pages deployed alongside the generated ones, e.g.
+     * `["handbook.html"]`. They are listed in `sitemap.xml` next to the pages
+     * periwinkle emits itself.
+     */
+    extraSitemapPaths?: string[];
   };
   theme?: {
     colors?: {
@@ -346,6 +391,13 @@ export interface ResolvedConfig {
     title?: string;
     logo?: string;
     favicon?: string;
+    url?: string;
+    description?: string;
+    language: string;
+    socialImage?: string;
+    socialImageAlt?: string;
+    robots: string;
+    extraSitemapPaths: string[];
   };
   theme: {
     colors: {
@@ -441,6 +493,19 @@ export const DEFAULT_RADIUS = "1rem";
 export const DEFAULT_THEME_MODE: ThemeMode = "system";
 
 const THEME_MODES: ReadonlySet<string> = new Set(["light", "dark", "system"]);
+
+/** Default documentation language, applied to `lang`, `og:locale`, and JSON-LD. */
+export const DEFAULT_LANGUAGE = "en";
+
+/**
+ * Default crawler directive: the site may be indexed, and search engines are
+ * allowed to show a large preview image, an unabridged text snippet, and a
+ * full-length video preview.
+ */
+export const DEFAULT_ROBOTS =
+  "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+
+const SITE_URL_PROTOCOLS: ReadonlySet<string> = new Set(["http:", "https:"]);
 
 /** Default sidebar affordances. */
 export const DEFAULT_SIDEBAR: Required<SidebarConfig> = {
@@ -589,6 +654,103 @@ function validateFooterLinks(value: unknown): FooterLink[] {
     if (typeof link.href !== "string") fail(`footer.links[${index}].href must be a string.`);
     return { label: link.label, href: link.href };
   });
+}
+
+/**
+ * Normalizes `site.url` into a directory URL other addresses resolve against.
+ *
+ * Keeping exactly one trailing slash matters: `new URL("page/", base)` resolves
+ * against the directory when the base ends in a slash, and replaces the last
+ * segment when it does not.
+ *
+ * @param value The authored `site.url`.
+ * @param basePath The already validated `site.basePath`.
+ * @returns The normalized URL, or `undefined` when none was authored.
+ * @throws Error when the value is not an absolute http(s) URL, or when its path
+ *   names a different location than `basePath`.
+ */
+function validateSiteUrl(value: unknown, basePath: string): string | undefined {
+  assertOptionalString(value, "site.url");
+  if (value === undefined) return undefined;
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    fail(`site.url must be an absolute URL, e.g. "https://example.com/docs". Got "${value}".`);
+  }
+  if (!SITE_URL_PROTOCOLS.has(parsed.protocol)) {
+    fail(`site.url must use http or https. Got "${parsed.protocol}".`);
+  }
+  const urlPath = parsed.pathname.replace(/\/+$/, "");
+  const base = basePath.replace(/\/+$/, "");
+  if (urlPath !== base) {
+    fail(
+      `site.url path "${parsed.pathname}" does not match site.basePath "${basePath}". Both name where a page lives, so they have to agree.`,
+    );
+  }
+  return `${parsed.origin}${urlPath}/`;
+}
+
+function validateExtraSitemapPaths(value: unknown): string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) fail("site.extraSitemapPaths must be an array of strings.");
+  return value.map((entry, index) => {
+    if (typeof entry !== "string" || entry.length === 0) {
+      fail(`site.extraSitemapPaths[${index}] must be a non-empty string.`);
+    }
+    return entry;
+  });
+}
+
+function validateSite(value: unknown): ResolvedConfig["site"] {
+  const site = value ?? {};
+  if (!isRecord(site)) fail("site must be an object.");
+  assertKnownKeys(
+    site,
+    [
+      "basePath",
+      "serverUrl",
+      "title",
+      "logo",
+      "favicon",
+      "url",
+      "description",
+      "language",
+      "socialImage",
+      "socialImageAlt",
+      "robots",
+      "extraSitemapPaths",
+    ],
+    "site",
+  );
+  assertOptionalString(site.basePath, "site.basePath");
+  assertOptionalString(site.serverUrl, "site.serverUrl");
+  assertOptionalString(site.title, "site.title");
+  assertOptionalString(site.logo, "site.logo");
+  assertOptionalString(site.favicon, "site.favicon");
+  assertOptionalString(site.description, "site.description");
+  assertOptionalString(site.language, "site.language");
+  assertOptionalString(site.socialImage, "site.socialImage");
+  assertOptionalString(site.socialImageAlt, "site.socialImageAlt");
+  assertOptionalString(site.robots, "site.robots");
+  const basePath = site.basePath ?? "/";
+  if (!basePath.startsWith("/")) fail('site.basePath must start with "/".');
+  const url = validateSiteUrl(site.url, basePath);
+
+  return {
+    basePath,
+    ...(site.serverUrl !== undefined ? { serverUrl: site.serverUrl } : {}),
+    ...(site.title !== undefined ? { title: site.title } : {}),
+    ...(site.logo !== undefined ? { logo: site.logo } : {}),
+    ...(site.favicon !== undefined ? { favicon: site.favicon } : {}),
+    ...(url !== undefined ? { url } : {}),
+    ...(site.description !== undefined ? { description: site.description } : {}),
+    language: site.language ?? DEFAULT_LANGUAGE,
+    ...(site.socialImage !== undefined ? { socialImage: site.socialImage } : {}),
+    ...(site.socialImageAlt !== undefined ? { socialImageAlt: site.socialImageAlt } : {}),
+    robots: site.robots ?? DEFAULT_ROBOTS,
+    extraSitemapPaths: validateExtraSitemapPaths(site.extraSitemapPaths),
+  };
 }
 
 function validateNavigation(value: unknown): ResolvedConfig["navigation"] {
@@ -771,17 +933,6 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
 
   assertOptionalString(config.spec, "spec");
 
-  const site = config.site ?? {};
-  if (!isRecord(site)) fail("site must be an object.");
-  assertKnownKeys(site, ["basePath", "serverUrl", "title", "logo", "favicon"], "site");
-  assertOptionalString(site.basePath, "site.basePath");
-  assertOptionalString(site.serverUrl, "site.serverUrl");
-  assertOptionalString(site.title, "site.title");
-  assertOptionalString(site.logo, "site.logo");
-  assertOptionalString(site.favicon, "site.favicon");
-  const basePath = site.basePath ?? "/";
-  if (!basePath.startsWith("/")) fail('site.basePath must start with "/".');
-
   const theme = config.theme ?? {};
   if (!isRecord(theme)) fail("theme must be an object.");
   assertKnownKeys(theme, ["colors", "fonts", "radius", "defaultMode"], "theme");
@@ -821,13 +972,7 @@ export function resolveConfig(config: unknown = {}): ResolvedConfig {
 
   return {
     ...(config.spec !== undefined ? { spec: config.spec } : {}),
-    site: {
-      basePath,
-      ...(site.serverUrl !== undefined ? { serverUrl: site.serverUrl } : {}),
-      ...(site.title !== undefined ? { title: site.title } : {}),
-      ...(site.logo !== undefined ? { logo: site.logo } : {}),
-      ...(site.favicon !== undefined ? { favicon: site.favicon } : {}),
-    },
+    site: validateSite(config.site),
     theme: {
       colors: {
         light: {

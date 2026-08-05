@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_DARK_COLORS,
   DEFAULT_FONTS,
+  DEFAULT_LANGUAGE,
   DEFAULT_LIGHT_COLORS,
   DEFAULT_RADIUS,
+  DEFAULT_ROBOTS,
   resolveConfig,
 } from "../src/config/config.js";
 import { loadConfig } from "../src/config/load-config.js";
@@ -111,6 +113,50 @@ describe("loadConfig", () => {
   it("fails loudly for a missing explicit path", async () => {
     await expect(loadConfig("missing.config.ts", fixturesDir)).rejects.toThrow(
       /config not found: missing\.config\.ts/,
+    );
+  });
+});
+
+describe("resolveConfig site addressing", () => {
+  it("defaults the language, the crawler directive, and the sitemap extras", () => {
+    const resolved = resolveConfig();
+    expect(resolved.site.language).toBe(DEFAULT_LANGUAGE);
+    expect(resolved.site.robots).toBe(DEFAULT_ROBOTS);
+    expect(resolved.site.extraSitemapPaths).toEqual([]);
+    expect(resolved.site.url).toBeUndefined();
+  });
+
+  it("normalizes the site URL into a directory address", () => {
+    expect(resolveConfig({ site: { url: "https://example.com" } }).site.url).toBe(
+      "https://example.com/",
+    );
+    expect(
+      resolveConfig({ site: { basePath: "/docs", url: "https://example.com/docs/" } }).site.url,
+    ).toBe("https://example.com/docs/");
+  });
+
+  it("rejects a site URL that is not an absolute http address", () => {
+    expect(() => resolveConfig({ site: { url: "/docs" } })).toThrow(/must be an absolute URL/);
+    expect(() => resolveConfig({ site: { url: "ftp://example.com" } })).toThrow(
+      /must use http or https/,
+    );
+  });
+
+  it("rejects a site URL whose path contradicts the base path", () => {
+    expect(() =>
+      resolveConfig({ site: { basePath: "/docs", url: "https://example.com" } }),
+    ).toThrow(/does not match site\.basePath/);
+    expect(() => resolveConfig({ site: { url: "https://example.com/docs" } })).toThrow(
+      /does not match site\.basePath/,
+    );
+  });
+
+  it("rejects malformed sitemap extras", () => {
+    expect(() => resolveConfig({ site: { extraSitemapPaths: "handbook.html" } })).toThrow(
+      /must be an array of strings/,
+    );
+    expect(() => resolveConfig({ site: { extraSitemapPaths: [""] } })).toThrow(
+      /must be a non-empty string/,
     );
   });
 });
