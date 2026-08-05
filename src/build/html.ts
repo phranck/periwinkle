@@ -2,15 +2,41 @@
  * HTML document assembly for the generated site.
  *
  * Wraps the statically rendered page body in a complete HTML document:
- * meta tags, favicon and font links, the compiled theme variables (inlined
- * so the palette needs no extra request), the stylesheet link, an early
- * theme script that applies the stored/preferred scheme before first paint,
- * and the deferred client bundle.
+ * meta tags, search-engine and social metadata, favicon and font links, the
+ * compiled theme variables (inlined so the palette needs no extra request), the
+ * stylesheet link, an early theme script that applies the stored/preferred
+ * scheme before first paint, and the deferred client bundle.
  */
 
 import type { ThemeMode } from "../config/config.js";
 import { compileThemeCss } from "../config/theme-css.js";
 import type { DocsData } from "../render/prepare.js";
+import { escapeHtml } from "./escape.js";
+import {
+  builderStructuredData,
+  type PageIdentity,
+  type PageMetadata,
+  referenceStructuredData,
+  renderPreconnectLinks,
+  renderSeoTags,
+  resolveDescription,
+  type SocialImage,
+} from "./seo.js";
+
+/**
+ * Site-relative names of the assets a generated document links to.
+ *
+ * @property stylesheet File name of the emitted stylesheet.
+ * @property clientScript File name of the deferred bundle the page loads.
+ * @property favicon Already base-path-prefixed favicon URL, when configured.
+ * @property socialImage The resolved social preview image, when configured.
+ */
+export interface DocumentAssets {
+  stylesheet: string;
+  clientScript: string;
+  favicon?: string;
+  socialImage?: SocialImage;
+}
 
 /**
  * Applies the configured base path to a site-relative asset path.
@@ -22,14 +48,6 @@ import type { DocsData } from "../render/prepare.js";
 export function withBase(basePath: string, path: string): string {
   const base = basePath.endsWith("/") ? basePath : `${basePath}/`;
   return `${base}${path.replace(/^\/+/, "")}`;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 /**
@@ -46,37 +64,44 @@ function earlyThemeScript(defaultMode: ThemeMode): string {
 }
 
 /**
- * Assembles the complete `index.html` document.
+ * Assembles a complete HTML document.
+ *
+ * Both generated pages share this chrome, comprising the metadata block, the
+ * favicon, the font stylesheets and their preconnect hints, the compiled theme
+ * variables, the early theme script, and the main stylesheet, so the two routes
+ * look and behave like one site. Only the page identity, the body markup, and
+ * the loaded client bundle differ.
  *
  * @param data Prepared docs data (title, theme, font stylesheets).
+ * @param page The page's own identity, see {@link PageMetadata}.
  * @param bodyHtml Statically rendered page body markup.
- * @param assets Site-relative file names of the emitted assets.
+ * @param assets See {@link DocumentAssets}.
  * @returns The full HTML document text.
  */
-export function renderHtmlDocument(
+function renderDocument(
   data: DocsData,
+  page: PageMetadata,
   bodyHtml: string,
-  assets: { stylesheet: string; clientScript: string; favicon?: string },
+  assets: DocumentAssets,
 ): string {
-  const { basePath } = data.config.site;
+  const { basePath, language } = data.config.site;
   const themeCss = compileThemeCss(data.config);
-  const fontLinks = data.config.theme.fonts.stylesheets
-    .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
-    .join("\n    ");
-  const faviconLink = assets.favicon
-    ? `<link rel="icon" href="${escapeHtml(assets.favicon)}">`
-    : "";
+  const head = [
+    `<title>${escapeHtml(page.title)}</title>`,
+    ...renderSeoTags(data, page, assets.socialImage),
+    ...(assets.favicon ? [`<link rel="icon" href="${escapeHtml(assets.favicon)}">`] : []),
+    ...renderPreconnectLinks(data.config.theme.fonts.stylesheets),
+    ...data.config.theme.fonts.stylesheets.map(
+      (href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`,
+    ),
+  ].join("\n    ");
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeHtml(language)}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(data.title)}</title>
-    <meta name="description" content="${escapeHtml(`API reference for ${data.title}, version ${data.reference.version}.`)}">
-    <meta name="generator" content="periwinkle">
-    ${faviconLink}
-    ${fontLinks}
+    ${head}
     <script>${earlyThemeScript(data.config.theme.defaultMode)}</script>
     <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
     <style>
@@ -91,53 +116,65 @@ ${themeCss}    </style>
 }
 
 /**
+ * Assembles the documentation page, emitted as `index.html`.
+ *
+ * @param data Prepared docs data (title, theme, font stylesheets).
+ * @param bodyHtml Statically rendered page body markup.
+ * @param assets See {@link DocumentAssets}.
+ * @returns The full HTML document text.
+ */
+export function renderHtmlDocument(
+  data: DocsData,
+  bodyHtml: string,
+  assets: DocumentAssets,
+): string {
+  const identity: PageIdentity = {
+    path: "",
+    title: data.title,
+    description: resolveDescription(data),
+  };
+  return renderDocument(
+    data,
+    {
+      ...identity,
+      structuredData: referenceStructuredData(data, identity, assets.socialImage),
+      alternates: [
+        {
+          href: withBase(data.config.site.basePath, "openapi.json"),
+          type: "application/json",
+          title: "OpenAPI contract",
+        },
+      ],
+    },
+    bodyHtml,
+    assets,
+  );
+}
+
+/**
  * Assembles the configuration-builder document, emitted as
- * `config-builder/index.html`. Shares the
- * same document chrome as the docs page, comprising the favicon, font
- * stylesheets, compiled theme variables, early theme script, and main
- * stylesheet, so both routes look the same. Only the body markup and the
- * loaded client bundle differ.
+ * `config-builder/index.html`.
  *
  * @param data Prepared docs data (title, theme, font stylesheets).
  * @param bodyHtml Statically rendered configuration-builder markup.
- * @param assets Site-relative file names of the emitted assets, plus
- *   the builder-specific client bundle name.
+ * @param assets See {@link DocumentAssets}, with the builder's own client
+ *   bundle as `clientScript`.
  * @returns The full HTML document text.
  */
 export function renderBuilderDocument(
   data: DocsData,
   bodyHtml: string,
-  assets: { stylesheet: string; builderScript: string; favicon?: string },
+  assets: DocumentAssets,
 ): string {
-  const { basePath } = data.config.site;
-  const themeCss = compileThemeCss(data.config);
-  const fontLinks = data.config.theme.fonts.stylesheets
-    .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
-    .join("\n    ");
-  const faviconLink = assets.favicon
-    ? `<link rel="icon" href="${escapeHtml(assets.favicon)}">`
-    : "";
-  const pageTitle = `Configuration builder for ${data.title}`;
-
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(pageTitle)}</title>
-    <meta name="description" content="${escapeHtml(`Interactive periwinkle.config.ts builder for ${data.title}.`)}">
-    <meta name="generator" content="periwinkle">
-    ${faviconLink}
-    ${fontLinks}
-    <script>${earlyThemeScript(data.config.theme.defaultMode)}</script>
-    <link rel="stylesheet" href="${escapeHtml(withBase(basePath, assets.stylesheet))}">
-    <style>
-${themeCss}    </style>
-  </head>
-  <body>
-    ${bodyHtml}
-    <script defer src="${escapeHtml(withBase(basePath, assets.builderScript))}"></script>
-  </body>
-</html>
-`;
+  const identity: PageIdentity = {
+    path: "config-builder/",
+    title: `Configuration builder for ${data.title}`,
+    description: `Assemble a periwinkle.config.ts for ${data.title} in the browser, with a live preview of the palette, fonts, and layout.`,
+  };
+  return renderDocument(
+    data,
+    { ...identity, structuredData: builderStructuredData(data, identity) },
+    bodyHtml,
+    assets,
+  );
 }

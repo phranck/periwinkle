@@ -18,7 +18,19 @@ export {
   type BuildSiteResult,
   buildSite,
 } from "./build/build-site.jsx";
-export { renderHtmlDocument, withBase } from "./build/html.js";
+export { type DocumentAssets, renderHtmlDocument, withBase } from "./build/html.js";
+export {
+  type AlternateRepresentation,
+  type PageIdentity,
+  type PageMetadata,
+  referenceStructuredData,
+  renderRobotsTxt,
+  renderSeoTags,
+  renderSitemap,
+  resolveDescription,
+  type SocialImage,
+  type StructuredDataNode,
+} from "./build/seo.js";
 export { ApiDocs } from "./components/ApiDocs.jsx";
 export { ContentCard } from "./components/ContentCard.jsx";
 export { ContentPanel } from "./components/ContentPanel.jsx";
@@ -53,8 +65,10 @@ export type {
 export {
   DEFAULT_DARK_COLORS,
   DEFAULT_FONTS,
+  DEFAULT_LANGUAGE,
   DEFAULT_LIGHT_COLORS,
   DEFAULT_RADIUS,
+  DEFAULT_ROBOTS,
   defineConfig,
   resolveConfig,
 } from "./config/config.js";

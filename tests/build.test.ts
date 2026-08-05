@@ -224,6 +224,178 @@ describe("buildSite auto builder nav-link", () => {
   });
 });
 
+/**
+ * Writes a file carrying a valid PNG signature and IHDR chunk, which is exactly
+ * what the build reads to learn an image's dimensions. The pixel data is left
+ * out because the build copies the file byte for byte without decoding it.
+ */
+function writePngHeader(path: string, width: number, height: number): void {
+  const header = Buffer.alloc(24);
+  header.write("\x89PNG\r\n\x1a\n", 0, "latin1");
+  header.writeUInt32BE(13, 8);
+  header.write("IHDR", 12, "latin1");
+  header.writeUInt32BE(width, 16);
+  header.writeUInt32BE(height, 20);
+  writeFileSync(path, header);
+}
+
+function parseJsonLd(document: string): {
+  "@context": string;
+  "@graph": Record<string, unknown>[];
+} {
+  const match = document.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  expect(match).not.toBeNull();
+  return JSON.parse(match?.[1] ?? "{}");
+}
+
+describe("buildSite search-engine and social metadata", () => {
+  let files: string[];
+  let outDir: string;
+  let html: string;
+  let builderHtml: string;
+
+  beforeAll(async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-seo-"));
+    outDir = join(workDir, "dist");
+    writePngHeader(join(workDir, "social-card.png"), 1200, 630);
+    const result = await buildSite({
+      specPath,
+      outDir,
+      cwd: workDir,
+      config: resolveConfig({
+        site: {
+          basePath: "/docs",
+          url: "https://example.com/docs",
+          language: "en-GB",
+          description: "Everything a client needs to talk to the Bookstore API.",
+          socialImage: "social-card.png",
+          socialImageAlt: "The Bookstore API wordmark.",
+          extraSitemapPaths: ["handbook.html"],
+        },
+        features: { configBuilder: true },
+      }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    files = result.files;
+    html = readFileSync(join(outDir, "index.html"), "utf8");
+    builderHtml = readFileSync(join(outDir, "config-builder", "index.html"), "utf8");
+  });
+
+  it("states the document language and where the page lives", () => {
+    expect(html).toContain('<html lang="en-GB">');
+    expect(html).toContain('<link rel="canonical" href="https://example.com/docs/">');
+    expect(html).toContain('<meta property="og:url" content="https://example.com/docs/">');
+    expect(html).toContain('<meta property="og:locale" content="en_GB">');
+    expect(html).toContain(
+      '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">',
+    );
+  });
+
+  it("carries the configured description into every description field", () => {
+    const description = "Everything a client needs to talk to the Bookstore API.";
+    expect(html).toContain(`<meta name="description" content="${description}">`);
+    expect(html).toContain(`<meta property="og:description" content="${description}">`);
+    expect(html).toContain(`<meta name="twitter:description" content="${description}">`);
+  });
+
+  it("bundles the social image and states its dimensions", () => {
+    expect(files).toContain("social-card.png");
+    expect(html).toContain(
+      '<meta property="og:image" content="https://example.com/docs/social-card.png">',
+    );
+    expect(html).toContain('<meta property="og:image:type" content="image/png">');
+    expect(html).toContain('<meta property="og:image:width" content="1200">');
+    expect(html).toContain('<meta property="og:image:height" content="630">');
+    expect(html).toContain('<meta property="og:image:alt" content="The Bookstore API wordmark.">');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+  });
+
+  it("offers the contract as an alternative representation and warms the font origins", () => {
+    expect(html).toContain(
+      '<link rel="alternate" type="application/json" href="/docs/openapi.json" title="OpenAPI contract">',
+    );
+    expect(html).toContain('<link rel="preconnect" href="https://fonts.googleapis.com">');
+    expect(html).toContain('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
+  });
+
+  it("describes the reference as structured data", () => {
+    const graph = parseJsonLd(html);
+    expect(graph["@context"]).toBe("https://schema.org");
+    expect(graph["@graph"].map((node) => node["@type"])).toEqual(["WebSite", "APIReference"]);
+    const reference = graph["@graph"][1];
+    expect(reference?.url).toBe("https://example.com/docs/");
+    expect(reference?.version).toBe("1.2.3");
+    expect(reference?.image).toBe("https://example.com/docs/social-card.png");
+    expect(reference?.isPartOf).toEqual({ "@id": "https://example.com/docs/#website" });
+  });
+
+  it("describes the builder page as an application reached from the reference", () => {
+    expect(builderHtml).toContain(
+      '<link rel="canonical" href="https://example.com/docs/config-builder/">',
+    );
+    const graph = parseJsonLd(builderHtml);
+    expect(graph["@graph"].map((node) => node["@type"])).toEqual([
+      "WebSite",
+      "WebApplication",
+      "BreadcrumbList",
+    ]);
+    expect(graph["@graph"][2]?.itemListElement).toEqual([
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Bookstore API",
+        item: "https://example.com/docs/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Configuration builder for Bookstore API",
+        item: "https://example.com/docs/config-builder/",
+      },
+    ]);
+  });
+
+  it("lists every page in the sitemap and points robots.txt at it", () => {
+    expect(files).toContain("sitemap.xml");
+    expect(files).toContain("robots.txt");
+    const sitemap = readFileSync(join(outDir, "sitemap.xml"), "utf8");
+    expect(sitemap).toContain("<loc>https://example.com/docs/</loc>");
+    expect(sitemap).toContain("<loc>https://example.com/docs/config-builder/</loc>");
+    expect(sitemap).toContain("<loc>https://example.com/docs/handbook.html</loc>");
+    expect(sitemap).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+    const robots = readFileSync(join(outDir, "robots.txt"), "utf8");
+    expect(robots).toContain("Sitemap: https://example.com/docs/sitemap.xml");
+  });
+});
+
+describe("buildSite without a site URL", () => {
+  it("keeps the relative metadata and skips everything that needs an address", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "periwinkle-seo-relative-"));
+    const outDir = join(workDir, "dist");
+    writePngHeader(join(workDir, "social-card.png"), 1200, 630);
+    const result = await buildSite({
+      specPath,
+      outDir,
+      cwd: workDir,
+      config: resolveConfig({ site: { socialImage: "social-card.png" } }),
+      assetPaths: testAssetPaths(workDir),
+    });
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+
+    expect(html).toContain('<meta name="description"');
+    expect(html).toContain('<meta property="og:title" content="Bookstore API">');
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).not.toContain("og:url");
+    // A card image has to be absolute, so a local file is neither referenced
+    // nor copied into a site that does not know where it is published.
+    expect(html).not.toContain("og:image");
+    expect(result.files).not.toContain("social-card.png");
+    expect(result.files).not.toContain("sitemap.xml");
+    expect(result.files).not.toContain("robots.txt");
+    expect(html).not.toContain("application/ld+json");
+  });
+});
+
 describe("buildSite failures", () => {
   it("fails loudly for a missing spec", async () => {
     const workDir = mkdtempSync(join(tmpdir(), "periwinkle-build-"));
