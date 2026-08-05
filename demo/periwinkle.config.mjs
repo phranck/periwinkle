@@ -10,7 +10,20 @@ export default {
   spec: "tests/fixtures/bookstore.openapi.json",
   site: {
     basePath: "/periwinkle",
+    // The URL the Pages deployment is served from. It carries the canonical
+    // link, the social card, the JSON-LD graph, sitemap.xml, and robots.txt.
+    url: "https://phranck.github.io/periwinkle",
     serverUrl: "https://api.bookstore.example",
+    language: "en-GB",
+    description:
+      "Live demo of periwinkle, the static API documentation generator for OpenAPI 3.x. A fictional bookstore contract rendered as a themable, self-contained site.",
+    socialImage: "assets/Logo_Banner/social-card.png",
+    socialImageAlt:
+      "The periwinkle wordmark beside an illustrated periwinkle flower, above the line OpenAPI documentation generator.",
+    favicon: "assets/Logo_Banner/logo.png",
+    // The Pages workflow copies the icon picker next to the generated pages,
+    // so periwinkle does not know about it and it is listed here by hand.
+    extraSitemapPaths: ["icon-picker.html"],
   },
   navigation: {
     logo: "assets/Logo_Banner/logo.png",
